@@ -152,7 +152,7 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData }: Pr
                                     )}
                                 >
                                     {date ? (
-                                        format(date, "PPP", { locale: vi })
+                                        format(date, "dd/MM/yyyy")
                                     ) : (
                                         <span>Chọn ngày</span>
                                     )}
