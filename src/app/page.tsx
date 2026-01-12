@@ -28,7 +28,7 @@ export default function Home() {
   const [billToDuplicate, setBillToDuplicate] = useState<any>(null); // State for duplication
 
   // User Data
-  const [currentUser, setCurrentUser] = useState<{ id: number; role: string } | null>(null);
+  const [currentUser, setCurrentUser] = useState<{ id: number; role: string; name?: string; username?: string } | null>(null);
 
   // Initial Fetch: Workspace & Sheets & User
   useEffect(() => {
