@@ -140,14 +140,14 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData }: Pr
                             />
                         </div>
                     </div>
-                    <div className="space-y-2 flex flex-col">
+                    <div className="space-y-2">
                         <Label>Ngày</Label>
                         <Popover>
                             <PopoverTrigger asChild>
                                 <Button
                                     variant={"outline"}
                                     className={cn(
-                                        "w-full pl-3 text-left font-normal",
+                                        "w-full h-10 pl-3 text-left font-normal",
                                         !date && "text-muted-foreground"
                                     )}
                                 >
