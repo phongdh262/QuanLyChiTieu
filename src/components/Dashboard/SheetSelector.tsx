@@ -2,6 +2,10 @@
 import React, { useState } from 'react';
 import { useConfirm } from '@/components/ui/ConfirmProvider';
 import { useToast } from '@/components/ui/ToastProvider';
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Check, X, Trash2, Edit, Plus } from "lucide-react";
 
 interface Sheet {
     id: number;
@@ -39,6 +43,7 @@ export default function SheetSelector({ sheets, currentSheetId, workspaceId, onC
             setIsCreating(false);
             onCreated();
             onChange(newSheet.id);
+            addToast('Đã tạo bảng mới', 'success');
         } catch (e) {
             console.error(e);
             addToast('Lỗi khi tạo bảng mới', 'error');
@@ -60,7 +65,8 @@ export default function SheetSelector({ sheets, currentSheetId, workspaceId, onC
             const res = await fetch(`/api/sheets/${currentSheetId}`, { method: 'DELETE' });
             if (!res.ok) throw new Error('Failed');
             onCreated(); // Reload workspace
-            // Parent will likely reset currentSheetId if it was deleted, but we trigger reload
+            // Parent will likely reset currentSheetId if it was deleted
+            addToast('Đã xóa bảng', 'success');
         } catch (e) {
             console.error(e);
             addToast('Lỗi khi xóa bảng', 'error');
@@ -86,7 +92,8 @@ export default function SheetSelector({ sheets, currentSheetId, workspaceId, onC
             });
             if (!res.ok) throw new Error('Failed');
             setIsEditing(false);
-            onCreated(); // Reload to update name in list
+            onCreated();
+            addToast('Đã cập nhật tên', 'success');
         } catch (e) {
             console.error(e);
             addToast('Lỗi khi cập nhật tên', 'error');
@@ -94,91 +101,107 @@ export default function SheetSelector({ sheets, currentSheetId, workspaceId, onC
     };
 
     return (
-        <div style={{ marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '0.5rem', height: '40px' }}>
+        <div className="mb-6 flex items-center gap-2 h-10 w-full">
             {isEditing ? (
-                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                    <input
+                <div className="flex gap-2 items-center flex-1 animate-in fade-in duration-200">
+                    <Input
                         value={editName}
                         onChange={e => setEditName(e.target.value)}
-                        style={{ margin: 0, padding: '0.5rem', width: '200px', fontWeight: 'bold' }}
+                        className="h-10 font-bold bg-white text-lg"
                         autoFocus
                     />
-                    <button onClick={saveEdit} style={{ width: 'auto', padding: '0.5rem 1rem' }}>Lưu</button>
-                    <button onClick={() => setIsEditing(false)} className="secondary" style={{ width: 'auto', padding: '0.5rem 1rem' }}>Hủy</button>
+                    <Button onClick={saveEdit} size="icon" className="bg-green-600 hover:bg-green-700 h-10 w-10 shrink-0">
+                        <Check className="w-5 h-5" />
+                    </Button>
+                    <Button onClick={() => setIsEditing(false)} variant="secondary" size="icon" className="h-10 w-10 shrink-0">
+                        <X className="w-5 h-5" />
+                    </Button>
                 </div>
             ) : isCreating ? (
-                <div className="fade-in" style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', width: '100%' }}>
-                    <input type="number" value={month} onChange={e => setMonth(parseInt(e.target.value))} style={{ width: '60px', margin: 0, padding: '0.5rem' }} min={1} max={12} placeholder="T" />
-                    <span style={{ fontWeight: 'bold' }}>/</span>
-                    <input type="number" value={year} onChange={e => setYear(parseInt(e.target.value))} style={{ width: '80px', margin: 0, padding: '0.5rem' }} placeholder="Năm" />
+                <div className="flex gap-2 items-center flex-1 animate-in fade-in duration-200 bg-white p-1 rounded-lg border border-slate-200 shadow-sm">
+                    <div className="flex items-center gap-2 px-2">
+                        <span className="text-sm font-semibold text-slate-500 whitespace-nowrap">Tháng:</span>
+                        <Input
+                            type="number"
+                            value={month}
+                            onChange={e => setMonth(parseInt(e.target.value))}
+                            className="w-16 h-8 text-center font-bold"
+                            min={1} max={12}
+                        />
+                        <span className="text-slate-300">/</span>
+                        <Input
+                            type="number"
+                            value={year}
+                            onChange={e => setYear(parseInt(e.target.value))}
+                            className="w-20 h-8 text-center font-bold"
+                        />
+                    </div>
 
-                    <button onClick={handleCreate} style={{ width: 'auto', margin: 0, padding: '0.5rem 1rem', background: 'var(--primary)', color: 'white', border: 'none', borderRadius: '8px' }}>Tạo</button>
-
-                    <button
-                        onClick={() => setIsCreating(false)}
-                        title="Hủy"
-                        style={{
-                            width: '36px',
-                            height: '36px',
-                            padding: 0,
-                            borderRadius: '8px',
-                            background: '#fee2e2',
-                            border: '1px solid #fecaca',
-                            color: 'var(--danger)',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            transition: 'all 0.2s',
-                        }}
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" style={{ width: '20px', height: '20px' }}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                    </button>
+                    <div className="flex items-center gap-1 ml-auto">
+                        <Button
+                            onClick={handleCreate}
+                            className="bg-blue-600 hover:bg-blue-700 h-8 px-3 text-xs"
+                        >
+                            <Check className="w-3.5 h-3.5 mr-1" /> Tạo
+                        </Button>
+                        <Button
+                            onClick={() => setIsCreating(false)}
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-slate-400 hover:text-red-500 hover:bg-red-50"
+                        >
+                            <X className="w-4 h-4" />
+                        </Button>
+                    </div>
                 </div>
             ) : (
                 <>
-                    <select
-                        value={currentSheetId || ''}
-                        onChange={(e) => onChange(parseInt(e.target.value))}
-                        style={{ width: 'auto', flex: 1, minWidth: '0', marginBottom: 0, padding: '0.5rem', fontWeight: 'bold', fontSize: '1.1rem' }}
-                    >
-                        {sheets.map(s => (
-                            <option key={s.id} value={s.id}>{s.name}</option>
-                        ))}
-                    </select>
+                    <Select value={currentSheetId?.toString()} onValueChange={(val) => onChange(parseInt(val))}>
+                        <SelectTrigger className="h-10 text-lg font-bold bg-white border-transparent hover:border-slate-200 focus:ring-0 shadow-none px-2 data-[state=open]:bg-slate-50">
+                            <SelectValue placeholder="Chọn bảng chi tiêu" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {sheets.map(s => (
+                                <SelectItem key={s.id} value={s.id.toString()} className="font-medium cursor-pointer">
+                                    {s.name}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
 
-                    <button
-                        onClick={startEdit}
-                        title="Đổi tên"
-                        className="h-9 w-9 p-0 flex items-center justify-center rounded-md border border-slate-200 bg-white text-slate-500 hover:text-blue-600 hover:bg-blue-50 hover:border-blue-200 transition-all shadow-sm"
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" style={{ width: '18px', height: '18px' }}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
-                        </svg>
-                    </button>
+                    <div className="flex items-center gap-1 shrink-0">
+                        <Button
+                            onClick={startEdit}
+                            variant="outline"
+                            size="icon"
+                            className="h-9 w-9 text-slate-400 hover:text-blue-600 border-slate-200 hover:bg-blue-50"
+                            title="Đổi tên"
+                        >
+                            <Edit className="w-4 h-4" />
+                        </Button>
 
-                    <button
-                        onClick={handleDelete}
-                        title="Xóa tháng này"
-                        className="h-9 w-9 p-0 flex items-center justify-center rounded-md border border-red-200 bg-red-50 text-red-500 hover:text-red-700 hover:bg-red-100 hover:border-red-300 transition-all shadow-sm"
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" style={{ width: '18px', height: '18px' }}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
-                        </svg>
-                    </button>
+                        <Button
+                            onClick={handleDelete}
+                            variant="outline"
+                            size="icon"
+                            className="h-9 w-9 text-slate-400 hover:text-red-600 border-slate-200 hover:bg-red-50 hover:border-red-200"
+                            title="Xóa tháng này"
+                        >
+                            <Trash2 className="w-4 h-4" />
+                        </Button>
 
-                    <div style={{ width: '1px', height: '20px', background: '#e2e8f0', margin: '0 0.25rem', flexShrink: 0 }}></div>
+                        <div className="w-px h-5 bg-slate-200 mx-1"></div>
 
-                    <button
-                        onClick={() => setIsCreating(true)}
-                        title="Thêm tháng mới"
-                        className="h-9 w-9 p-0 flex items-center justify-center rounded-md border border-blue-200 bg-blue-50 text-blue-600 hover:text-blue-700 hover:bg-blue-100 hover:border-blue-300 transition-all shadow-sm"
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" style={{ width: '20px', height: '20px' }}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                        </svg>
-                    </button>
+                        <Button
+                            onClick={() => setIsCreating(true)}
+                            variant="default"
+                            size="icon"
+                            className="h-9 w-9 bg-blue-600 hover:bg-blue-700 text-white shadow-sm"
+                            title="Thêm tháng mới"
+                        >
+                            <Plus className="w-5 h-5" />
+                        </Button>
+                    </div>
                 </>
             )}
         </div>

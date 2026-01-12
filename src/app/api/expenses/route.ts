@@ -60,6 +60,7 @@ export async function POST(req: Request) {
                     amount,
                     description,
                     type,
+                    date: body.date ? new Date(body.date) : new Date(),
                 }
             });
 
