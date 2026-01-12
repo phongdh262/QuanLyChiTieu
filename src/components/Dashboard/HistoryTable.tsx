@@ -225,7 +225,7 @@ export default function HistoryTable({ bills, members, onDelete }: Props) {
             <Table>
               <TableHeader className="bg-slate-100/80">
                 <TableRow>
-                  <TableHead className="w-[50px] text-center">
+                  <TableHead className="w-[40px] text-center p-2">
                     <input
                       type="checkbox"
                       checked={isAllSelected}
@@ -233,18 +233,19 @@ export default function HistoryTable({ bills, members, onDelete }: Props) {
                       className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer accent-blue-600"
                     />
                   </TableHead>
-                  <TableHead className="w-[60px] text-center font-bold text-slate-700">STT</TableHead>
-                  <TableHead className="w-[280px] font-bold text-slate-700">Nội dung</TableHead>
-                  <TableHead className="w-[180px] font-bold text-slate-700">Người chi</TableHead>
-                  <TableHead className="w-[150px] text-right font-bold text-slate-700">Số tiền</TableHead>
-                  <TableHead className="w-[200px] font-bold text-slate-700">Chia cho</TableHead>
-                  <TableHead className="w-[100px]"></TableHead>
+                  <TableHead className="w-[100px] text-left font-bold text-slate-700">Ngày</TableHead>
+                  <TableHead className="w-[100px] text-center font-bold text-slate-700">Loại</TableHead>
+                  <TableHead className="min-w-[200px] font-bold text-slate-700">Nội dung</TableHead>
+                  <TableHead className="w-[140px] text-right font-bold text-slate-700">Số tiền</TableHead>
+                  <TableHead className="w-[160px] font-bold text-slate-700 pl-4">Người chi</TableHead>
+                  <TableHead className="w-[150px] font-bold text-slate-700">Chia cho</TableHead>
+                  <TableHead className="w-[80px]"></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredBills.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="h-32 text-center text-muted-foreground italic bg-slate-50/30">
+                    <TableCell colSpan={8} className="h-32 text-center text-muted-foreground italic bg-slate-50/30">
                       Không có dữ liệu hóa đơn nào.
                     </TableCell>
                   </TableRow>
@@ -260,7 +261,7 @@ export default function HistoryTable({ bills, members, onDelete }: Props) {
                           index % 2 === 0 ? "bg-white" : "bg-slate-50/20"
                         )}
                       >
-                        <TableCell className="text-center">
+                        <TableCell className="text-center p-2">
                           <input
                             type="checkbox"
                             checked={isSelected}
@@ -268,61 +269,52 @@ export default function HistoryTable({ bills, members, onDelete }: Props) {
                             className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer accent-blue-600 mt-1"
                           />
                         </TableCell>
-                        <TableCell className="text-center font-bold text-slate-400">
-                          {index + 1}
+                        <TableCell className="text-left py-3">
+                          <span className="text-sm font-medium text-slate-600">
+                            {b.date ? new Date(b.date).toLocaleDateString('vi-VN') : '-'}
+                          </span>
                         </TableCell>
-                        <TableCell>
-                          <div className="flex flex-col gap-1.5">
-                            <div className="flex items-center gap-2">
-                              <Badge variant={b.type === 'SHARED' ? 'secondary' : 'default'} className={cn(
-                                "shadow-sm px-2 py-0.5",
-                                b.type === 'SHARED' ? "bg-blue-100 text-blue-700 hover:bg-blue-200 border border-blue-200" : "bg-orange-100 text-orange-800 hover:bg-orange-200 border border-orange-200"
-                              )}>
-                                {b.type === 'SHARED' ? 'CHUNG' : 'RIÊNG'}
-                              </Badge>
-                              <span className="font-bold text-slate-800 text-base">{b.note}</span>
-                            </div>
-                            {b.date && (
-                              <div className="flex items-center gap-1.5 text-xs text-slate-400 font-medium">
-                                <Calendar className="w-3 h-3" />
-                                {new Date(b.date).toLocaleDateString('vi-VN')}
-                              </div>
-                            )}
-                          </div>
+                        <TableCell className="text-center py-3">
+                          <Badge variant={b.type === 'SHARED' ? 'secondary' : 'default'} className={cn(
+                            "shadow-sm px-2 py-0.5 text-[10px] uppercase tracking-wider",
+                            b.type === 'SHARED' ? "bg-blue-100 text-blue-700 border-blue-200" : "bg-orange-100 text-orange-800 border-orange-200"
+                          )}>
+                            {b.type === 'SHARED' ? 'Chung' : 'Riêng'}
+                          </Badge>
                         </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <div className={cn("w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-md ring-2 ring-white", getAvatarColor(b.payer))}>
-                              {b.payer.charAt(0).toUpperCase()}
-                            </div>
-                            <span className="font-semibold text-slate-700">{b.payer}</span>
-                          </div>
+                        <TableCell className="py-3">
+                          <span className="font-bold text-slate-800 text-base line-clamp-2" title={b.note}>
+                            {b.note}
+                          </span>
                         </TableCell>
-                        <TableCell className="text-right">
-                          <span className="font-black text-lg text-slate-800 tabular-nums tracking-tight">
+                        <TableCell className="text-right py-3">
+                          <span className="font-bold text-base text-slate-800 tabular-nums tracking-tight">
                             {formatMoney(b.amount)}
                           </span>
                         </TableCell>
-                        <TableCell>
-                          <div className="flex flex-wrap items-center gap-1.5">
+                        <TableCell className="pl-4 py-3">
+                          <div className="flex items-center gap-2">
+                            <div className={cn("w-6 h-6 rounded-full flex items-center justify-center text-white font-bold text-xs shadow-sm", getAvatarColor(b.payer))}>
+                              {b.payer.charAt(0).toUpperCase()}
+                            </div>
+                            <span className="text-sm font-medium text-slate-700 truncate max-w-[100px]" title={b.payer}>{b.payer}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="py-3">
+                          <div className="flex flex-wrap items-center gap-1">
                             {b.type === 'SHARED' ? (
-                              <Badge variant="outline" className="bg-white text-slate-600 border-slate-200 gap-1.5 font-medium shadow-sm px-2">
-                                <Users className="w-3 h-3" /> Tất cả
-                              </Badge>
+                              <span className="text-xs text-slate-400 font-medium italic">Tất cả</span>
                             ) : (
                               (b.beneficiaries || []).map((name, idx) => (
-                                <div key={idx} className="flex items-center bg-white border border-slate-200 rounded-full pl-0.5 pr-2 py-0.5 shadow-sm gap-1.5">
-                                  <div className={cn("w-5 h-5 rounded-full flex items-center justify-center text-[10px] text-white font-bold", getAvatarColor(name))}>
-                                    {name.charAt(0).toUpperCase()}
-                                  </div>
-                                  <span className="text-xs font-semibold text-slate-600">{name}</span>
+                                <div key={idx} className={cn("w-6 h-6 rounded-full flex items-center justify-center text-white font-bold text-xs shadow-sm ring-1 ring-white", getAvatarColor(name))} title={name}>
+                                  {name.charAt(0).toUpperCase()}
                                 </div>
                               ))
                             )}
                           </div>
                         </TableCell>
-                        <TableCell>
-                          <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-all duration-200 transform translate-x-2 group-hover:translate-x-0">
+                        <TableCell className="py-3 text-right">
+                          <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                             <Button
                               variant="ghost"
                               size="icon"
