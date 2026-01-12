@@ -151,8 +151,8 @@ export default function Home() {
   const activeSheetName = sheets.find(s => s.id === currentSheetId)?.name || 'QUẢN LÝ CHI TIÊU';
 
   return (
-    <main>
-      <div style={{ width: '100%', padding: '0 2rem', marginBottom: '2rem', display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>
+    <main className="container mx-auto max-w-7xl px-4 py-6">
+      <div style={{ width: '100%', marginBottom: '2rem', display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>
 
         {/* Responsive Header Container */}
         <div style={{
@@ -215,10 +215,10 @@ export default function Home() {
         </h1>
       </div>
 
-      <div className="row">
-        <div>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div className="lg:col-span-4 space-y-6">
           {/* LEFT COLUMN: Controls */}
-          <div style={{ position: 'sticky', top: '2rem' }}>
+          <div className="sticky top-6 space-y-4">
             <SheetSelector
               sheets={sheets}
               currentSheetId={currentSheetId}
@@ -239,8 +239,7 @@ export default function Home() {
           </div>
         </div>
 
-        <div>
-
+        <div className="lg:col-span-8 space-y-6">
           {/* RIGHT COLUMN: Data */}
           {calculations && (
             <>

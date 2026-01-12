@@ -225,21 +225,22 @@ export default function HistoryTable({ bills, members, onDelete }: Props) {
             <Table>
               <TableHeader className="bg-slate-100/80">
                 <TableRow>
-                  <TableHead className="w-[40px] text-center">
-                    <input
-                      type="checkbox"
-                      checked={isAllSelected}
-                      onChange={toggleAll}
-                      className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer accent-blue-600"
-                    />
-                  </TableHead>
-                  <TableHead className="w-[50px] text-center font-bold text-slate-700">STT</TableHead>
-                  <TableHead className="font-bold text-slate-700">Nội dung</TableHead>
-                  <TableHead className="font-bold text-slate-700">Người chi</TableHead>
-                  <TableHead className="text-right font-bold text-slate-700">Số tiền</TableHead>
-                  <TableHead className="font-bold text-slate-700">Chia cho</TableHead>
-                  <TableHead className="w-[100px]"></TableHead>
-                </TableRow>
+                  <TableRow>
+                    <TableHead className="w-[50px] text-center">
+                      <input
+                        type="checkbox"
+                        checked={isAllSelected}
+                        onChange={toggleAll}
+                        className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer accent-blue-600"
+                      />
+                    </TableHead>
+                    <TableHead className="w-[60px] text-center font-bold text-slate-700">STT</TableHead>
+                    <TableHead className="w-[280px] font-bold text-slate-700">Nội dung</TableHead>
+                    <TableHead className="w-[180px] font-bold text-slate-700">Người chi</TableHead>
+                    <TableHead className="w-[150px] text-right font-bold text-slate-700">Số tiền</TableHead>
+                    <TableHead className="w-[200px] font-bold text-slate-700">Chia cho</TableHead>
+                    <TableHead className="w-[100px]"></TableHead>
+                  </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredBills.length === 0 ? (
