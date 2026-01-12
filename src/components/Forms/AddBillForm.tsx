@@ -4,8 +4,12 @@ import { useToast } from '@/components/ui/ToastProvider';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, Wallet, Calendar, Users, Calculator, Check, CheckCircle2 } from 'lucide-react';
+import { PlusCircle, Wallet, Calendar as CalendarIcon, Users, Calculator, Check, CheckCircle2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { format } from "date-fns";
+import { vi } from "date-fns/locale";
 
 // Quick inline Label component to avoid module not found error if not created yet
 function Label({ children, className, ...props }: React.LabelHTMLAttributes<HTMLLabelElement>) {
@@ -29,7 +33,7 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData }: Pr
     const { addToast } = useToast();
     const [description, setDescription] = useState('');
     const [amount, setAmount] = useState('');
-    const [date, setDate] = useState('');
+    const [date, setDate] = useState<Date | undefined>(undefined);
     const [payerId, setPayerId] = useState<string>('');
     const [type, setType] = useState<'SHARED' | 'PRIVATE'>('SHARED');
     const [beneficiaryIds, setBeneficiaryIds] = useState<string[]>([]);
@@ -83,7 +87,7 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData }: Pr
                     amount: parseFloat(amount),
                     description,
                     type,
-                    date: date || undefined,
+                    date: date ? date.toISOString() : undefined,
                     beneficiaryIds: type === 'PRIVATE' ? beneficiaryIds.map(id => parseInt(id)) : []
                 }),
             });
@@ -93,7 +97,7 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData }: Pr
             // Reset form
             setDescription('');
             setAmount('');
-            setDate('');
+            setDate(undefined);
             setType('SHARED');
             setBeneficiaryIds([]);
             addToast('Đã thêm hóa đơn thành công!', 'success');
@@ -136,17 +140,37 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData }: Pr
                             />
                         </div>
                     </div>
-                    <div className="space-y-2">
+                    <div className="space-y-2 flex flex-col">
                         <Label>Ngày</Label>
-                        <div className="relative">
-                            <Calendar className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                            <Input
-                                type="date"
-                                value={date}
-                                onChange={e => setDate(e.target.value)}
-                                className="pl-9"
-                            />
-                        </div>
+                        <Popover>
+                            <PopoverTrigger asChild>
+                                <Button
+                                    variant={"outline"}
+                                    className={cn(
+                                        "w-full pl-3 text-left font-normal",
+                                        !date && "text-muted-foreground"
+                                    )}
+                                >
+                                    {date ? (
+                                        format(date, "PPP", { locale: vi })
+                                    ) : (
+                                        <span>Chọn ngày</span>
+                                    )}
+                                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0" align="start">
+                                <Calendar
+                                    mode="single"
+                                    selected={date}
+                                    onSelect={setDate}
+                                    disabled={(date) =>
+                                        date > new Date() || date < new Date("1900-01-01")
+                                    }
+                                    initialFocus
+                                />
+                            </PopoverContent>
+                        </Popover>
                     </div>
                 </div>
 
