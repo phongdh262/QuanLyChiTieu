@@ -45,45 +45,19 @@ export default function ActivityLogList() {
 
     return (
         <div className="card" style={{ marginTop: '2rem' }}>
-            <div
-                onClick={() => setIsOpen(!isOpen)}
-                style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    cursor: 'pointer',
-                    marginBottom: isOpen ? '1rem' : '0',
-                    padding: '0.5rem 0'
-                }}
-            >
-                <h2 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <div className="card-header" onClick={() => setIsOpen(!isOpen)}>
+                <h2>
                     <span>📜</span> Nhật Ký Hoạt Động
                 </h2>
-                <div style={{
-                    width: '32px', height: '32px',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    background: isOpen ? '#eff6ff' : '#f3f4f6',
-                    borderRadius: '50%',
-                    color: isOpen ? 'var(--primary)' : '#6b7280',
-                    transition: 'all 0.2s ease'
-                }}>
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 20 20"
-                        fill="currentColor"
-                        style={{
-                            width: '20px', height: '20px',
-                            transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
-                            transition: 'transform 0.2s'
-                        }}
-                    >
+                <div className={`card-toggle-icon ${isOpen ? 'open' : ''}`}>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" style={{ width: '20px', height: '20px' }}>
                         <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" />
                     </svg>
                 </div>
             </div>
 
             {isOpen && (
-                <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
+                <div style={{ maxHeight: '400px', overflowY: 'auto' }} className="fade-in">
                     {loading ? (
                         <div style={{ padding: '1rem', textAlign: 'center', color: '#6b7280' }}>Đang tải...</div>
                     ) : (

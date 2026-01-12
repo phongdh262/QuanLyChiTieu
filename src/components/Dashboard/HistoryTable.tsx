@@ -132,22 +132,21 @@ export default function HistoryTable({ bills, members, onDelete }: Props) {
       <div className="card">
         {/* Header & Filters Toolbar */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '1.5rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
             <h2 style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', margin: 0, fontSize: '1.5rem' }}>
               <span style={{ fontSize: '1.75rem' }}>🕰️</span> Lịch Sử Chi Tiêu
             </h2>
-            <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+            <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
 
               {/* Bulk Delete Button */}
               {selectedIds.size > 0 && (
                 <button
                   onClick={handleBulkDelete}
                   disabled={isBulkDeleting}
-                  className="fade-in"
+                  className="fade-in danger"
                   style={{
-                    background: '#fee2e2', color: '#ef4444', border: 'none',
-                    padding: '0.6rem 1rem', borderRadius: '10px', fontWeight: 600,
-                    display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer'
+                    padding: '0.6rem 1rem', borderRadius: '10px',
+                    display: 'flex', alignItems: 'center', gap: '0.5rem'
                   }}
                 >
                   {isBulkDeleting ? 'Đang xóa...' : `Xóa (${selectedIds.size})`}
@@ -159,26 +158,16 @@ export default function HistoryTable({ bills, members, onDelete }: Props) {
                 </button>
               )}
 
-              <div className="filter-group" style={{ position: 'relative' }}>
-                <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', display: 'flex', alignItems: 'center', pointerEvents: 'none', color: '#6b7280' }}>
+              <div className="filter-group">
+                <span>
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" style={{ width: '16px', height: '16px' }}>
                     <path fillRule="evenodd" d="M17.707 9.293a1 1 0 010 1.414l-7 7a1 1 0 01-1.414 0l-7-7A.997.997 0 012 10V5a3 3 0 013-3h5c.256 0 .512.098.707.293l7 7zM5 6a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
                   </svg>
                 </span>
                 <select
+                  className="filter-select"
                   value={filterType}
                   onChange={e => setFilterType(e.target.value)}
-                  style={{
-                    padding: '0.6rem 1rem 0.6rem 2.2rem',
-                    borderRadius: '10px',
-                    border: '1px solid #e5e7eb',
-                    background: '#f9fafb',
-                    fontSize: '0.9rem',
-                    fontWeight: 500,
-                    cursor: 'pointer',
-                    outline: 'none',
-                    minWidth: '130px'
-                  }}
                 >
                   <option value="ALL">Tất cả loại</option>
                   <option value="SHARED">Chung</option>
@@ -186,26 +175,16 @@ export default function HistoryTable({ bills, members, onDelete }: Props) {
                 </select>
               </div>
 
-              <div className="filter-group" style={{ position: 'relative' }}>
-                <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', display: 'flex', alignItems: 'center', pointerEvents: 'none', color: '#6b7280' }}>
+              <div className="filter-group">
+                <span>
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" style={{ width: '16px', height: '16px' }}>
                     <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
                   </svg>
                 </span>
                 <select
+                  className="filter-select"
                   value={filterPayer}
                   onChange={e => setFilterPayer(e.target.value)}
-                  style={{
-                    padding: '0.6rem 1rem 0.6rem 2.2rem',
-                    borderRadius: '10px',
-                    border: '1px solid #e5e7eb',
-                    background: '#f9fafb',
-                    fontSize: '0.9rem',
-                    fontWeight: 500,
-                    cursor: 'pointer',
-                    outline: 'none',
-                    minWidth: '130px'
-                  }}
                 >
                   <option value="ALL">Tất cả người chi</option>
                   {members.map(m => (
@@ -218,142 +197,106 @@ export default function HistoryTable({ bills, members, onDelete }: Props) {
         </div>
 
         {/* Beautiful Table */}
-        <div style={{ overflowX: 'auto' }}>
-          <table style={{ borderCollapse: 'separate', borderSpacing: '0 8px', width: '100%' }}>
+        <div className="table-container">
+          <table className="table-history">
             <thead>
               <tr>
-                <th style={{ padding: '0 1rem', border: 'none', width: '40px' }}>
+                <th style={{ width: '40px' }}>
                   <input
                     type="checkbox"
                     checked={isAllSelected}
                     onChange={toggleAll}
-                    style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                    style={{ width: '18px', height: '18px', cursor: 'pointer', margin: 0 }}
                   />
                 </th>
-                <th style={{ color: '#9ca3af', fontWeight: 600, fontSize: '0.85rem', textTransform: 'uppercase', padding: '0 1rem', border: 'none', width: '50px' }}>STT</th>
-                <th style={{ color: '#9ca3af', fontWeight: 600, fontSize: '0.85rem', textTransform: 'uppercase', padding: '0 1rem', border: 'none' }}>Nội dung</th>
-                <th style={{ color: '#9ca3af', fontWeight: 600, fontSize: '0.85rem', textTransform: 'uppercase', padding: '0 1rem', border: 'none' }}>Người chi</th>
-                <th style={{ color: '#9ca3af', fontWeight: 600, fontSize: '0.85rem', textTransform: 'uppercase', padding: '0 1rem', border: 'none', textAlign: 'right' }}>Số tiền</th>
-                <th style={{ color: '#9ca3af', fontWeight: 600, fontSize: '0.85rem', textTransform: 'uppercase', padding: '0 1rem', border: 'none' }}>Chia cho</th>
-                <th style={{ border: 'none' }}></th>
+                <th style={{ width: '50px' }}>STT</th>
+                <th>Nội dung</th>
+                <th>Người chi</th>
+                <th className="text-right">Số tiền</th>
+                <th>Chia cho</th>
+                <th></th>
               </tr>
             </thead>
             <tbody>
               {filteredBills.map((b, index) => {
-                const typeColor = b.type === 'SHARED' ? { bg: '#dbeafe', text: '#1e40af' } : { bg: '#ffedd5', text: '#9a3412' };
+                const typeClass = b.type === 'SHARED' ? 'tag tag-shared' : 'tag tag-private';
                 const typeLabel = b.type === 'SHARED' ? 'CHUNG' : 'RIÊNG';
                 const isSelected = selectedIds.has(b.id);
 
                 return (
-                  <tr key={b.id} style={{ background: isSelected ? '#f0fdf4' : 'white', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', transition: 'background 0.1s' }}>
+                  <tr key={b.id} className={isSelected ? 'selected' : ''}>
 
-                    <td style={{ padding: '1rem', borderTopLeftRadius: '12px', borderBottomLeftRadius: '12px', border: '1px solid #f3f4f6', borderRight: 'none' }}>
-                      <input
-                        type="checkbox"
-                        checked={isSelected}
-                        onChange={() => toggleRow(b.id)}
-                        style={{ width: '18px', height: '18px', cursor: 'pointer' }}
-                      />
+                    <td>
+                      <div className="flex-center">
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={() => toggleRow(b.id)}
+                          style={{ width: '18px', height: '18px', cursor: 'pointer', margin: 0 }}
+                        />
+                      </div>
                     </td>
 
-                    <td style={{ padding: '1rem', border: '1px solid #f3f4f6', borderLeft: 'none', borderRight: 'none', fontWeight: 600, color: '#6b7280' }}>
+                    <td className="font-bold text-muted text-center" style={{ width: '50px' }}>
                       {index + 1}
                     </td>
 
-                    <td style={{ padding: '1rem', border: '1px solid #f3f4f6', borderRight: 'none', borderLeft: 'none' }}>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                          <span style={{
-                            fontSize: '0.7rem',
-                            fontWeight: 700,
-                            padding: '2px 8px',
-                            borderRadius: '999px',
-                            backgroundColor: typeColor.bg,
-                            color: typeColor.text,
-                            letterSpacing: '0.5px'
-                          }}>
+                    <td>
+                      <div className="flex-col gap-1">
+                        <div className="flex-center" style={{ justifyContent: 'flex-start', gap: '0.75rem' }}>
+                          <span className={typeClass}>
                             {typeLabel}
                           </span>
                           <span style={{ fontWeight: 600, fontSize: '1.05rem', color: '#1f2937' }}>{b.note}</span>
                         </div>
                         {b.date && (
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#9ca3af', fontSize: '0.85rem', marginLeft: '2px' }}>
+                          <div className="flex-center" style={{ justifyContent: 'flex-start', gap: '4px', color: '#9ca3af', fontSize: '0.85rem' }}>
                             <span>🗓</span> {new Date(b.date).toLocaleDateString('vi-VN')}
                           </div>
                         )}
                       </div>
                     </td>
 
-                    <td style={{ padding: '1rem', border: '1px solid #f3f4f6', borderLeft: 'none', borderRight: 'none' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                        <div style={{
-                          width: '32px', height: '32px', borderRadius: '50%',
-                          background: getAvatarColor(b.payer),
-                          color: 'white', fontWeight: 'bold', fontSize: '0.9rem',
-                          display: 'flex', alignItems: 'center', justifyContent: 'center'
-                        }}>
+                    <td>
+                      <div className="flex-center" style={{ justifyContent: 'flex-start', gap: '0.75rem' }}>
+                        <div className="avatar" style={{ background: getAvatarColor(b.payer) }}>
                           {b.payer.charAt(0).toUpperCase()}
                         </div>
-                        <span style={{ fontWeight: 500, color: '#374151' }}>{b.payer}</span>
+                        <span className="font-medium">{b.payer}</span>
                       </div>
                     </td>
 
-                    <td style={{ padding: '1rem', textAlign: 'right', border: '1px solid #f3f4f6', borderLeft: 'none', borderRight: 'none' }}>
+                    <td className="text-right">
                       <span style={{ fontWeight: 700, fontSize: '1.1rem', color: '#111827' }}>
                         {formatMoney(b.amount)}
                       </span>
                     </td>
 
-                    <td style={{ padding: '1rem', border: '1px solid #f3f4f6', borderLeft: 'none', borderRight: 'none' }}>
+                    <td>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
                         {b.type === 'SHARED' ? (
-                          <span style={{
-                            background: 'linear-gradient(135deg, #e0e7ff 0%, #d1e0ff 100%)', // subtle blue gradient
-                            color: '#3730a3',
-                            padding: '4px 10px', borderRadius: '20px',
-                            fontSize: '0.8rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px'
-                          }}>
+                          <span className="tag" style={{ background: '#e0e7ff', color: '#3730a3' }}>
                             👥 Tất cả
                           </span>
                         ) : (
                           (b.beneficiaries || []).map((name, idx) => (
-                            <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                              <div style={{
-                                width: '28px', height: '28px', borderRadius: '50%',
-                                background: getAvatarColor(name), color: 'white',
-                                fontSize: '0.8rem', fontWeight: 'bold',
-                                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                              }}>
+                            <div key={idx} className="flex-center" style={{ gap: '0.5rem' }}>
+                              <div className="avatar avatar-sm" style={{ background: getAvatarColor(name) }}>
                                 {name.charAt(0).toUpperCase()}
                               </div>
-                              <span style={{ fontSize: '0.9rem', fontWeight: 500, color: '#374151' }}>{name}</span>
+                              <span style={{ fontSize: '0.9rem', fontWeight: 500 }}>{name}</span>
                             </div>
                           ))
                         )}
                       </div>
                     </td>
 
-                    <td style={{ padding: '1rem', textAlign: 'right', borderTopRightRadius: '12px', borderBottomRightRadius: '12px', border: '1px solid #f3f4f6', borderLeft: 'none' }}>
-                      <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '0.5rem' }}>
+                    <td>
+                      <div className="flex-center" style={{ justifyContent: 'flex-end', gap: '0.5rem' }}>
                         <button
+                          className="btn-icon btn-icon-gray"
                           onClick={() => setEditingBill(b)}
                           title="Sửa"
-                          style={{
-                            width: '36px',
-                            height: '36px',
-                            padding: 0,
-                            borderRadius: '10px',
-                            background: '#f3f4f6', // subtle gray
-                            border: 'none',
-                            color: '#4b5563',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            transition: 'all 0.2s',
-                            cursor: 'pointer'
-                          }}
-                          onMouseOver={(e) => { e.currentTarget.style.background = '#e5e7eb'; e.currentTarget.style.color = '#000'; }}
-                          onMouseOut={(e) => { e.currentTarget.style.background = '#f3f4f6'; e.currentTarget.style.color = '#4b5563'; }}
                         >
                           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" style={{ width: '20px', height: '20px' }}>
                             <path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
@@ -361,25 +304,9 @@ export default function HistoryTable({ bills, members, onDelete }: Props) {
                         </button>
 
                         <button
+                          className="btn-icon btn-icon-danger"
                           onClick={() => handleDeleteClick(b.id)}
                           disabled={deletingId === b.id}
-                          style={{
-                            width: '36px',
-                            height: '36px',
-                            padding: 0,
-                            borderRadius: '10px',
-                            background: '#fee2e2', // Light red
-                            border: 'none',
-                            color: '#ef4444',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            opacity: deletingId === b.id ? 0.7 : 1,
-                            transition: 'all 0.2s',
-                            cursor: 'pointer'
-                          }}
-                          onMouseOver={(e) => { e.currentTarget.style.background = '#fecaca'; e.currentTarget.style.color = '#dc2626'; }}
-                          onMouseOut={(e) => { e.currentTarget.style.background = '#fee2e2'; e.currentTarget.style.color = '#ef4444'; }}
                         >
                           {deletingId === b.id ? '...' : (
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" style={{ width: '20px', height: '20px' }}>
