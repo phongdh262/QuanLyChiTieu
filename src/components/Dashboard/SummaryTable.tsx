@@ -64,7 +64,7 @@ export default function SummaryTable({ members, calculations }: Props) {
                         <tbody>
                             {members.map(member => {
                                 const m = member.name;
-                                const s = stats[m] || { totalPaid: 0 };
+                                const s = stats[m.toString()] || stats[m] || { sharedPaid: 0, totalPaid: 0 }; // Handle string/number key key
                                 const bal = balances[m] || 0;
                                 const privateBal = privateBalances[m] || 0;
                                 const sharedBalance = bal - privateBal;
@@ -75,7 +75,7 @@ export default function SummaryTable({ members, calculations }: Props) {
                                 return (
                                     <tr key={member.id}>
                                         <td style={{ padding: '1rem', borderBottom: '1px solid #f3f4f6', fontWeight: 500, color: '#374151' }}>{member.name}</td>
-                                        <td style={{ padding: '1rem', borderBottom: '1px solid #f3f4f6', textAlign: 'right', fontWeight: 600 }}>{formatMoney(s.totalPaid)}</td>
+                                        <td style={{ padding: '1rem', borderBottom: '1px solid #f3f4f6', textAlign: 'right', fontWeight: 600 }}>{formatMoney(s.sharedPaid)}</td>
                                         <td style={{ padding: '1rem', borderBottom: '1px solid #f3f4f6', textAlign: 'right', ...textStyle }}>{balText}</td>
                                     </tr>
                                 );
