@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  chitieu-app:
+    container_name: chitieu-app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    environment:
+      # Database Connection
+      # Password encoded: +_4nw=c7vAHh^gDjf5x? -> %2B_4nw%3Dc7vAHh%5EgDjf5x%3F
+      DATABASE_URL: "mysql://root:%2B_4nw%3Dc7vAHh%5EgDjf5x%3F@global-mariadb:3306/chitieu_db"
+
+      # App Secrets
+      JWT_SECRET: "kydieu-secret-key-change-me-in-production-123"
+
+      # Next.js Config
+      NODE_ENV: "production"
+      HOSTNAME: "0.0.0.0"
+
+    networks:
+      - web_network
+    ports:
+      - "3000:3000"
+
+networks:
+  web_network:
+    external: true

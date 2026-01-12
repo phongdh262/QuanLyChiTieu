@@ -1,0 +1,73 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Workspace {
+  id        Int      @id @default(autoincrement())
+  name      String
+  ownerId   String   // Placeholder for Auth User ID
+  createdAt DateTime @default(now())
+  
+  sheets    Sheet[]
+  members   Member[]
+}
+
+model Sheet {
+  id          Int       @id @default(autoincrement())
+  name        String    // e.g. "Tháng 1/2026"
+  month       Int
+  year        Int
+  status      String    @default("OPEN") // OPEN, CLOSED
+  createdAt   DateTime  @default(now())
+  
+  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+  workspaceId Int
+  
+  expenses    Expense[]
+}
+
+model Member {
+  id          Int       @id @default(autoincrement())
+  name        String
+  email       String?
+  username    String?   @unique
+  password    String?   // Hashed
+  role        String    @default("MEMBER") // ADMIN, MEMBER
+  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+  workspaceId Int
+  
+  paidExpenses Expense[] @relation("Payer")
+  splits       Split[]
+}
+
+model Expense {
+  id          Int      @id @default(autoincrement())
+  description String
+  amount      Float
+  type        String   // SHARED, PRIVATE
+  date        DateTime @default(now())
+  
+  sheet       Sheet    @relation(fields: [sheetId], references: [id])
+  sheetId     Int
+  
+  payer       Member   @relation("Payer", fields: [payerId], references: [id])
+  payerId     Int
+  
+  splits      Split[]
+}
+
+model Split {
+  id        Int     @id @default(autoincrement())
+  amount    Float
+  
+  expense   Expense @relation(fields: [expenseId], references: [id])
+  expenseId Int
+  
+  member    Member  @relation(fields: [memberId], references: [id])
+  memberId  Int
+}

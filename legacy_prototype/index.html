@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản Lý Chi Tiêu Nhóm</title>
+    <style>
+        :root {
+            --primary: #007bff;
+            --success: #28a745;
+            --danger: #dc3545;
+            --light: #f8f9fa;
+            --dark: #343a40;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #f4f7f6;
+            color: #333;
+        }
+
+        h1,
+        h2 {
+            color: var(--dark);
+        }
+
+        .row {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .col {
+            flex: 1;
+            min-width: 300px;
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+        }
+
+        input,
+        select,
+        button {
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        button {
+            cursor: pointer;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            font-weight: bold;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        button.danger {
+            background-color: var(--danger);
+        }
+
+        button.secondary {
+            background-color: #6c757d;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th,
+        td {
+            border: 1px solid #dee2e6;
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #e9ecef;
+        }
+
+        .amount {
+            text-align: right;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+        }
+
+        .positive {
+            color: var(--success);
+        }
+
+        .negative {
+            color: var(--danger);
+        }
+
+        .tag {
+            display: inline-block;
+            background: #e9ecef;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            margin-right: 5px;
+            margin-bottom: 5px;
+        }
+
+        .tag-remove {
+            margin-left: 5px;
+            color: var(--danger);
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            background: #fff;
+            padding: 5px 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: auto;
+        }
+
+        .checkbox-item input {
+            width: auto;
+            margin: 0 8px 0 0;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>💰 Quản Lý Chi Tiêu Nhóm</h1>
+
+    <div class="row">
+        <!-- Configuration Column -->
+        <div class="col" style="flex: 0 0 300px;">
+            <div class="card">
+                <h2>Thành Viên</h2>
+                <div style="display: flex; gap: 5px;">
+                    <input type="text" id="newMemberName" placeholder="Tên thành viên (VD: Khôi)">
+                    <button onclick="addMember()" style="width: auto;">+</button>
+                </div>
+                <div id="memberTags"></div>
+            </div>
+
+            <div class="card">
+                <h2>Thêm Hóa Đơn</h2>
+                <input type="text" id="billNote" placeholder="Nội dung chi (VD: Ăn tối)">
+                <input type="number" id="billAmount" placeholder="Số tiền (VNĐ)">
+
+                <label>Người trả tiền:</label>
+                <select id="payerSelect"></select>
+
+                <label>Loại chi tiêu:</label>
+                <select id="billType" onchange="toggleBeneficiaries()">
+                    <option value="SHARED">Chia Đều (Tất cả)</option>
+                    <option value="PRIVATE">Chi Riêng (Chọn người)</option>
+                </select>
+
+                <div id="beneficiariesSection"
+                    style="display: none; background: #f9f9f9; padding: 10px; border-radius: 4px; margin-bottom: 10px;">
+                    <label>Người thụ hưởng:</label>
+                    <div id="beneficiariesCheckboxes" class="checkbox-group"></div>
+                </div>
+
+                <div style="display: flex; gap: 10px;">
+                    <button id="addBillBtn" onclick="addBill()">Thêm Hóa Đơn</button>
+                    <button id="cancelEditBtn" class="secondary" onclick="resetForm()"
+                        style="display: none;">Hủy</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Data Column -->
+        <div class="col">
+            <div class="card">
+                <h2
+                    style="background-color: #fdd835; padding: 10px; border-radius: 4px; margin: -20px -20px 20px -20px; color: #333;">
+                    Bảng Tổng Kết (Summary)</h2>
+                <table id="summaryTable">
+                    <thead>
+                        <tr>
+                            <!-- Headers will be dynamic or hardcoded -->
+                            <th>Thành viên</th>
+                            <th class="amount" style="background-color: #fdd835">Tổng tiền</th>
+                            <th class="amount" style="background-color: #fdd835">Dư / Nợ tiền ăn chung</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+
+            <div class="card">
+                <h2
+                    style="background-color: #fdd835; padding: 10px; border-radius: 4px; margin: -20px -20px 20px -20px; color: #333;">
+                    Bảng Chi Riêng (Private Spending)</h2>
+                <p><i>Ma trận thanh toán chi hộ (Rows: Người chi, Columns: Người thụ hưởng)</i></p>
+                <table id="privateDebtTable">
+                    <thead></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+
+            <div class="card">
+                <h2>📊 Bảng Tính Nợ Tổng (Final Settlement)</h2>
+                <p><i>Bảng chốt sổ cuối cùng: Ai cần chuyển khoản cho ai bao nhiêu.</i></p>
+                <table id="debtTable">
+                    <thead>
+                        <tr>
+                            <th>Từ (Người nợ)</th>
+                            <th>Đến (Người được trả)</th>
+                            <th class="amount">Số tiền</th>
+                            <th>Trạng thái</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+
+            <div class="card">
+                <h2>Lịch Sử Chi Tiêu</h2>
+                <table id="historyTable">
+                    <thead>
+                        <tr>
+                            <th>Nội dung</th>
+                            <th>Người chi</th>
+                            <th class="amount">Số tiền</th>
+                            <th>Chia cho</th>
+                            <th style="width: 120px;">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="expenseCalculator.js"></script>
+    <script>
+        // State
+        let members = ['Khôi', 'Vân', 'Phong'];
+        let bills = [];
+        let editingBillId = null;
+
+        // Init
+        document.addEventListener('DOMContentLoaded', () => {
+            renderMembers();
+            renderPayerOptions();
+            updateUI();
+        });
+
+        function formatMoney(amount) {
+            return amount.toLocaleString('vi-VN') + ' ₫';
+        }
+
+        function addMember() {
+            const nameInput = document.getElementById('newMemberName');
+            const name = nameInput.value.trim();
+            if (name && !members.includes(name)) {
+                members.push(name);
+                nameInput.value = '';
+                renderMembers();
+                renderPayerOptions();
+                updateUI();
+            }
+        }
+
+        function removeMember(name) {
+            if (confirm(`Xóa thành viên ${name}? Lưu ý: không xóa lịch sử cũ của họ.`)) {
+                members = members.filter(m => m !== name);
+                renderMembers();
+                renderPayerOptions();
+                updateUI();
+            }
+        }
+
+        function renderMembers() {
+            const container = document.getElementById('memberTags');
+            container.innerHTML = members.map(m => `
+                <span class="tag">
+                    ${m} <span class="tag-remove" onclick="removeMember('${m}')">×</span>
+                </span>
+            `).join('');
+
+            const beneContainer = document.getElementById('beneficiariesCheckboxes');
+            beneContainer.innerHTML = members.map(m => `
+                <label class="checkbox-item">
+                    <input type="checkbox" value="${m}" checked> ${m}
+                </label>
+            `).join('');
+        }
+
+        function renderPayerOptions() {
+            const select = document.getElementById('payerSelect');
+            const currentVal = select.value;
+            select.innerHTML = members.map(m => `<option value="${m}">${m}</option>`).join('');
+            if (members.includes(currentVal)) select.value = currentVal;
+            else if (members.length > 0) select.value = members[0];
+        }
+
+        function toggleBeneficiaries() {
+            const type = document.getElementById('billType').value;
+            const section = document.getElementById('beneficiariesSection');
+            section.style.display = type === 'PRIVATE' ? 'block' : 'none';
+        }
+
+        function addBill() {
+            const note = document.getElementById('billNote').value || 'Khoản chi không tên';
+            const amount = parseInt(document.getElementById('billAmount').value);
+            const payer = document.getElementById('payerSelect').value;
+            const type = document.getElementById('billType').value;
+
+            if (!amount || isNaN(amount)) {
+                alert('Vui lòng nhập số tiền hợp lệ');
+                return;
+            }
+
+            let beneficiaries = [];
+            if (type === 'PRIVATE') {
+                const checkboxes = document.querySelectorAll('#beneficiariesCheckboxes input:checked');
+                checkboxes.forEach(cb => beneficiaries.push(cb.value));
+                if (beneficiaries.length === 0) {
+                    alert('Vui lòng chọn ít nhất 1 người thụ hưởng');
+                    return;
+                }
+            }
+
+            if (editingBillId) {
+                // Update mode
+                const index = bills.findIndex(b => b.id === editingBillId);
+                if (index !== -1) {
+                    bills[index] = {
+                        ...bills[index],
+                        note,
+                        amount,
+                        payer,
+                        type,
+                        beneficiaries: type === 'PRIVATE' ? beneficiaries : members
+                    };
+                }
+            } else {
+                // Add mode
+                const bill = {
+                    id: Date.now(),
+                    note,
+                    amount,
+                    payer,
+                    type,
+                    beneficiaries: type === 'PRIVATE' ? beneficiaries : members
+                };
+                bills.push(bill);
+            }
+
+            resetForm();
+            updateUI();
+        }
+
+        function editBill(id) {
+            const bill = bills.find(b => b.id === id);
+            if (!bill) return;
+
+            editingBillId = id;
+            document.getElementById('billNote').value = bill.note;
+            document.getElementById('billAmount').value = bill.amount;
+            document.getElementById('payerSelect').value = bill.payer;
+            document.getElementById('billType').value = bill.type;
+
+            toggleBeneficiaries();
+
+            if (bill.type === 'PRIVATE') {
+                const checkboxes = document.querySelectorAll('#beneficiariesCheckboxes input');
+                checkboxes.forEach(cb => {
+                    cb.checked = bill.beneficiaries.includes(cb.value);
+                });
+            } else {
+                // Reset checks if shared
+                document.querySelectorAll('#beneficiariesCheckboxes input').forEach(cb => cb.checked = true);
+            }
+
+            document.getElementById('addBillBtn').textContent = 'Lưu Thay Đổi';
+            document.getElementById('cancelEditBtn').style.display = 'block';
+
+            // Scroll top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function deleteBill(id) {
+            if (confirm('Bạn chắc chắn muốn xóa?')) {
+                bills = bills.filter(b => b.id !== id);
+                if (editingBillId === id) resetForm();
+                updateUI();
+            }
+        }
+
+        function resetForm() {
+            editingBillId = null;
+            document.getElementById('billNote').value = '';
+            document.getElementById('billAmount').value = '';
+            document.getElementById('billType').value = 'SHARED';
+            document.getElementById('addBillBtn').textContent = 'Thêm Hóa Đơn';
+            document.getElementById('cancelEditBtn').style.display = 'none';
+            toggleBeneficiaries();
+            document.querySelectorAll('#beneficiariesCheckboxes input').forEach(cb => cb.checked = true);
+        }
+
+        function updateUI() {
+            // Calculate
+            const result = calculateFinalBalances(members, bills);
+            const { balances, stats, privateBalances } = result;
+            const matrixData = calculatePrivateMatrix(members, bills);
+
+            // Global Debts (Overall Settlement)
+            const globalDebts = calculateDebts(balances);
+
+            // 1. Render Summary Table (Bảng tổng)
+            const summaryBody = document.querySelector('#summaryTable tbody');
+            summaryBody.innerHTML = '';
+            for (const member of members) {
+                const s = stats[member];
+                const sharedBalance = balances[member] - privateBalances[member];
+
+                let colorClass = sharedBalance > 0 ? 'positive' : (sharedBalance < 0 ? 'negative' : '');
+                let balText = sharedBalance === 0 ? '-' : (sharedBalance > 0 ? `+${formatMoney(sharedBalance)}` : formatMoney(sharedBalance));
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${member}</td>
+                    <td class="amount" style="font-weight:bold">${formatMoney(s.totalPaid)}</td>
+                    <td class="amount ${colorClass}">${balText}</td>
+                `;
+                summaryBody.appendChild(tr);
+            }
+
+            // 2. Render Private Matrix (Bảng chi riêng)
+            renderPrivateMatrixTable(matrixData);
+
+            // 3. Render Global Debts (Must Settle)
+            renderDebtTable('#debtTable tbody', globalDebts, 'Không có công nợ cần thanh toán');
+
+            // 4. Render History
+            const historyBody = document.querySelector('#historyTable tbody');
+            historyBody.innerHTML = '';
+            // Show latest first
+            [...bills].reverse().forEach(b => {
+                const tr = document.createElement('tr');
+                const beneList = b.type === 'SHARED' ? 'Tất cả' : b.beneficiaries.join(', ');
+                const typeTag = b.type === 'SHARED'
+                    ? '<span class="tag" style="background:#e3f2fd; color:#0d47a1">Chung</span>'
+                    : '<span class="tag" style="background:#fff3e0; color:#e65100">Riêng</span>';
+
+                tr.innerHTML = `
+                    <td>${typeTag} ${b.note}</td>
+                    <td>${b.payer}</td>
+                    <td class="amount">${formatMoney(b.amount)}</td>
+                    <td><small>${beneList}</small></td>
+                    <td>
+                        <button style="padding:4px 8px; font-size:12px; width:auto; margin:0;" onclick="editBill(${b.id})">Sửa</button>
+                        <button class="danger" style="padding:4px 8px; font-size:12px; width:auto; margin:0;" onclick="deleteBill(${b.id})">Xóa</button>
+                    </td>
+                `;
+                historyBody.appendChild(tr);
+            });
+        }
+
+        function renderPrivateMatrixTable(data) {
+            const { matrix, totals } = data;
+            const table = document.getElementById('privateDebtTable');
+            const thead = table.querySelector('thead');
+            const tbody = table.querySelector('tbody');
+
+            // 1. Build Header: Tên | Tổng tiền đã chi | Trả cho M1 | Trả cho M2 ...
+            let headerHTML = `<tr><th>Tên</th><th class="amount">Tổng tiền đã chi</th>`;
+            members.forEach(m => {
+                headerHTML += `<th class="amount">Trả cho ${m}</th>`;
+            });
+            headerHTML += '</tr>';
+            thead.innerHTML = headerHTML;
+
+            // 2. Build Rows
+            tbody.innerHTML = '';
+            members.forEach(payer => {
+                const tr = document.createElement('tr');
+                let rowHTML = `<td>${payer}</td>`;
+                rowHTML += `<td class="amount" style="font-weight:bold">${formatMoney(totals[payer])}</td>`;
+
+                members.forEach(beneficiary => {
+                    const amount = matrix[payer][beneficiary];
+                    let cellContent = '-';
+                    let cellStyle = '';
+
+                    if (payer === beneficiary) {
+                        cellStyle = 'background-color: #f1f3f5; color: #adb5bd;';
+                    } else if (amount > 0) {
+                        cellContent = formatMoney(amount);
+                    }
+
+                    rowHTML += `<td class="amount" style="${cellStyle}">${cellContent}</td>`;
+                });
+
+                tr.innerHTML = rowHTML;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function renderDebtTable(selector, debts, emptyMessage) {
+            const body = document.querySelector(selector);
+            if (!body) return;
+            body.innerHTML = '';
+
+            if (debts.length === 0) {
+                body.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#888;">${emptyMessage}</td></tr>`;
+            } else {
+                debts.forEach(d => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td><strong>${d.from}</strong></td>
+                        <td>➡️ <strong>${d.to}</strong></td>
+                        <td class="amount negative">${formatMoney(d.amount)}</td>
+                        <td><span style="color:red; font-size: 0.8em;">Cần trả</span></td>
+                    `;
+                    body.appendChild(tr);
+                });
+            }
+        }
+    </script>
+</body>
+
+</html>
