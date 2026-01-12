@@ -241,21 +241,6 @@ export default function Home() {
             bills={bills}
             members={members}
             onDelete={reload}
-            onDuplicate={(bill) => {
-              // Convert bill to AddForm format
-              const payer = members.find(m => m.name === bill.payer);
-              const beneficiaryIds = bill.beneficiaries
-                ? bill.beneficiaries.map(name => members.find(m => m.name === name)?.id).filter(Boolean) as number[]
-                : [];
-
-              setBillToDuplicate({
-                amount: bill.amount,
-                description: bill.note || '',
-                payerId: payer?.id || 0,
-                type: bill.type,
-                beneficiaryIds
-              });
-            }}
           />
         </div>
       </div>

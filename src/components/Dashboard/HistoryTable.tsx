@@ -8,12 +8,11 @@ interface Props {
   bills: Bill[];
   members: Member[];
   onDelete: () => void;
-  onDuplicate: (bill: Bill) => void;
 }
 
 const formatMoney = (amount: number) => amount.toLocaleString('vi-VN') + ' ₫';
 
-export default function HistoryTable({ bills, members, onDelete, onDuplicate }: Props) {
+export default function HistoryTable({ bills, members, onDelete }: Props) {
   const { confirm } = useConfirm();
   const { addToast } = useToast();
   const [deletingId, setDeletingId] = useState<number | string | null>(null);
@@ -361,28 +360,7 @@ export default function HistoryTable({ bills, members, onDelete, onDuplicate }: 
                           </svg>
                         </button>
 
-                        <button
-                          onClick={() => onDuplicate(b)}
-                          title="Sao chép nhanh (Duplicate)"
-                          style={{
-                            width: '36px',
-                            height: '36px',
-                            padding: 0,
-                            borderRadius: '10px',
-                            background: '#e0f2fe', // Light Blue
-                            border: 'none',
-                            color: '#0284c7', // Dark Blue
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            transition: 'all 0.2s',
-                            cursor: 'pointer'
-                          }}
-                          onMouseOver={(e) => { e.currentTarget.style.background = '#bae6fd'; }}
-                          onMouseOut={(e) => { e.currentTarget.style.background = '#e0f2fe'; }}
-                        >
-                          <span style={{ fontSize: '1.2rem', fontWeight: 600 }}>+</span>
-                        </button>
+// Button removed
 
                         <button
                           onClick={() => handleDeleteClick(b.id)}
