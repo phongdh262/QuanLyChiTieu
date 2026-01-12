@@ -43,7 +43,7 @@ export default function StatisticsSection({ members, calculations }: Props) {
         datasets: [
             {
                 label: 'Đã chi (Paid)',
-                data: members.map(m => stats[m.id]?.totalPaid || 0),
+                data: members.map(m => stats[m.id.toString()]?.totalPaid || stats[m.id]?.totalPaid || 0),
                 backgroundColor: 'rgba(99, 102, 241, 0.7)', // Indigo
                 borderColor: 'rgba(99, 102, 241, 1)',
                 borderWidth: 1,
@@ -51,7 +51,7 @@ export default function StatisticsSection({ members, calculations }: Props) {
             },
             {
                 label: 'Sử dụng (Consumed)',
-                data: members.map(m => stats[m.id]?.totalConsumed || 0),
+                data: members.map(m => stats[m.id.toString()]?.totalConsumed || stats[m.id]?.totalConsumed || 0),
                 backgroundColor: 'rgba(239, 68, 68, 0.7)', // Red
                 borderColor: 'rgba(239, 68, 68, 1)',
                 borderWidth: 1,

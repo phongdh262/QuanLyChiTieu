@@ -9,7 +9,7 @@ interface Log {
 }
 
 export default function ActivityLogList() {
-    const [isOpen, setIsOpen] = useState(false);
+    const [isOpen, setIsOpen] = useState(true); // Default OPEN
     const [logs, setLogs] = useState<Log[]>([]);
     const [loading, setLoading] = useState(false);
 
