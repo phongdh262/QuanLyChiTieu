@@ -110,13 +110,7 @@
   @apply text-muted-foreground;
 }
 
-.font-medium {
-  @apply font-medium;
-}
 
-.font-bold {
-  @apply font-bold;
-}
 
 .avatar {
   @apply w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-sm;
