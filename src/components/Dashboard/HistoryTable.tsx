@@ -63,7 +63,8 @@ export default function HistoryTable({ bills, members, onDelete }: Props) {
     .filter(b => {
       if (filterPayer !== 'ALL' && b.payer !== filterPayer) return false;
       if (filterType !== 'ALL' && b.type !== filterType) return false;
-      if (searchTerm && !b.note.toLowerCase().includes(searchTerm.toLowerCase())) return false;
+      const note = b.note || '';
+      if (searchTerm && !note.toLowerCase().includes(searchTerm.toLowerCase())) return false;
       return true;
     });
 
