@@ -157,11 +157,11 @@ export default function HistoryTable({ bills, members, onDelete }: Props) {
 
   return (
     <>
-      <Card className="w-full shadow-md border-t-4 border-t-primary">
-        <CardHeader className="pb-4">
+      <Card className="w-full shadow-lg border-t-4 border-t-blue-500 bg-white">
+        <CardHeader className="pb-4 bg-gradient-to-r from-blue-50/50 to-transparent">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-            <CardTitle className="text-xl flex items-center gap-2">
-              <Clock className="w-6 h-6 text-primary" />
+            <CardTitle className="text-xl flex items-center gap-2 text-blue-800">
+              <Clock className="w-6 h-6 text-blue-600" />
               Lịch Sử Chi Tiêu
             </CardTitle>
 
@@ -173,7 +173,7 @@ export default function HistoryTable({ bills, members, onDelete }: Props) {
                   size="sm"
                   onClick={handleBulkDelete}
                   disabled={isBulkDeleting}
-                  className="animate-in fade-in zoom-in duration-200"
+                  className="animate-in fade-in zoom-in duration-200 shadow-md"
                 >
                   {isBulkDeleting ? <span className="animate-spin mr-2">⏳</span> : <Trash2 className="w-4 h-4 mr-1" />}
                   Xóa ({selectedIds.size})
@@ -186,14 +186,14 @@ export default function HistoryTable({ bills, members, onDelete }: Props) {
                   placeholder="Tìm nội dung..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-8 h-9"
+                  className="pl-8 h-9 bg-white shadow-sm"
                 />
               </div>
 
               <div className="flex items-center gap-2">
                 <div className="relative">
                   <select
-                    className="h-9 w-[130px] rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                    className="h-9 w-[130px] rounded-md border border-input bg-white px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                     value={filterType}
                     onChange={e => setFilterType(e.target.value)}
                   >
@@ -205,7 +205,7 @@ export default function HistoryTable({ bills, members, onDelete }: Props) {
 
                 <div className="relative">
                   <select
-                    className="h-9 w-[130px] rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                    className="h-9 w-[130px] rounded-md border border-input bg-white px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                     value={filterPayer}
                     onChange={e => setFilterPayer(e.target.value)}
                   >
@@ -223,28 +223,28 @@ export default function HistoryTable({ bills, members, onDelete }: Props) {
         <CardContent className="p-0">
           <div className="overflow-x-auto">
             <Table>
-              <TableHeader className="bg-muted/50">
+              <TableHeader className="bg-slate-100/80">
                 <TableRow>
                   <TableHead className="w-[40px] text-center">
                     <input
                       type="checkbox"
                       checked={isAllSelected}
                       onChange={toggleAll}
-                      className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer accent-primary"
+                      className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer accent-blue-600"
                     />
                   </TableHead>
-                  <TableHead className="w-[50px] text-center">STT</TableHead>
-                  <TableHead>Nội dung</TableHead>
-                  <TableHead>Người chi</TableHead>
-                  <TableHead className="text-right">Số tiền</TableHead>
-                  <TableHead>Chia cho</TableHead>
+                  <TableHead className="w-[50px] text-center font-bold text-slate-700">STT</TableHead>
+                  <TableHead className="font-bold text-slate-700">Nội dung</TableHead>
+                  <TableHead className="font-bold text-slate-700">Người chi</TableHead>
+                  <TableHead className="text-right font-bold text-slate-700">Số tiền</TableHead>
+                  <TableHead className="font-bold text-slate-700">Chia cho</TableHead>
                   <TableHead className="w-[100px]"></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredBills.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
+                    <TableCell colSpan={7} className="h-32 text-center text-muted-foreground italic bg-slate-50/30">
                       Không có dữ liệu hóa đơn nào.
                     </TableCell>
                   </TableRow>
@@ -255,8 +255,9 @@ export default function HistoryTable({ bills, members, onDelete }: Props) {
                       <TableRow
                         key={b.id}
                         className={cn(
-                          "group transition-colors",
-                          isSelected ? "bg-primary/5 hover:bg-primary/10" : "hover:bg-muted/40"
+                          "group transition-all duration-200 border-b last:border-0",
+                          isSelected ? "bg-blue-50 hover:bg-blue-100" : "hover:bg-slate-50",
+                          index % 2 === 0 ? "bg-white" : "bg-slate-50/20"
                         )}
                       >
                         <TableCell className="text-center">
@@ -264,24 +265,25 @@ export default function HistoryTable({ bills, members, onDelete }: Props) {
                             type="checkbox"
                             checked={isSelected}
                             onChange={() => toggleRow(b.id)}
-                            className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer accent-primary mt-1"
+                            className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer accent-blue-600 mt-1"
                           />
                         </TableCell>
-                        <TableCell className="text-center font-medium text-muted-foreground">
+                        <TableCell className="text-center font-bold text-slate-400">
                           {index + 1}
                         </TableCell>
                         <TableCell>
-                          <div className="flex flex-col gap-1">
+                          <div className="flex flex-col gap-1.5">
                             <div className="flex items-center gap-2">
                               <Badge variant={b.type === 'SHARED' ? 'secondary' : 'default'} className={cn(
-                                b.type === 'SHARED' ? 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200 border-none' : 'bg-orange-100 text-orange-800 hover:bg-orange-200 border-none'
+                                "shadow-sm px-2 py-0.5",
+                                b.type === 'SHARED' ? "bg-blue-100 text-blue-700 hover:bg-blue-200 border border-blue-200" : "bg-orange-100 text-orange-800 hover:bg-orange-200 border border-orange-200"
                               )}>
                                 {b.type === 'SHARED' ? 'CHUNG' : 'RIÊNG'}
                               </Badge>
-                              <span className="font-semibold text-foreground">{b.note}</span>
+                              <span className="font-bold text-slate-800 text-base">{b.note}</span>
                             </div>
                             {b.date && (
-                              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                              <div className="flex items-center gap-1.5 text-xs text-slate-400 font-medium">
                                 <Calendar className="w-3 h-3" />
                                 {new Date(b.date).toLocaleDateString('vi-VN')}
                               </div>
@@ -290,41 +292,41 @@ export default function HistoryTable({ bills, members, onDelete }: Props) {
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">
-                            <div className={cn("w-7 h-7 rounded-full flex items-center justify-center text-white font-bold text-xs shadow-sm", getAvatarColor(b.payer))}>
+                            <div className={cn("w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-md ring-2 ring-white", getAvatarColor(b.payer))}>
                               {b.payer.charAt(0).toUpperCase()}
                             </div>
-                            <span className="font-medium text-sm">{b.payer}</span>
+                            <span className="font-semibold text-slate-700">{b.payer}</span>
                           </div>
                         </TableCell>
                         <TableCell className="text-right">
-                          <span className="font-bold text-base text-foreground tabular-nums">
+                          <span className="font-black text-lg text-slate-800 tabular-nums tracking-tight">
                             {formatMoney(b.amount)}
                           </span>
                         </TableCell>
                         <TableCell>
                           <div className="flex flex-wrap items-center gap-1.5">
                             {b.type === 'SHARED' ? (
-                              <Badge variant="outline" className="bg-slate-50 text-slate-600 border-slate-200 gap-1 font-normal">
+                              <Badge variant="outline" className="bg-white text-slate-600 border-slate-200 gap-1.5 font-medium shadow-sm px-2">
                                 <Users className="w-3 h-3" /> Tất cả
                               </Badge>
                             ) : (
                               (b.beneficiaries || []).map((name, idx) => (
-                                <Badge key={idx} variant="outline" className="bg-slate-50 text-slate-600 border-slate-200 gap-1 font-normal pr-2">
-                                  <div className={cn("w-4 h-4 rounded-full flex items-center justify-center text-[9px] text-white font-bold mr-1", getAvatarColor(name))}>
+                                <div key={idx} className="flex items-center bg-white border border-slate-200 rounded-full pl-0.5 pr-2 py-0.5 shadow-sm gap-1.5">
+                                  <div className={cn("w-5 h-5 rounded-full flex items-center justify-center text-[10px] text-white font-bold", getAvatarColor(name))}>
                                     {name.charAt(0).toUpperCase()}
                                   </div>
-                                  {name}
-                                </Badge>
+                                  <span className="text-xs font-semibold text-slate-600">{name}</span>
+                                </div>
                               ))
                             )}
                           </div>
                         </TableCell>
                         <TableCell>
-                          <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-all duration-200 transform translate-x-2 group-hover:translate-x-0">
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                              className="h-8 w-8 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-full"
                               onClick={() => setEditingBill(b)}
                               title="Sửa"
                             >
@@ -334,7 +336,7 @@ export default function HistoryTable({ bills, members, onDelete }: Props) {
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                              className="h-8 w-8 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-full"
                               onClick={() => handleDeleteClick(b.id)}
                               disabled={deletingId === b.id}
                               title="Xóa"
