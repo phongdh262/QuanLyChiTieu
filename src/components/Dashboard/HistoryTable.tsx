@@ -19,6 +19,78 @@ export default function HistoryTable({ bills, members, onDelete, onDuplicate }: 
   const [deletingId, setDeletingId] = useState<number | string | null>(null);
   const [editingBill, setEditingBill] = useState<Bill | null>(null);
 
+  // Selection State
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+  const [isBulkDeleting, setIsBulkDeleting] = useState(false);
+
+  // Filters
+  const [filterPayer, setFilterPayer] = useState<string>('ALL');
+  const [filterType, setFilterType] = useState<string>('ALL');
+
+  // Logic: Sort by Date Descending -> Filter
+  const filteredBills = [...bills]
+    .sort((a, b) => {
+      const dateA = a.date ? new Date(a.date).getTime() : 0;
+      const dateB = b.date ? new Date(b.date).getTime() : 0;
+      return dateB - dateA; // Newest first
+    })
+    .filter(b => {
+      if (filterPayer !== 'ALL' && b.payer !== filterPayer) return false;
+      if (filterType !== 'ALL' && b.type !== filterType) return false;
+      return true;
+    });
+
+  // Bulk Delete Handlers
+  const toggleRow = (id: number) => {
+    const next = new Set(selectedIds);
+    if (next.has(id)) next.delete(id);
+    else next.add(id);
+    setSelectedIds(next);
+  };
+
+  const toggleAll = () => {
+    if (selectedIds.size === filteredBills.length && filteredBills.length > 0) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(filteredBills.map(b => b.id)));
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedIds.size === 0) return;
+
+    const ok = await confirm({
+      title: 'Xóa nhiều hóa đơn',
+      message: `Bạn có chắc chắn muốn xóa ${selectedIds.size} hóa đơn đã chọn không? hành động này không thể hoàn tác.`,
+      type: 'danger',
+      confirmText: `Xóa ${selectedIds.size} hóa đơn`,
+      cancelText: 'Hủy'
+    });
+
+    if (!ok) return;
+
+    setIsBulkDeleting(true);
+    let successCount = 0;
+    try {
+      // Execute in parallel (or sequential if preferred, parallel is faster)
+      await Promise.all(
+        Array.from(selectedIds).map(async (id) => {
+          const res = await fetch(`/api/expenses/${id}`, { method: 'DELETE' });
+          if (res.ok) successCount++;
+        })
+      );
+
+      addToast(`Đã xóa ${successCount}/${selectedIds.size} hóa đơn`, 'success');
+      setSelectedIds(new Set());
+      onDelete(); // Reload parent
+    } catch (e) {
+      console.error(e);
+      addToast('Có lỗi xảy ra khi xóa', 'error');
+    } finally {
+      setIsBulkDeleting(false);
+    }
+  };
+
   const handleDeleteClick = async (id: number | string) => {
     if (deletingId) return;
 
@@ -46,22 +118,6 @@ export default function HistoryTable({ bills, members, onDelete, onDuplicate }: 
     }
   };
 
-  const [filterPayer, setFilterPayer] = useState<string>('ALL');
-  const [filterType, setFilterType] = useState<string>('ALL');
-
-  // Logic: Sort by Date Descending -> Filter
-  const filteredBills = [...bills]
-    .sort((a, b) => {
-      const dateA = a.date ? new Date(a.date).getTime() : 0;
-      const dateB = b.date ? new Date(b.date).getTime() : 0;
-      return dateB - dateA; // Newest first
-    })
-    .filter(b => {
-      if (filterPayer !== 'ALL' && b.payer !== filterPayer) return false;
-      if (filterType !== 'ALL' && b.type !== filterType) return false;
-      return true;
-    });
-
   // Helper for Payer Avatar
   const getAvatarColor = (name: string) => {
     const colors = ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899'];
@@ -69,6 +125,8 @@ export default function HistoryTable({ bills, members, onDelete, onDuplicate }: 
     for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
     return colors[Math.abs(hash) % colors.length];
   };
+
+  const isAllSelected = filteredBills.length > 0 && selectedIds.size === filteredBills.length;
 
   return (
     <>
@@ -80,6 +138,28 @@ export default function HistoryTable({ bills, members, onDelete, onDuplicate }: 
               <span style={{ fontSize: '1.75rem' }}>🕰️</span> Lịch Sử Chi Tiêu
             </h2>
             <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+
+              {/* Bulk Delete Button */}
+              {selectedIds.size > 0 && (
+                <button
+                  onClick={handleBulkDelete}
+                  disabled={isBulkDeleting}
+                  className="fade-in"
+                  style={{
+                    background: '#fee2e2', color: '#ef4444', border: 'none',
+                    padding: '0.6rem 1rem', borderRadius: '10px', fontWeight: 600,
+                    display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer'
+                  }}
+                >
+                  {isBulkDeleting ? 'Đang xóa...' : `Xóa (${selectedIds.size})`}
+                  {!isBulkDeleting && (
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" style={{ width: '18px', height: '18px' }}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                    </svg>
+                  )}
+                </button>
+              )}
+
               <div className="filter-group" style={{ position: 'relative' }}>
                 <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', display: 'flex', alignItems: 'center', pointerEvents: 'none', color: '#6b7280' }}>
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" style={{ width: '16px', height: '16px' }}>
@@ -143,6 +223,15 @@ export default function HistoryTable({ bills, members, onDelete, onDuplicate }: 
           <table style={{ borderCollapse: 'separate', borderSpacing: '0 8px', width: '100%' }}>
             <thead>
               <tr>
+                <th style={{ padding: '0 1rem', border: 'none', width: '40px' }}>
+                  <input
+                    type="checkbox"
+                    checked={isAllSelected}
+                    onChange={toggleAll}
+                    style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                  />
+                </th>
+                <th style={{ color: '#9ca3af', fontWeight: 600, fontSize: '0.85rem', textTransform: 'uppercase', padding: '0 1rem', border: 'none', width: '50px' }}>STT</th>
                 <th style={{ color: '#9ca3af', fontWeight: 600, fontSize: '0.85rem', textTransform: 'uppercase', padding: '0 1rem', border: 'none' }}>Nội dung</th>
                 <th style={{ color: '#9ca3af', fontWeight: 600, fontSize: '0.85rem', textTransform: 'uppercase', padding: '0 1rem', border: 'none' }}>Người chi</th>
                 <th style={{ color: '#9ca3af', fontWeight: 600, fontSize: '0.85rem', textTransform: 'uppercase', padding: '0 1rem', border: 'none', textAlign: 'right' }}>Số tiền</th>
@@ -151,15 +240,28 @@ export default function HistoryTable({ bills, members, onDelete, onDuplicate }: 
               </tr>
             </thead>
             <tbody>
-              {filteredBills.map((b) => {
+              {filteredBills.map((b, index) => {
                 const typeColor = b.type === 'SHARED' ? { bg: '#dbeafe', text: '#1e40af' } : { bg: '#ffedd5', text: '#9a3412' };
                 const typeLabel = b.type === 'SHARED' ? 'CHUNG' : 'RIÊNG';
-
-                const beneList = b.type === 'SHARED' ? 'Tất cả' : (b.beneficiaries || []).join(', ');
+                const isSelected = selectedIds.has(b.id);
 
                 return (
-                  <tr key={b.id} style={{ background: 'white', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', transition: 'transform 0.1s' }}>
+                  <tr key={b.id} style={{ background: isSelected ? '#f0fdf4' : 'white', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', transition: 'background 0.1s' }}>
+
                     <td style={{ padding: '1rem', borderTopLeftRadius: '12px', borderBottomLeftRadius: '12px', border: '1px solid #f3f4f6', borderRight: 'none' }}>
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={() => toggleRow(b.id)}
+                        style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                      />
+                    </td>
+
+                    <td style={{ padding: '1rem', border: '1px solid #f3f4f6', borderLeft: 'none', borderRight: 'none', fontWeight: 600, color: '#6b7280' }}>
+                      {index + 1}
+                    </td>
+
+                    <td style={{ padding: '1rem', border: '1px solid #f3f4f6', borderRight: 'none', borderLeft: 'none' }}>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                           <span style={{
@@ -329,8 +431,6 @@ export default function HistoryTable({ bills, members, onDelete, onDuplicate }: 
             }}
           />
         )}
-
-
       </div>
     </>
   );
