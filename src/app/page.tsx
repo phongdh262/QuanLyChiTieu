@@ -152,52 +152,65 @@ export default function Home() {
 
   return (
     <main>
-      <div style={{ width: '100%', padding: '0 2rem', marginBottom: '2rem', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        {/* User Header */}
-        {currentUser && (
-          <div style={{
-            position: 'absolute',
-            top: '1rem',
-            right: '2rem',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '1rem',
-            background: 'white',
-            padding: '0.5rem 1rem',
-            borderRadius: '99px',
-            boxShadow: '0 2px 5px rgba(0,0,0,0.05)',
-            border: '1px solid #f3f4f6'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <div style={{
-                width: '32px', height: '32px', borderRadius: '50%',
-                background: '#3b82f6', color: 'white',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold'
-              }}>
-                {currentUser.role === 'ADMIN' ? '👑' : '👤'}
-              </div>
-              <div>
-                <div style={{ fontSize: '0.9rem', fontWeight: 600 }}>{currentUser.name || 'Người dùng'}</div>
-                <div style={{ fontSize: '0.75rem', color: '#6b7280' }}>@{currentUser.username || 'user'}</div>
-              </div>
-            </div>
-            <div style={{ width: '1px', height: '20px', background: '#e5e7eb' }}></div>
-            <button
-              onClick={async () => {
-                await fetch('/api/auth/logout', { method: 'POST' });
-                window.location.href = '/login';
-              }}
-              style={{
-                background: 'none', border: 'none', color: '#ef4444',
-                cursor: 'pointer', fontSize: '0.9rem', fontWeight: 600
-              }}
-            >
-              Đăng xuất
-            </button>
-          </div>
-        )}
+      <div style={{ width: '100%', padding: '0 2rem', marginBottom: '2rem', display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>
 
-        <h1 style={{ textAlign: 'center', textTransform: 'uppercase', fontSize: '2.5rem', letterSpacing: '2px', color: 'var(--primary-dark)', width: '100%', marginTop: '2rem' }}>
+        {/* Responsive Header Container */}
+        <div style={{
+          width: '100%',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: '1rem',
+          flexWrap: 'wrap',
+          gap: '1rem'
+        }}>
+          {/* Spacer for centering title on desktop if needed, or just left empty */}
+          <div style={{ flex: 1 }}></div>
+
+          {/* User Profile */}
+          {currentUser && (
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '1rem',
+              background: 'white',
+              padding: '0.4rem 1rem',
+              borderRadius: '99px',
+              boxShadow: '0 2px 5px rgba(0,0,0,0.05)',
+              border: '1px solid #f3f4f6',
+              marginLeft: 'auto' // Push to right
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <div style={{
+                  width: '32px', height: '32px', borderRadius: '50%',
+                  background: '#3b82f6', color: 'white',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold'
+                }}>
+                  {currentUser.role === 'ADMIN' ? '👑' : '👤'}
+                </div>
+                <div>
+                  <div style={{ fontSize: '0.9rem', fontWeight: 600 }}>{currentUser.name || 'Người dùng'}</div>
+                  <div style={{ fontSize: '0.75rem', color: '#6b7280' }}>@{currentUser.username || 'user'}</div>
+                </div>
+              </div>
+              <div style={{ width: '1px', height: '20px', background: '#e5e7eb' }}></div>
+              <button
+                onClick={async () => {
+                  await fetch('/api/auth/logout', { method: 'POST' });
+                  window.location.href = '/login';
+                }}
+                style={{
+                  background: 'none', border: 'none', color: '#ef4444',
+                  cursor: 'pointer', fontSize: '0.9rem', fontWeight: 600
+                }}
+              >
+                Đăng xuất
+              </button>
+            </div>
+          )}
+        </div>
+
+        <h1 style={{ textAlign: 'center', textTransform: 'uppercase', fontSize: 'clamp(1.5rem, 5vw, 2.5rem)', letterSpacing: '2px', color: 'var(--primary-dark)', width: '100%', margin: '0' }}>
           {activeSheetName}
         </h1>
       </div>
