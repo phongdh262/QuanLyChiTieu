@@ -137,7 +137,7 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData }: Pr
                         </div>
                     </div>
                     <div className="space-y-2">
-                        <Label>Ngày (Tuỳ chọn)</Label>
+                        <Label>Ngày</Label>
                         <div className="relative">
                             <Calendar className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                             <Input

@@ -193,7 +193,7 @@ export default function HistoryTable({ bills, members, onDelete }: Props) {
               <div className="flex items-center gap-2">
                 <div className="relative">
                   <select
-                    className="h-9 w-[130px] rounded-md border border-input bg-white px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                    className="h-9 w-[150px] rounded-md border border-input bg-white px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 font-medium"
                     value={filterType}
                     onChange={e => setFilterType(e.target.value)}
                   >
@@ -205,7 +205,7 @@ export default function HistoryTable({ bills, members, onDelete }: Props) {
 
                 <div className="relative">
                   <select
-                    className="h-9 w-[130px] rounded-md border border-input bg-white px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                    className="h-9 w-[180px] rounded-md border border-input bg-white px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 font-medium"
                     value={filterPayer}
                     onChange={e => setFilterPayer(e.target.value)}
                   >

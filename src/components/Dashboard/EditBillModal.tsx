@@ -101,146 +101,146 @@ export default function EditBillModal({ bill, members, onClose, onSave }: Props)
     if (!mounted) return null;
 
     return createPortal(
-        <div style={{
-            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-            backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-            zIndex: 9999, backdropFilter: 'blur(4px)'
-        }}>
-            <div className="card" style={{ width: '500px', maxWidth: '90%', margin: 0, maxHeight: '90vh', overflowY: 'auto' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
-                    <h2>✏️ Sửa Hóa Đơn</h2>
-                    <button onClick={onClose} style={{ width: 'auto', background: 'transparent', color: '#666', fontSize: '1.5rem', padding: 0 }}>&times;</button>
+        <div className="fixed inset-0 z-[9999] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+            <div className="bg-white rounded-lg shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto border border-slate-200 animate-in zoom-in-95 duration-200">
+                <div className="flex justify-between items-center p-4 border-b border-slate-100 bg-slate-50/50 rounded-t-lg">
+                    <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
+                        ✏️ Sửa Hóa Đơn
+                    </h2>
+                    <button
+                        onClick={onClose}
+                        className="text-slate-400 hover:text-slate-600 w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-200 transition-colors text-xl"
+                    >
+                        &times;
+                    </button>
                 </div>
 
-                <form onSubmit={handleSubmit}>
-                    <div style={{ display: 'grid', gap: '1rem', gridTemplateColumns: '2fr 1fr' }}>
-                        <div>
-                            <label>Nội dung chi tiêu</label>
-                            <input
-                                type="text"
-                                value={description}
-                                onChange={e => setDescription(e.target.value)}
-                            />
-                        </div>
-                        <div>
-                            <label>Ngày</label>
-                            <input type="date" value={date} onChange={e => setDate(e.target.value)} />
-                        </div>
-                    </div>
-
-                    <div style={{ display: 'grid', gap: '1rem', gridTemplateColumns: '1fr 1fr' }}>
-                        <div>
-                            <label>Số tiền (VNĐ)</label>
-                            <input
-                                type="number"
-                                value={amount}
-                                onChange={e => setAmount(e.target.value)}
-                            />
-                        </div>
-                        <div>
-                            <label>Người chi</label>
-                            <select value={payerId} onChange={e => setPayerId(e.target.value)}>
-                                {members.map(m => (
-                                    <option key={m.id} value={m.id}>{m.name}</option>
-                                ))}
-                            </select>
-                        </div>
-                    </div>
-
-                    <div>
-                        <label>Loại chi tiêu</label>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
-                            <button
-                                type="button"
-                                onClick={() => setType('SHARED')}
-                                style={{
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    padding: '0.75rem',
-                                    background: type === 'SHARED' ? '#3b82f6' : 'white',
-                                    border: `1px solid ${type === 'SHARED' ? '#3b82f6' : '#e5e7eb'}`,
-                                    color: type === 'SHARED' ? 'white' : '#6b7280',
-                                    borderRadius: 'var(--radius-lg)',
-                                    cursor: 'pointer',
-                                    transition: 'all 0.2s ease',
-                                    height: 'auto',
-                                    boxShadow: type === 'SHARED' ? '0 4px 6px -1px rgba(59, 130, 246, 0.5)' : 'none'
-                                }}
-                            >
-                                <span style={{ fontSize: '1rem', fontWeight: 600 }}>Chung</span>
-                            </button>
-
-                            <button
-                                type="button"
-                                onClick={() => setType('PRIVATE')}
-                                style={{
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    padding: '0.75rem',
-                                    background: type === 'PRIVATE' ? '#f97316' : 'white',
-                                    border: `1px solid ${type === 'PRIVATE' ? '#f97316' : '#e5e7eb'}`,
-                                    color: type === 'PRIVATE' ? 'white' : '#6b7280',
-                                    borderRadius: 'var(--radius-lg)',
-                                    cursor: 'pointer',
-                                    transition: 'all 0.2s ease',
-                                    height: 'auto',
-                                    boxShadow: type === 'PRIVATE' ? '0 4px 6px -1px rgba(249, 115, 22, 0.5)' : 'none'
-                                }}
-                            >
-                                <span style={{ fontSize: '1rem', fontWeight: 600 }}>Riêng</span>
-                            </button>
-                        </div>
-                    </div>
-
-                    {type === 'PRIVATE' && (
-                        <div className="fade-in" style={{ marginTop: '0.5rem', padding: '1rem', background: '#fff7ed', borderRadius: 'var(--radius-lg)', border: '1px dashed #fdba74' }}>
-                            <label style={{ marginBottom: '0.75rem', display: 'block', color: '#c2410c', fontWeight: 600 }}>
-                                Chọn người thụ hưởng:
-                            </label>
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(110px, 1fr))', gap: '0.75rem' }}>
-                                {members.map(m => {
-                                    const isSelected = beneficiaryIds.includes(m.id.toString());
-                                    return (
-                                        <button
-                                            key={m.id}
-                                            type="button"
-                                            onClick={() => toggleBeneficiary(m.id.toString())}
-                                            style={{
-                                                width: '100%',
-                                                padding: '0.5rem',
-                                                borderRadius: 'var(--radius-md)',
-                                                background: isSelected ? '#f97316' : 'white',
-                                                border: isSelected ? '1px solid #ea580c' : '1px solid #fed7aa',
-                                                color: isSelected ? 'white' : '#9a3412',
-                                                fontWeight: 600,
-                                                boxShadow: isSelected ? '0 2px 4px rgba(234, 88, 12, 0.3)' : 'none',
-                                                transition: 'all 0.15s ease',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                gap: '0.25rem'
-                                            }}
-                                        >
-                                            {isSelected && <span>✓</span>}
-                                            {m.name}
-                                        </button>
-                                    );
-                                })}
+                <div className="p-6">
+                    <form onSubmit={handleSubmit} className="space-y-5">
+                        <div className="space-y-4">
+                            <div className="grid grid-cols-3 gap-4">
+                                <div className="col-span-2 space-y-2">
+                                    <label className="text-sm font-medium text-slate-700">Nội dung chi tiêu</label>
+                                    <input
+                                        type="text"
+                                        value={description}
+                                        onChange={e => setDescription(e.target.value)}
+                                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                        placeholder="Nhập nội dung..."
+                                        autoFocus
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium text-slate-700">Ngày</label>
+                                    <input
+                                        type="date"
+                                        value={date}
+                                        onChange={e => setDate(e.target.value)}
+                                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                    />
+                                </div>
                             </div>
-                        </div>
-                    )}
 
-                    <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem' }}>
-                        <button type="submit" disabled={isSubmitting} className="primary" style={{ flex: 1 }}>
-                            {isSubmitting ? 'Đang lưu...' : 'Lưu Thay Đổi'}
-                        </button>
-                        <button type="button" onClick={onClose} className="secondary" style={{ width: 'auto' }}>Hủy</button>
-                    </div>
-                </form>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium text-slate-700">Số tiền (VNĐ)</label>
+                                    <input
+                                        type="number"
+                                        value={amount}
+                                        onChange={e => setAmount(e.target.value)}
+                                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm font-bold text-blue-700 ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium text-slate-700">Người chi</label>
+                                    <select
+                                        value={payerId}
+                                        onChange={e => setPayerId(e.target.value)}
+                                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                    >
+                                        {members.map(m => (
+                                            <option key={m.id} value={m.id}>{m.name}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium text-slate-700">Loại chi tiêu</label>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <button
+                                        type="button"
+                                        onClick={() => setType('SHARED')}
+                                        className={`flex flex-col items-center justify-center p-3 rounded-lg border transition-all duration-200 ${type === 'SHARED'
+                                                ? 'bg-blue-500 text-white border-blue-600 shadow-md'
+                                                : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
+                                            }`}
+                                    >
+                                        <span className="font-bold">Chung</span>
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        onClick={() => setType('PRIVATE')}
+                                        className={`flex flex-col items-center justify-center p-3 rounded-lg border transition-all duration-200 ${type === 'PRIVATE'
+                                                ? 'bg-orange-500 text-white border-orange-600 shadow-md'
+                                                : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
+                                            }`}
+                                    >
+                                        <span className="font-bold">Riêng</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            {type === 'PRIVATE' && (
+                                <div className="p-4 bg-orange-50 border border-orange-100 rounded-lg space-y-3 animate-in fade-in slide-in-from-top-1">
+                                    <label className="text-sm font-bold text-orange-800 block">
+                                        Chọn người thụ hưởng:
+                                    </label>
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                                        {members.map(m => {
+                                            const isSelected = beneficiaryIds.includes(m.id.toString());
+                                            return (
+                                                <button
+                                                    key={m.id}
+                                                    type="button"
+                                                    onClick={() => toggleBeneficiary(m.id.toString())}
+                                                    className={`
+                                                        flex items-center justify-center gap-1.5 p-2 rounded-md text-sm font-medium transition-all
+                                                        ${isSelected
+                                                            ? 'bg-orange-500 text-white shadow-sm'
+                                                            : 'bg-white border border-orange-200 text-orange-800 hover:bg-orange-100'
+                                                        }
+                                                    `}
+                                                >
+                                                    {isSelected && <span>✓</span>}
+                                                    {m.name}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="flex gap-4 pt-2 border-t border-slate-100 mt-6">
+                            <button
+                                type="submit"
+                                disabled={isSubmitting}
+                                className="flex-1 h-10 bg-blue-600 hover:bg-blue-700 text-white rounded-md font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+                            >
+                                {isSubmitting ? 'Đang lưu...' : 'Lưu Thay Đổi'}
+                            </button>
+                            <button
+                                type="button"
+                                onClick={onClose}
+                                className="px-6 h-10 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-md font-medium transition-colors"
+                            >
+                                Hủy
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>,
         document.body
