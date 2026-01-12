@@ -337,32 +337,6 @@ export default function HistoryTable({ bills, members, onDelete }: Props) {
                       <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '0.5rem' }}>
                         <button
                           onClick={() => setEditingBill(b)}
-                          title="Sửa"
-                          style={{
-                            width: '36px',
-                            height: '36px',
-                            padding: 0,
-                            borderRadius: '10px',
-                            background: '#f3f4f6', // subtle gray
-                            border: 'none',
-                            color: '#4b5563',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            transition: 'all 0.2s',
-                            cursor: 'pointer'
-                          }}
-                          onMouseOver={(e) => { e.currentTarget.style.background = '#e5e7eb'; e.currentTarget.style.color = '#000'; }}
-                          onMouseOut={(e) => { e.currentTarget.style.background = '#f3f4f6'; e.currentTarget.style.color = '#4b5563'; }}
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" style={{ width: '20px', height: '20px' }}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
-                          </svg>
-                        </button>
-
-// Button removed
-
-                        <button
                           onClick={() => handleDeleteClick(b.id)}
                           disabled={deletingId === b.id}
                           style={{
