@@ -16,6 +16,7 @@ model Workspace {
   
   sheets    Sheet[]
   members   Member[]
+  activityLogs ActivityLog[]
 }
 
 model Sheet {
