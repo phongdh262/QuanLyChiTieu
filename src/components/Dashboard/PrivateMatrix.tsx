@@ -16,93 +16,62 @@ export default function PrivateMatrix({ members, matrixData }: Props) {
 
     return (
         <div className="card">
-            <div
-                onClick={() => setIsOpen(!isOpen)}
-                style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    cursor: 'pointer',
-                    marginBottom: isOpen ? '1rem' : '0',
-                    padding: '0.5rem 0'
-                }}
-            >
-                <h2 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <div className="card-header" onClick={() => setIsOpen(!isOpen)}>
+                <h2>
                     <span>💸</span> Bảng Chi Riêng
                 </h2>
-                <div style={{
-                    width: '32px', height: '32px',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    background: isOpen ? '#eff6ff' : '#f3f4f6',
-                    borderRadius: '50%',
-                    color: isOpen ? 'var(--primary)' : '#6b7280',
-                    transition: 'all 0.2s ease'
-                }}>
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 20 20"
-                        fill="currentColor"
-                        style={{
-                            width: '20px', height: '20px',
-                            transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
-                            transition: 'transform 0.2s'
-                        }}
-                    >
+                <div className={`card-toggle-icon ${isOpen ? 'open' : ''}`}>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" style={{ width: '20px', height: '20px' }}>
                         <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" />
                     </svg>
                 </div>
             </div>
 
             {isOpen && (
-                <>
-
-                    <div style={{ overflowX: 'auto' }}>
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Tên</th>
-                                    <th className="amount">Tổng tiền đã chi</th>
-                                    {members.map(m => (
-                                        <th key={m.name} className="amount">Trả cho {m.name}</th>
-                                    ))}
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {members.map((payer) => (
-                                    <tr key={payer.name}>
-                                        <td style={{ fontWeight: '500' }}>{payer.name}</td>
-                                        <td className="amount" style={{ fontWeight: 'bold' }}>
-                                            {formatMoney(totals[payer.name] || 0)}
-                                        </td>
-                                        {members.map((beneficiary) => {
-                                            const amount = matrix[payer.name]?.[beneficiary.name] || 0;
-                                            let cellContent = '-';
-                                            // Simple styling: just text color for existing usage
-                                            let cellStyle: React.CSSProperties = { color: '#d1d5db' };
-
-                                            if (payer.name === beneficiary.name) {
-                                                // Diagonal: Disabled look
-                                                cellStyle = { background: '#f9fafb', color: 'transparent' };
-                                            } else if (amount > 0) {
-                                                cellContent = formatMoney(amount);
-                                                // Color logic: if payer != beneficiary, it's a debt/payment relation
-                                                cellStyle = { color: 'var(--text-main)', fontWeight: 600, background: '#fffbeb' }; // Light yellow bg for debts
-                                            } else {
-                                                cellStyle = { color: '#e5e7eb', fontSize: '0.85rem' }; // Very faint for 0
-                                            }
-
-                                            return (
-                                                <td key={beneficiary.name} className="amount" style={cellStyle}>
-                                                    {cellContent}
-                                                </td>
-                                            );
-                                        })}
-                                    </tr>
+                <div className="table-container fade-in">
+                    <table className="table-report">
+                        <thead>
+                            <tr>
+                                <th>Tên</th>
+                                <th className="amount">Tổng tiền đã chi</th>
+                                {members.map(m => (
+                                    <th key={m.name} className="amount">Chi hộ {m.name}</th>
                                 ))}
-                            </tbody>
-                        </table>
-                    </div>
-                </>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {members.map((payer) => (
+                                <tr key={payer.name}>
+                                    <td className="font-medium">{payer.name}</td>
+                                    <td className="amount font-bold">
+                                        {formatMoney(totals[payer.name] || 0)}
+                                    </td>
+                                    {members.map((beneficiary) => {
+                                        const amount = matrix[payer.name]?.[beneficiary.name] || 0;
+                                        let cellContent = '-';
+                                        let cellClass = 'amount text-muted';
+                                        let cellStyle = {};
+
+                                        if (payer.name === beneficiary.name) {
+                                            // Diagonal: Disabled look
+                                            cellStyle = { background: '#f9fafb', color: 'transparent' };
+                                        } else if (amount > 0) {
+                                            cellContent = formatMoney(amount);
+                                            cellClass = 'amount font-bold';
+                                            cellStyle = { background: '#fffbeb', color: 'var(--text-main)' };
+                                        }
+
+                                        return (
+                                            <td key={beneficiary.name} className={cellClass} style={cellStyle}>
+                                                {cellContent}
+                                            </td>
+                                        );
+                                    })}
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             )}
         </div>
     );
