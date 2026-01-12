@@ -55,9 +55,7 @@ export default function PrivateMatrix({ members, matrixData }: Props) {
 
             {isOpen && (
                 <>
-                    <p style={{ color: 'var(--text-muted)', marginBottom: '1rem', fontStyle: 'italic', fontSize: '0.9rem' }}>
-                        Ma trận thanh toán chi hộ (Rows: Người chi, Columns: Người thụ hưởng)
-                    </p>
+
                     <div style={{ overflowX: 'auto' }}>
                         <table>
                             <thead>
