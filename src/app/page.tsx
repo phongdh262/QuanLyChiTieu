@@ -7,6 +7,7 @@ import DebtsTable from '@/components/Dashboard/DebtsTable';
 import HistoryTable from '@/components/Dashboard/HistoryTable';
 import AddBillForm from '@/components/Forms/AddBillForm';
 import SheetSelector from '@/components/Dashboard/SheetSelector';
+import ActivityLogList from '@/components/Dashboard/ActivityLogList';
 
 import MemberManager from '@/components/Dashboard/MemberManager';
 import StatisticsSection from '@/components/Dashboard/StatisticsSection';
