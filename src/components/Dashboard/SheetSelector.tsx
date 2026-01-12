@@ -10,7 +10,7 @@ interface Sheet {
 
 interface Props {
     sheets: Sheet[];
-    currentSheetId: number;
+    currentSheetId: number | null;
     workspaceId: number;
     onChange: (id: number) => void;
     onCreated: () => void;
@@ -46,6 +46,7 @@ export default function SheetSelector({ sheets, currentSheetId, workspaceId, onC
     };
 
     const handleDelete = async () => {
+        if (!currentSheetId) return;
         const ok = await confirm({
             title: 'Xóa bảng chi tiêu',
             message: '⚠️ CẢNH BÁO: Hành động này sẽ xóa TOÀN BỘ dữ liệu chi tiêu trong tháng này và KHÔNG THỂ khôi phục.\n\nBạn có chắc chắn muốn xóa?',
@@ -67,6 +68,7 @@ export default function SheetSelector({ sheets, currentSheetId, workspaceId, onC
     };
 
     const startEdit = () => {
+        if (!currentSheetId) return;
         const current = sheets.find(s => s.id === currentSheetId);
         if (current) {
             setEditName(current.name);
@@ -75,6 +77,7 @@ export default function SheetSelector({ sheets, currentSheetId, workspaceId, onC
     };
 
     const saveEdit = async () => {
+        if (!currentSheetId) return;
         try {
             const res = await fetch(`/api/sheets/${currentSheetId}`, {
                 method: 'PUT',
@@ -136,7 +139,7 @@ export default function SheetSelector({ sheets, currentSheetId, workspaceId, onC
             ) : (
                 <>
                     <select
-                        value={currentSheetId}
+                        value={currentSheetId || ''}
                         onChange={(e) => onChange(parseInt(e.target.value))}
                         style={{ width: 'auto', flex: 1, minWidth: '0', marginBottom: 0, padding: '0.5rem', fontWeight: 'bold', fontSize: '1.1rem' }}
                     >
