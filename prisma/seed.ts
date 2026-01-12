@@ -3,17 +3,13 @@ import { PrismaClient } from '@prisma/client'
 const prisma = new PrismaClient()
 
 async function main() {
+    // Password hash for '2126#'
+    const password = '$2b$10$brXh2aQMIbu3rpylXw02QOg.LLYrP4c8a/pCEGvfho6b8cPnI343S';
+
     const workspace = await prisma.workspace.create({
         data: {
             name: 'Nhóm Ăn Trưa',
             ownerId: 'user-1',
-            members: {
-                create: [
-                    { name: 'Phong' },
-                    { name: 'Vân' },
-                    { name: 'Khôi' }
-                ]
-            },
             sheets: {
                 create: {
                     name: `Tháng ${new Date().getMonth() + 1}/${new Date().getFullYear()}`,
@@ -22,13 +18,19 @@ async function main() {
                     status: 'OPEN'
                 }
             }
-        },
-        include: {
-            sheets: true,
-            members: true
         }
-    })
-    console.log({ workspace })
+    });
+
+    // Create 3 Admin Users
+    await prisma.member.createMany({
+        data: [
+            { name: 'Phong', username: 'phong', password, role: 'ADMIN', workspaceId: workspace.id },
+            { name: 'Văn', username: 'van', password, role: 'ADMIN', workspaceId: workspace.id },
+            { name: 'Khôi', username: 'khoi', password, role: 'ADMIN', workspaceId: workspace.id },
+        ]
+    });
+
+    console.log('Seeding completed: Created Workspace + 3 Admins (Phong, Van, Khoi)');
 }
 
 main()
