@@ -3,6 +3,35 @@ import { Bill, Member } from '@/types/expense';
 import EditBillModal from './EditBillModal';
 import { useConfirm } from '@/components/ui/ConfirmProvider';
 import { useToast } from '@/components/ui/ToastProvider';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Trash2,
+  Edit,
+  Clock,
+  Calendar,
+  Filter,
+  Check,
+  Users,
+  User,
+  Search
+} from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface Props {
   bills: Bill[];
@@ -25,6 +54,7 @@ export default function HistoryTable({ bills, members, onDelete }: Props) {
   // Filters
   const [filterPayer, setFilterPayer] = useState<string>('ALL');
   const [filterType, setFilterType] = useState<string>('ALL');
+  const [searchTerm, setSearchTerm] = useState<string>('');
 
   // Logic: Sort by Date Descending -> Filter
   const filteredBills = [...bills]

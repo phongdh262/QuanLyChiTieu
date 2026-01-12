@@ -1,8 +1,18 @@
 'use client';
 import React, { useState } from 'react';
 import { useToast } from '@/components/ui/ToastProvider';
+import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label'; // Need to make Label if it doesn't exist? Use generic label for now.
+import { PlusCircle, Wallet, Calendar, Users, Calculator, Check, CheckCircle2 } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { Badge } from '@/components/ui/badge';
 
-// ... imports
+// Quick inline Label component if not exists
+function Label({ children, className, ...props }: React.LabelHTMLAttributes<HTMLLabelElement>) {
+    return <label className={cn("text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-foreground/90", className)} {...props}>{children}</label>
+}
 
 interface Props {
     members: { id: number; name: string }[];
@@ -105,27 +115,21 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData }: Pr
     };
 
     return (
-        <div className="card" id="add-bill-form">
-            <h2>➕ Thêm Hóa Đơn Mới</h2>
-            <form onSubmit={handleSubmit}>
-                <div style={{ display: 'grid', gap: '1rem', gridTemplateColumns: '2fr 1fr' }}>
-                    <div>
-                        <label>Nội dung chi tiêu</label>
-                        <input
-                            type="text"
-                            value={description}
-                            onChange={e => setDescription(e.target.value)}
-                        />
-                    </div>
-                    <div>
-                        <label>Ngày (Tuỳ chọn)</label>
-                        <input
-                            type="date"
-                            value={date}
-                            onChange={e => setDate(e.target.value)}
-                        />
-                    </div>
-                </div>
+        <input
+            type="text"
+            value={description}
+            onChange={e => setDescription(e.target.value)}
+        />
+                    </div >
+        <div>
+            <label>Ngày (Tuỳ chọn)</label>
+            <input
+                type="date"
+                value={date}
+                onChange={e => setDate(e.target.value)}
+            />
+        </div>
+                </div >
 
                 <div style={{ display: 'grid', gap: '1rem', gridTemplateColumns: '1fr 1fr' }}>
                     <div>
@@ -195,48 +199,50 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData }: Pr
                     </div>
                 </div>
 
-                {type === 'PRIVATE' && (
-                    <div className="fade-in" style={{ marginTop: '0.5rem', padding: '1rem', background: '#fff7ed', borderRadius: 'var(--radius-lg)', border: '1px dashed #fdba74' }}>
-                        <label style={{ marginBottom: '0.75rem', display: 'block', color: '#c2410c', fontWeight: 600 }}>
-                            Chọn người thụ hưởng (Ai phải trả khoản này?):
-                        </label>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(110px, 1fr))', gap: '0.75rem' }}>
-                            {members.map(m => {
-                                const isSelected = beneficiaryIds.includes(m.id.toString());
-                                return (
-                                    <button
-                                        key={m.id}
-                                        type="button"
-                                        onClick={() => toggleBeneficiary(m.id.toString())}
-                                        style={{
-                                            width: '100%',
-                                            padding: '0.5rem',
-                                            borderRadius: 'var(--radius-md)',
-                                            background: isSelected ? '#f97316' : 'white',
-                                            border: isSelected ? '1px solid #ea580c' : '1px solid #fed7aa',
-                                            color: isSelected ? 'white' : '#9a3412',
-                                            fontWeight: 600,
-                                            boxShadow: isSelected ? '0 2px 4px rgba(234, 88, 12, 0.3)' : 'none',
-                                            transition: 'all 0.15s ease',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            gap: '0.25rem'
-                                        }}
-                                    >
-                                        {isSelected && <span>✓</span>}
-                                        {m.name}
-                                    </button>
-                                );
-                            })}
-                        </div>
-                    </div>
-                )}
+    {
+        type === 'PRIVATE' && (
+            <div className="fade-in" style={{ marginTop: '0.5rem', padding: '1rem', background: '#fff7ed', borderRadius: 'var(--radius-lg)', border: '1px dashed #fdba74' }}>
+                <label style={{ marginBottom: '0.75rem', display: 'block', color: '#c2410c', fontWeight: 600 }}>
+                    Chọn người thụ hưởng (Ai phải trả khoản này?):
+                </label>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(110px, 1fr))', gap: '0.75rem' }}>
+                    {members.map(m => {
+                        const isSelected = beneficiaryIds.includes(m.id.toString());
+                        return (
+                            <button
+                                key={m.id}
+                                type="button"
+                                onClick={() => toggleBeneficiary(m.id.toString())}
+                                style={{
+                                    width: '100%',
+                                    padding: '0.5rem',
+                                    borderRadius: 'var(--radius-md)',
+                                    background: isSelected ? '#f97316' : 'white',
+                                    border: isSelected ? '1px solid #ea580c' : '1px solid #fed7aa',
+                                    color: isSelected ? 'white' : '#9a3412',
+                                    fontWeight: 600,
+                                    boxShadow: isSelected ? '0 2px 4px rgba(234, 88, 12, 0.3)' : 'none',
+                                    transition: 'all 0.15s ease',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '0.25rem'
+                                }}
+                            >
+                                {isSelected && <span>✓</span>}
+                                {m.name}
+                            </button>
+                        );
+                    })}
+                </div>
+            </div>
+        )
+    }
 
-                <button type="submit" disabled={isSubmitting} style={{ marginTop: '1.5rem', width: '100%', fontSize: '1rem', padding: '0.875rem' }}>
-                    {isSubmitting ? 'Đang lưu...' : 'Lưu Hóa Đơn'}
-                </button>
-            </form>
-        </div>
+    <button type="submit" disabled={isSubmitting} style={{ marginTop: '1.5rem', width: '100%', fontSize: '1rem', padding: '0.875rem' }}>
+        {isSubmitting ? 'Đang lưu...' : 'Lưu Hóa Đơn'}
+    </button>
+            </form >
+        </div >
     );
 }
