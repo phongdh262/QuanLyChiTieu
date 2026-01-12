@@ -1,63 +1,66 @@
 import React from 'react';
-import { CalculationResult, Member } from '@/types/expense';
+import { Member, CalculationResult } from '@/types/expense';
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { cn } from "@/lib/utils";
 
 interface Props {
     members: Member[];
     calculations: CalculationResult;
 }
 
-const formatMoney = (amount: number) => amount.toLocaleString('vi-VN') + ' ₫';
+const formatMoney = (amount: number) => amount.toLocaleString('vi-VN');
 
 export default function SummaryTable({ members, calculations }: Props) {
     const { balances, stats, privateBalances } = calculations;
     const [isOpen, setIsOpen] = React.useState(false);
 
     return (
-        <div className="card">
-            <div className="card-header" onClick={() => setIsOpen(!isOpen)}>
-                <h2>
+        <Card>
+            <CardHeader className="cursor-pointer flex flex-row items-center justify-between space-y-0 pb-2" onClick={() => setIsOpen(!isOpen)}>
+                <CardTitle className="text-xl flex items-center gap-2">
                     <span>📊</span> Bảng Tổng Kết
-                </h2>
-                <div className={`card-toggle-icon ${isOpen ? 'open' : ''}`}>
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" style={{ width: '20px', height: '20px' }}>
+                </CardTitle>
+                <div className={cn("rounded-full p-2 bg-secondary text-muted-foreground transition-transform duration-200", isOpen && "rotate-180 bg-primary/10 text-primary")}>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
                         <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" />
                     </svg>
                 </div>
-            </div>
+            </CardHeader>
 
             {isOpen && (
-                <div className="table-container fade-in">
-                    <table className="table-report">
-                        <thead>
-                            <tr>
-                                <th>Thành viên</th>
-                                <th className="amount">Tổng Tiền</th>
-                                <th className="amount">Dư / Nợ Tiền Ăn Chung</th>
-                            </tr>
-                        </thead>
-                        <tbody>
+                <CardContent className="fade-in pt-0">
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Thành viên</TableHead>
+                                <TableHead className="text-right">Tổng Tiền</TableHead>
+                                <TableHead className="text-right">Dư / Nợ Tiền Ăn Chung</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
                             {members.map(member => {
                                 const m = member.name;
-                                const s = stats[m.toString()] || stats[m] || { sharedPaid: 0, totalPaid: 0 };
+                                const s = stats[m] || { sharedPaid: 0, totalPaid: 0 };
                                 const bal = balances[m] || 0;
                                 const privateBal = privateBalances[m] || 0;
                                 const sharedBalance = bal - privateBal;
 
                                 const balText = sharedBalance === 0 ? '-' : (sharedBalance > 0 ? `+${formatMoney(sharedBalance)}` : formatMoney(sharedBalance));
-                                const textClass = sharedBalance > 0 ? 'text-success font-bold' : (sharedBalance < 0 ? 'text-danger font-bold' : '');
+                                const textClass = sharedBalance > 0 ? 'text-green-600 font-bold' : (sharedBalance < 0 ? 'text-red-500 font-bold' : '');
 
                                 return (
-                                    <tr key={member.id}>
-                                        <td className="font-medium">{member.name}</td>
-                                        <td className="amount font-bold">{formatMoney(s.sharedPaid)}</td>
-                                        <td className={`amount ${textClass}`}>{balText}</td>
-                                    </tr>
+                                    <TableRow key={member.id}>
+                                        <TableCell className="font-medium">{member.name}</TableCell>
+                                        <TableCell className="text-right font-bold">{formatMoney(s.sharedPaid)}</TableCell>
+                                        <TableCell className={cn("text-right", textClass)}>{balText}</TableCell>
+                                    </TableRow>
                                 );
                             })}
-                        </tbody>
-                    </table>
-                </div>
+                        </TableBody>
+                    </Table>
+                </CardContent>
             )}
-        </div>
+        </Card>
     );
 }
