@@ -1,8 +1,14 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { getSession } from '@/lib/auth';
+import { logActivity } from '@/lib/logger';
 
 export async function POST(req: Request) {
     try {
+        const session = await getSession();
+        const actorId = session ? (session.id as number) : 0;
+        const actorName = session ? (session.name as string) : 'Unknown';
+
         const body = await req.json();
         const { sheetId, payerId, amount, description, type, beneficiaryIds } = body;
 
@@ -13,20 +19,26 @@ export async function POST(req: Request) {
 
         // 2. Determine Splits
         let splitMembers = [];
+        let workspaceId = 0;
+
         if (type === 'SHARED') {
-            // Get all members of the workspace this sheet belongs to
             const sheet = await prisma.sheet.findUnique({
                 where: { id: sheetId },
                 include: { workspace: { include: { members: true } } }
             });
             if (!sheet) return NextResponse.json({ error: 'Sheet not found' }, { status: 404 });
             splitMembers = sheet.workspace.members;
+            workspaceId = sheet.workspaceId;
         } else {
-            // PRIVATE: User selected beneficiaries
+            // PRIVATE
             if (!beneficiaryIds || beneficiaryIds.length === 0) {
                 return NextResponse.json({ error: 'Private bills require beneficiaries' }, { status: 400 });
             }
-            // Verify members exist
+            // Fetch sheet to get workspaceId
+            const sheet = await prisma.sheet.findUnique({ where: { id: sheetId } });
+            if (!sheet) return NextResponse.json({ error: 'Sheet not found' }, { status: 404 });
+            workspaceId = sheet.workspaceId;
+
             splitMembers = await prisma.member.findMany({
                 where: { id: { in: beneficiaryIds } }
             });
@@ -62,6 +74,17 @@ export async function POST(req: Request) {
 
             return newExpense;
         });
+
+        // 4. Log Activity
+        await logActivity(
+            workspaceId,
+            actorId,
+            actorName,
+            'CREATE',
+            'EXPENSE',
+            expense.id,
+            `Đã thêm khoản chi: ${description} (${amount.toLocaleString('vi-VN')}đ)`
+        );
 
         return NextResponse.json(expense);
 

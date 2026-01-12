@@ -212,6 +212,7 @@ export default function Home() {
               onChange={setCurrentSheetId}
               onCreated={reload}
             />
+            <ActivityLogList />
             <AddBillForm
               members={members}
               sheetId={currentSheetId!}

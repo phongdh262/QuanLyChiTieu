@@ -72,3 +72,17 @@ model Split {
   member    Member  @relation(fields: [memberId], references: [id])
   memberId  Int
 }
+
+model ActivityLog {
+  id          Int      @id @default(autoincrement())
+  action      String   // CREATE, UPDATE, DELETE, LOGIN
+  entityType  String   // EXPENSE, SHEET, MEMBER, SYSTEM
+  entityId    Int?
+  description String
+  actorId     Int
+  actorName   String   // Store name to show even if user deleted
+  createdAt   DateTime @default(now())
+  
+  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+  workspaceId Int
+}

@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { getSession } from '@/lib/auth';
+import { logActivity } from '@/lib/logger';
 
 // UPDATE Expense
 export async function PUT(
@@ -7,9 +9,15 @@ export async function PUT(
     { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const session = await getSession();
+        const actorId = session ? (session.id as number) : 0;
+        const actorName = session ? (session.name as string) : 'Unknown';
+
         const id = parseInt((await params).id);
         const body = await request.json();
         const { amount, description, payerId, type, beneficiaryIds } = body;
+
+        let workspaceId = 0;
 
         // Transaction: Update expense + Re-do splits
         await prisma.$transaction(async (tx: any) => {
@@ -19,6 +27,7 @@ export async function PUT(
                 include: { sheet: true }
             });
             if (!expense) throw new Error('Expense not found');
+            workspaceId = expense.sheet.workspaceId;
 
             // 2. Update Expense Details
             await tx.expense.update({
@@ -61,6 +70,17 @@ export async function PUT(
             }
         });
 
+        // Log Activity
+        await logActivity(
+            workspaceId,
+            actorId,
+            actorName,
+            'UPDATE',
+            'EXPENSE',
+            id,
+            `Đã cập nhật khoản chi: ${description} (${amount.toLocaleString('vi-VN')}đ)`
+        );
+
         return NextResponse.json({ success: true });
     } catch (error) {
         console.error(error);
@@ -74,7 +94,19 @@ export async function DELETE(
     { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const session = await getSession();
+        const actorId = session ? (session.id as number) : 0;
+        const actorName = session ? (session.name as string) : 'Unknown';
+
         const id = parseInt((await params).id);
+
+        // Fetch details before delete for logging
+        const expense = await prisma.expense.findUnique({
+            where: { id },
+            include: { sheet: true }
+        });
+
+        if (!expense) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
         // Transaction to delete splits then expense
         await prisma.$transaction(async (tx: any) => {
@@ -85,6 +117,17 @@ export async function DELETE(
                 where: { id: id }
             });
         });
+
+        // Log Activity
+        await logActivity(
+            expense.sheet.workspaceId,
+            actorId,
+            actorName,
+            'DELETE',
+            'EXPENSE',
+            id,
+            `Đã xóa khoản chi: ${expense.description} (${expense.amount.toLocaleString('vi-VN')}đ)`
+        );
 
         return NextResponse.json({ success: true });
     } catch (error) {
