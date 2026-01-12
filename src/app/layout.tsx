@@ -12,8 +12,8 @@ export const metadata: Metadata = {
   description: "By Phong Dinh",
 };
 
-import ToastProvider from "@/components/UI/ToastProvider";
-import ConfirmProvider from "@/components/UI/ConfirmProvider";
+import ToastProvider from "@/components/ui/ToastProvider";
+import ConfirmProvider from "@/components/ui/ConfirmProvider";
 
 export default function RootLayout({
   children,

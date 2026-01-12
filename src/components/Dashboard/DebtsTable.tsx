@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { DebtTransaction, Member } from '@/types/expense';
-import { useConfirm } from '@/components/UI/ConfirmProvider';
-import { useToast } from '@/components/UI/ToastProvider';
+import { useConfirm } from '@/components/ui/ConfirmProvider';
+import { useToast } from '@/components/ui/ToastProvider';
 
 interface Props {
     debts: DebtTransaction[];

@@ -1,7 +1,7 @@
 'use client';
 import React, { useState } from 'react';
-import { useConfirm } from '@/components/UI/ConfirmProvider';
-import { useToast } from '@/components/UI/ToastProvider';
+import { useConfirm } from '@/components/ui/ConfirmProvider';
+import { useToast } from '@/components/ui/ToastProvider';
 
 interface Sheet {
     id: number;

@@ -1,6 +1,6 @@
 'use client';
 import React, { useState } from 'react';
-import { useToast } from '@/components/UI/ToastProvider';
+import { useToast } from '@/components/ui/ToastProvider';
 
 // ... imports
 

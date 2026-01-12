@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Bill, Member } from '@/types/expense';
 import EditBillModal from './EditBillModal';
-import { useConfirm } from '@/components/UI/ConfirmProvider';
-import { useToast } from '@/components/UI/ToastProvider';
+import { useConfirm } from '@/components/ui/ConfirmProvider';
+import { useToast } from '@/components/ui/ToastProvider';
 
 interface Props {
   bills: Bill[];

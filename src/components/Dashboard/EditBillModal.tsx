@@ -2,7 +2,7 @@
 import { createPortal } from 'react-dom';
 import React, { useState, useEffect } from 'react';
 import { Bill } from '@/types/expense';
-import { useToast } from '@/components/UI/ToastProvider';
+import { useToast } from '@/components/ui/ToastProvider';
 
 interface Props {
     bill: Bill;
