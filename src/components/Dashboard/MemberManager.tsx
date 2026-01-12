@@ -10,7 +10,16 @@ interface Props {
     onUpdate: () => void;
 }
 
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Users, UserPlus, Trash2, Edit, Save, X } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+// ... (imports)
+
 export default function MemberManager({ members, workspaceId, onUpdate }: Props) {
+    // ... (logic)
     const { confirm } = useConfirm();
     const { addToast } = useToast();
     const [isAdding, setIsAdding] = useState(false);
@@ -28,6 +37,7 @@ export default function MemberManager({ members, workspaceId, onUpdate }: Props)
             });
             setNewName('');
             setIsAdding(false);
+            onUpdate(); // Reload members list
             addToast('Đã thêm thành viên', 'success');
         } catch (e) {
             console.error(e);
@@ -71,6 +81,7 @@ export default function MemberManager({ members, workspaceId, onUpdate }: Props)
                 body: JSON.stringify({ name: editName })
             });
             setEditingId(null);
+            onUpdate();
             addToast('Đã cập nhật tên', 'success');
         } catch (e) {
             console.error(e);
@@ -79,90 +90,102 @@ export default function MemberManager({ members, workspaceId, onUpdate }: Props)
     };
 
     return (
-        <div className="card">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                <h2>👥 Thành Viên</h2>
-                <button
-                    onClick={() => setIsAdding(!isAdding)}
-                    style={{ width: 'auto', padding: '0.25rem 0.75rem', fontSize: '0.85rem' }}
-                >
-                    {isAdding ? 'Đóng' : '+ Thêm'}
-                </button>
-            </div>
-
-            {isAdding && (
-                <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
-                    <input
-                        value={newName}
-                        onChange={e => setNewName(e.target.value)}
-                        placeholder="Tên thành viên..."
-                        autoFocus
-                    />
-                    <button onClick={handleAdd} style={{ width: 'auto' }}>Lưu</button>
+        <Card className="w-full shadow-md hover:shadow-lg transition-all duration-300 border-t-4 border-t-indigo-500 bg-white">
+            <CardHeader className="p-4 pb-2 border-b border-slate-50 bg-indigo-50/20">
+                <div className="flex items-center justify-between">
+                    <CardTitle className="text-base flex items-center gap-2 text-indigo-800">
+                        <Users className="w-5 h-5 text-indigo-500" />
+                        Thành Viên
+                    </CardTitle>
+                    <Button
+                        size="sm"
+                        variant={isAdding ? "secondary" : "default"}
+                        onClick={() => setIsAdding(!isAdding)}
+                        className={cn("h-8 text-xs font-semibold shadow-sm", isAdding ? "bg-slate-200 text-slate-700 hover:bg-slate-300" : "bg-indigo-600 hover:bg-indigo-700 text-white")}
+                    >
+                        {isAdding ? <><X className="w-3 h-3 mr-1" /> Đóng</> : <><UserPlus className="w-3 h-3 mr-1" /> Thêm</>}
+                    </Button>
                 </div>
-            )}
+            </CardHeader>
+            <CardContent className="p-4 pt-4">
+                {isAdding && (
+                    <div className="flex gap-2 mb-4 animate-in slide-in-from-top-2 duration-200">
+                        <Input
+                            value={newName}
+                            onChange={e => setNewName(e.target.value)}
+                            placeholder="Tên thành viên..."
+                            autoFocus
+                            className="h-9 text-sm"
+                            onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
+                        />
+                        <Button
+                            className="h-9 px-3 bg-green-600 hover:bg-green-700 text-white"
+                            onClick={handleAdd}
+                        >
+                            <Save className="w-4 h-4" />
+                        </Button>
+                    </div>
+                )}
 
-            <ul style={{ listStyle: 'none', padding: 0 }}>
-                {members.map(m => (
-                    <li key={m.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.5rem 0', borderBottom: '1px solid #f1f5f9' }}>
-                        {editingId === m.id ? (
-                            <div style={{ display: 'flex', gap: '0.5rem', width: '100%' }}>
-                                <input value={editName} onChange={e => setEditName(e.target.value)} style={{ margin: 0 }} />
-                                <button onClick={() => saveEdit(m.id)} style={{ width: 'auto', padding: '0.25rem 0.5rem' }}>Lưu</button>
-                                <button onClick={() => setEditingId(null)} className="secondary" style={{ width: 'auto', padding: '0.25rem 0.5rem' }}>Hủy</button>
-                            </div>
-                        ) : (
-                            <>
-                                <span style={{ fontWeight: 500 }}>{m.name}</span>
-                                <div style={{ display: 'flex', gap: '0.5rem' }}>
-                                    <button
-                                        onClick={() => startEdit(m)}
-                                        title="Sửa"
-                                        style={{
-                                            width: '32px',
-                                            height: '32px',
-                                            padding: 0,
-                                            borderRadius: '6px',
-                                            background: 'white',
-                                            border: '1px solid var(--border-color)',
-                                            color: 'var(--primary)',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            transition: 'all 0.2s'
-                                        }}
-                                    >
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" style={{ width: '16px', height: '16px' }}>
-                                            <path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
-                                        </svg>
-                                    </button>
-                                    <button
-                                        onClick={() => handleDelete(m.id)}
-                                        title="Xóa"
-                                        style={{
-                                            width: '32px',
-                                            height: '32px',
-                                            padding: 0,
-                                            borderRadius: '6px',
-                                            background: '#fee2e2',
-                                            border: '1px solid #fecaca',
-                                            color: 'var(--danger)',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            transition: 'all 0.2s'
-                                        }}
-                                    >
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" style={{ width: '16px', height: '16px' }}>
-                                            <path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
-                                        </svg>
-                                    </button>
+                <div className="space-y-1">
+                    {members.map(m => (
+                        <div
+                            key={m.id}
+                            className={cn(
+                                "group flex items-center justify-between p-2 rounded-md hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-100",
+                                editingId === m.id ? "bg-blue-50/50 border-blue-100" : ""
+                            )}
+                        >
+                            {editingId === m.id ? (
+                                <div className="flex gap-2 w-full animate-in fade-in duration-200">
+                                    <Input
+                                        value={editName}
+                                        onChange={e => setEditName(e.target.value)}
+                                        className="h-8 text-sm flex-1 bg-white"
+                                        autoFocus
+                                        onKeyDown={(e) => e.key === 'Enter' && saveEdit(m.id)}
+                                    />
+                                    <Button size="icon" className="h-8 w-8 bg-green-600 hover:bg-green-700 text-white" onClick={() => saveEdit(m.id)}>
+                                        <Save className="w-3.5 h-3.5" />
+                                    </Button>
+                                    <Button size="icon" variant="ghost" className="h-8 w-8 text-slate-500 hover:bg-slate-200" onClick={() => setEditingId(null)}>
+                                        <X className="w-3.5 h-3.5" />
+                                    </Button>
                                 </div>
-                            </>
-                        )}
-                    </li>
-                ))}
-            </ul>
-        </div>
+                            ) : (
+                                <>
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-xs font-bold">
+                                            {m.name.charAt(0).toUpperCase()}
+                                        </div>
+                                        <span className="font-medium text-slate-700 text-sm">{m.name}</span>
+                                    </div>
+                                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                                        <Button
+                                            size="icon"
+                                            variant="ghost"
+                                            className="h-7 w-7 text-slate-400 hover:text-blue-600 hover:bg-blue-50"
+                                            onClick={() => startEdit(m)}
+                                            title="Sửa"
+                                        >
+                                            <Edit className="w-3.5 h-3.5" />
+                                        </Button>
+                                        <Button
+                                            size="icon"
+                                            variant="ghost"
+                                            className="h-7 w-7 text-slate-400 hover:text-red-600 hover:bg-red-50"
+                                            onClick={() => handleDelete(m.id)}
+                                            title="Xóa"
+                                        >
+                                            <Trash2 className="w-3.5 h-3.5" />
+                                        </Button>
+                                    </div>
+                                </>
+                            )}
+                        </div>
+                    ))}
+                </div>
+            </CardContent>
+        </Card>
     );
 }

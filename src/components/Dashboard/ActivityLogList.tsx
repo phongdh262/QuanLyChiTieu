@@ -8,8 +8,13 @@ interface Log {
     createdAt: string;
 }
 
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { History, ChevronDown, ChevronUp } from "lucide-react";
+import { cn } from "@/lib/utils";
+
 export default function ActivityLogList() {
-    const [isOpen, setIsOpen] = useState(true); // Default OPEN
+    const [isOpen, setIsOpen] = useState(false); // Default CLOSED to save space
     const [logs, setLogs] = useState<Log[]>([]);
     const [loading, setLoading] = useState(false);
 
@@ -22,7 +27,7 @@ export default function ActivityLogList() {
     const fetchLogs = async () => {
         setLoading(true);
         try {
-            const res = await fetch('/api/activity-logs'); // Need to create this API
+            const res = await fetch('/api/activity-logs');
             if (res.ok) {
                 const data = await res.json();
                 setLogs(data);
@@ -34,61 +39,72 @@ export default function ActivityLogList() {
         }
     };
 
-    const getActionIcon = (action: string) => {
+    const getActionColor = (action: string) => {
         switch (action) {
-            case 'CREATE': return '🟢';
-            case 'UPDATE': return '🟡';
-            case 'DELETE': return '🔴';
-            default: return '⚪️';
+            case 'CREATE': return 'text-green-600 bg-green-50 border-green-200';
+            case 'UPDATE': return 'text-amber-600 bg-amber-50 border-amber-200';
+            case 'DELETE': return 'text-red-600 bg-red-50 border-red-200';
+            default: return 'text-slate-600 bg-slate-50 border-slate-200';
+        }
+    };
+
+    const getActionLabel = (action: string) => {
+        switch (action) {
+            case 'CREATE': return 'Tạo mới';
+            case 'UPDATE': return 'Cập nhật';
+            case 'DELETE': return 'Xóa';
+            default: return 'Hoạt động';
         }
     };
 
     return (
-        <div className="card" style={{ marginTop: '2rem' }}>
-            <div className="card-header" onClick={() => setIsOpen(!isOpen)}>
-                <h2>
-                    <span>📜</span> Nhật Ký Hoạt Động
-                </h2>
-                <div className={`card-toggle-icon ${isOpen ? 'open' : ''}`}>
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" style={{ width: '20px', height: '20px' }}>
-                        <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" />
-                    </svg>
+        <Card className="w-full shadow-md hover:shadow-lg transition-all duration-300 border-t-4 border-t-purple-500 bg-white group/card">
+            <CardHeader
+                className="p-4 cursor-pointer hover:bg-slate-50 transition-colors flex flex-row items-center justify-between"
+                onClick={() => setIsOpen(!isOpen)}
+            >
+                <CardTitle className="text-base flex items-center gap-2 text-purple-700">
+                    <History className="w-5 h-5 text-purple-500" />
+                    Nhật Ký Hoạt Động
+                </CardTitle>
+                <div className={cn("transition-transform duration-300 text-slate-400", isOpen && "rotate-180")}>
+                    <ChevronDown className="w-5 h-5" />
                 </div>
-            </div>
+            </CardHeader>
 
             {isOpen && (
-                <div style={{ maxHeight: '400px', overflowY: 'auto' }} className="fade-in">
-                    {loading ? (
-                        <div style={{ padding: '1rem', textAlign: 'center', color: '#6b7280' }}>Đang tải...</div>
-                    ) : (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                            {logs.length === 0 ? (
-                                <div style={{ fontStyle: 'italic', color: '#9ca3af', textAlign: 'center' }}>Chưa có hoạt động nào.</div>
-                            ) : (
-                                logs.map(log => (
-                                    <div key={log.id} style={{
-                                        padding: '0.75rem',
-                                        borderRadius: '8px',
-                                        background: '#f9fafb',
-                                        fontSize: '0.9rem',
-                                        border: '1px solid #f3f4f6'
-                                    }}>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                                            <span style={{ fontWeight: 600 }}>{getActionIcon(log.action)} {log.actorName}</span>
-                                            <span style={{ fontSize: '0.8rem', color: '#9ca3af' }}>
-                                                {new Date(log.createdAt).toLocaleString('vi-VN')}
+                <CardContent className="p-0 border-t border-slate-100 animate-in slide-in-from-top-2 duration-200">
+                    <div className="h-[350px] overflow-y-auto p-4 space-y-3 custom-scrollbar">
+                        {loading ? (
+                            <div className="flex justify-center p-4 text-slate-400 font-medium italic">Đang tải dữ liệu...</div>
+                        ) : logs.length === 0 ? (
+                            <div className="text-center p-4 text-slate-400 italic">Chưa có hoạt động nào được ghi lại.</div>
+                        ) : (
+                            logs.map(log => (
+                                <div
+                                    key={log.id}
+                                    className="p-3 rounded-lg border border-slate-100 bg-white shadow-sm hover:shadow-md transition-shadow duration-200 flex flex-col gap-1.5"
+                                >
+                                    <div className="flex justify-between items-start">
+                                        <div className="flex items-center gap-2">
+                                            <span className={cn("text-[10px] font-bold px-1.5 py-0.5 rounded border uppercase tracking-wider", getActionColor(log.action))}>
+                                                {getActionLabel(log.action)}
                                             </span>
+                                            <span className="font-semibold text-sm text-slate-800">{log.actorName}</span>
                                         </div>
-                                        <div style={{ color: '#4b5563', lineHeight: '1.4' }}>
-                                            {log.description}
-                                        </div>
+                                        <span className="text-[10px] text-slate-400 font-medium">
+                                            {new Date(log.createdAt).toLocaleString('vi-VN')}
+                                        </span>
                                     </div>
-                                ))
-                            )}
-                        </div>
-                    )}
-                </div>
+                                    <p className="text-xs text-slate-600 pl-1 leading-relaxed">
+                                        {log.description}
+                                    </p>
+                                </div>
+                            ))
+                        )}
+                    </div>
+                </CardContent>
             )}
-        </div>
+        </Card>
     );
 }

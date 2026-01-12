@@ -29,7 +29,11 @@ interface Props {
     calculations: CalculationResult;
 }
 
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { BarChart3, PieChart as PieChartIcon } from "lucide-react";
+
 export default function StatisticsSection({ members, calculations }: Props) {
+    // ... existing logic ...
     const { stats } = calculations;
 
     // Calculate Totals manually since they are not in CalculationResult
@@ -37,6 +41,7 @@ export default function StatisticsSection({ members, calculations }: Props) {
     const totalPrivate = Object.values(stats).reduce((acc, curr) => acc + curr.privatePaid, 0);
     const totalExpenses = totalShared + totalPrivate;
 
+    // ... existing chart setup ...
     // 1. Data for Bar Chart: Who paid vs Who consumed
     const barData = {
         labels: members.map(m => m.name),
@@ -136,23 +141,28 @@ export default function StatisticsSection({ members, calculations }: Props) {
     }
 
     return (
-        <div className="card" style={{ marginBottom: '2rem' }}>
-            <h2 style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <span>📊</span> Thống Kê Tổng Quan
-            </h2>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '2rem' }}>
-                {/* Bar Chart Container */}
-                <div style={{ minHeight: '300px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                    <Bar options={barOptions} data={barData} />
-                </div>
+        <Card className="w-full shadow-lg hover:shadow-xl transition-all duration-300 border-t-4 border-t-indigo-500 bg-white overflow-hidden">
+            <CardHeader className="bg-gradient-to-r from-indigo-50/50 to-transparent pb-4">
+                <CardTitle className="text-xl flex items-center gap-2 text-indigo-700">
+                    <BarChart3 className="w-6 h-6" />
+                    Thống Kê Tổng Quan
+                </CardTitle>
+            </CardHeader>
+            <CardContent className="p-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                    {/* Bar Chart Container */}
+                    <div className="min-h-[300px] flex justify-center items-center w-full">
+                        <Bar options={barOptions} data={barData} />
+                    </div>
 
-                {/* Pie Chart Container */}
-                <div style={{ height: '300px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                    <div style={{ width: '250px', height: '250px', position: 'relative' }}>
-                        <Pie options={pieOptions} data={pieData} />
+                    {/* Pie Chart Container */}
+                    <div className="h-[300px] flex flex-col items-center justify-center p-4 bg-slate-50/50 rounded-lg border border-slate-100">
+                        <div className="w-[280px] h-[280px] relative">
+                            <Pie options={pieOptions} data={pieData} />
+                        </div>
                     </div>
                 </div>
-            </div>
-        </div>
+            </CardContent>
+        </Card>
     );
 }
