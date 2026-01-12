@@ -1,24 +1,101 @@
+'use client';
 import { createPortal } from 'react-dom';
+import React, { useState, useEffect } from 'react';
+import { Bill } from '@/types/expense';
+import { useToast } from '@/components/UI/ToastProvider';
 
-// ... (existing imports)
+interface Props {
+    bill: Bill;
+    members: { id: number; name: string }[];
+    onClose: () => void;
+    onSave: () => void;
+}
 
 export default function EditBillModal({ bill, members, onClose, onSave }: Props) {
+    const { addToast } = useToast();
     const [mounted, setMounted] = useState(false);
 
-    // ... (existing hooks)
+    // ... (existing hooks) which were deleted, now restoring full logic
+    const [description, setDescription] = useState(bill.note || '');
+    const [amount, setAmount] = useState(bill.amount.toString());
+
+    // Find payer ID by name
+    const initialPayer = members.find(m => m.name === bill.payer);
+    // Safe fallback if member not found or members list empty
+    const defaultPayerId = members.length > 0 ? members[0].id.toString() : '';
+    const [payerId, setPayerId] = useState<string>(initialPayer?.id.toString() || defaultPayerId);
+
+    const [type, setType] = useState<'SHARED' | 'PRIVATE'>(bill.type);
+
+    // For beneficiaries, we might only have names in 'bill.beneficiaries'.
+    const initialBenes = (bill.beneficiaries || [])
+        .map(name => members.find(m => m.name === name)?.id.toString())
+        .filter(id => id !== undefined) as string[];
+
+    const [beneficiaryIds, setBeneficiaryIds] = useState<string[]>(initialBenes);
+
+    // Fix: Handle invalid date
+    const formatDate = (dateString?: string | Date) => {
+        if (!dateString) return '';
+        try {
+            return new Date(dateString).toISOString().split('T')[0];
+        } catch (e) {
+            return '';
+        }
+    };
+    const [date, setDate] = useState(formatDate(bill.date));
+
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     useEffect(() => {
         setMounted(true);
         return () => setMounted(false);
     }, []);
 
-    // ... (existing helper function formatDate)
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (isSubmitting) return;
 
-    // ... (existing hooks for beneficiaryIds, date, isSubmitting)
+        if (!description || !amount || !payerId) {
+            addToast('Vui lòng điền đầy đủ thông tin', 'warning');
+            return;
+        }
 
-    // ... (existing handleSubmit)
+        if (type === 'PRIVATE' && beneficiaryIds.length === 0) {
+            addToast('Vui lòng chọn người thụ hưởng cho chi tiêu riêng', 'warning');
+            return;
+        }
 
-    // ... (existing toggleBeneficiary)
+        setIsSubmitting(true);
+        try {
+            const res = await fetch(`/api/expenses/${bill.id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    payerId: parseInt(payerId),
+                    amount: parseFloat(amount),
+                    description,
+                    type,
+                    date: date || undefined,
+                    beneficiaryIds: type === 'PRIVATE' ? beneficiaryIds.map(id => parseInt(id)) : []
+                }),
+            });
+
+            if (!res.ok) throw new Error('Failed to update expense');
+            onSave();
+        } catch (error) {
+            console.error(error);
+            addToast('Có lỗi xảy ra khi cập nhật', 'error');
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    const toggleBeneficiary = (id: string) => {
+        setBeneficiaryIds(prev =>
+            prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+        );
+    };
 
     // Wait for client fields to mount
     if (!mounted) return null;
@@ -29,7 +106,6 @@ export default function EditBillModal({ bill, members, onClose, onSave }: Props)
             backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center',
             zIndex: 9999, backdropFilter: 'blur(4px)'
         }}>
-            {/* ... existing card content ... */}
             <div className="card" style={{ width: '500px', maxWidth: '90%', margin: 0, maxHeight: '90vh', overflowY: 'auto' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
                     <h2>✏️ Sửa Hóa Đơn</h2>
