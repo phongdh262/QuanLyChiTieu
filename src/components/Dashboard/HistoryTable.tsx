@@ -25,10 +25,7 @@ import {
   Edit,
   Clock,
   Calendar,
-  Filter,
-  Check,
   Users,
-  User,
   Search
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -66,6 +63,7 @@ export default function HistoryTable({ bills, members, onDelete }: Props) {
     .filter(b => {
       if (filterPayer !== 'ALL' && b.payer !== filterPayer) return false;
       if (filterType !== 'ALL' && b.type !== filterType) return false;
+      if (searchTerm && !b.note.toLowerCase().includes(searchTerm.toLowerCase())) return false;
       return true;
     });
 
@@ -101,7 +99,6 @@ export default function HistoryTable({ bills, members, onDelete }: Props) {
     setIsBulkDeleting(true);
     let successCount = 0;
     try {
-      // Execute in parallel (or sequential if preferred, parallel is faster)
       await Promise.all(
         Array.from(selectedIds).map(async (id) => {
           const res = await fetch(`/api/expenses/${id}`, { method: 'DELETE' });
@@ -111,7 +108,7 @@ export default function HistoryTable({ bills, members, onDelete }: Props) {
 
       addToast(`Đã xóa ${successCount}/${selectedIds.size} hóa đơn`, 'success');
       setSelectedIds(new Set());
-      onDelete(); // Reload parent
+      onDelete();
     } catch (e) {
       console.error(e);
       addToast('Có lỗi xảy ra khi xóa', 'error');
@@ -149,7 +146,7 @@ export default function HistoryTable({ bills, members, onDelete }: Props) {
 
   // Helper for Payer Avatar
   const getAvatarColor = (name: string) => {
-    const colors = ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899'];
+    const colors = ['bg-blue-500', 'bg-red-500', 'bg-green-500', 'bg-amber-500', 'bg-purple-500', 'bg-pink-500'];
     let hash = 0;
     for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
     return colors[Math.abs(hash) % colors.length];
@@ -159,199 +156,204 @@ export default function HistoryTable({ bills, members, onDelete }: Props) {
 
   return (
     <>
-      <div className="card">
-        {/* Header & Filters Toolbar */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '1.5rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
-            <h2 style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', margin: 0, fontSize: '1.5rem' }}>
-              <span style={{ fontSize: '1.75rem' }}>🕰️</span> Lịch Sử Chi Tiêu
-            </h2>
-            <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
+      <Card className="w-full shadow-md border-t-4 border-t-primary">
+        <CardHeader className="pb-4">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <CardTitle className="text-xl flex items-center gap-2">
+              <Clock className="w-6 h-6 text-primary" />
+              Lịch Sử Chi Tiêu
+            </CardTitle>
 
+            <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
               {/* Bulk Delete Button */}
               {selectedIds.size > 0 && (
-                <button
+                <Button
+                  variant="destructive"
+                  size="sm"
                   onClick={handleBulkDelete}
                   disabled={isBulkDeleting}
-                  className="fade-in danger"
-                  style={{
-                    padding: '0.6rem 1rem', borderRadius: '10px',
-                    display: 'flex', alignItems: 'center', gap: '0.5rem'
-                  }}
+                  className="animate-in fade-in zoom-in duration-200"
                 >
-                  {isBulkDeleting ? 'Đang xóa...' : `Xóa (${selectedIds.size})`}
-                  {!isBulkDeleting && (
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" style={{ width: '18px', height: '18px' }}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
-                    </svg>
-                  )}
-                </button>
+                  {isBulkDeleting ? <span className="animate-spin mr-2">⏳</span> : <Trash2 className="w-4 h-4 mr-1" />}
+                  Xóa ({selectedIds.size})
+                </Button>
               )}
 
-              <div className="filter-group">
-                <span>
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" style={{ width: '16px', height: '16px' }}>
-                    <path fillRule="evenodd" d="M17.707 9.293a1 1 0 010 1.414l-7 7a1 1 0 01-1.414 0l-7-7A.997.997 0 012 10V5a3 3 0 013-3h5c.256 0 .512.098.707.293l7 7zM5 6a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
-                  </svg>
-                </span>
-                <select
-                  className="filter-select"
-                  value={filterType}
-                  onChange={e => setFilterType(e.target.value)}
-                >
-                  <option value="ALL">Tất cả loại</option>
-                  <option value="SHARED">Chung</option>
-                  <option value="PRIVATE">Riêng</option>
-                </select>
+              <div className="relative flex-1 md:w-40 lg:w-56">
+                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Tìm nội dung..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-8 h-9"
+                />
               </div>
 
-              <div className="filter-group">
-                <span>
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" style={{ width: '16px', height: '16px' }}>
-                    <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
-                  </svg>
-                </span>
-                <select
-                  className="filter-select"
-                  value={filterPayer}
-                  onChange={e => setFilterPayer(e.target.value)}
-                >
-                  <option value="ALL">Tất cả người chi</option>
-                  {members.map(m => (
-                    <option key={m.id} value={m.name}>{m.name}</option>
-                  ))}
-                </select>
+              <div className="flex items-center gap-2">
+                <div className="relative">
+                  <select
+                    className="h-9 w-[130px] rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                    value={filterType}
+                    onChange={e => setFilterType(e.target.value)}
+                  >
+                    <option value="ALL">Tất cả loại</option>
+                    <option value="SHARED">Chung</option>
+                    <option value="PRIVATE">Riêng</option>
+                  </select>
+                </div>
+
+                <div className="relative">
+                  <select
+                    className="h-9 w-[130px] rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                    value={filterPayer}
+                    onChange={e => setFilterPayer(e.target.value)}
+                  >
+                    <option value="ALL">Người chi: Tất cả</option>
+                    {members.map(m => (
+                      <option key={m.id} value={m.name}>{m.name}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        </CardHeader>
 
-        {/* Beautiful Table */}
-        <div className="table-container">
-          <table className="table-history">
-            <thead>
-              <tr>
-                <th style={{ width: '40px' }}>
-                  <input
-                    type="checkbox"
-                    checked={isAllSelected}
-                    onChange={toggleAll}
-                    style={{ width: '18px', height: '18px', cursor: 'pointer', margin: 0 }}
-                  />
-                </th>
-                <th style={{ width: '50px' }}>STT</th>
-                <th>Nội dung</th>
-                <th>Người chi</th>
-                <th className="text-right">Số tiền</th>
-                <th>Chia cho</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredBills.map((b, index) => {
-                const typeClass = b.type === 'SHARED' ? 'tag tag-shared' : 'tag tag-private';
-                const typeLabel = b.type === 'SHARED' ? 'CHUNG' : 'RIÊNG';
-                const isSelected = selectedIds.has(b.id);
-
-                return (
-                  <tr key={b.id} className={isSelected ? 'selected' : ''}>
-
-                    <td>
-                      <div className="flex-center">
-                        <input
-                          type="checkbox"
-                          checked={isSelected}
-                          onChange={() => toggleRow(b.id)}
-                          style={{ width: '18px', height: '18px', cursor: 'pointer', margin: 0 }}
-                        />
-                      </div>
-                    </td>
-
-                    <td className="font-bold text-muted text-center" style={{ width: '50px' }}>
-                      {index + 1}
-                    </td>
-
-                    <td>
-                      <div className="flex-col gap-1">
-                        <div className="flex-center" style={{ justifyContent: 'flex-start', gap: '0.75rem' }}>
-                          <span className={typeClass}>
-                            {typeLabel}
-                          </span>
-                          <span style={{ fontWeight: 600, fontSize: '1.05rem', color: '#1f2937' }}>{b.note}</span>
-                        </div>
-                        {b.date && (
-                          <div className="flex-center" style={{ justifyContent: 'flex-start', gap: '4px', color: '#9ca3af', fontSize: '0.85rem' }}>
-                            <span>🗓</span> {new Date(b.date).toLocaleDateString('vi-VN')}
-                          </div>
+        <CardContent className="p-0">
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader className="bg-muted/50">
+                <TableRow>
+                  <TableHead className="w-[40px] text-center">
+                    <input
+                      type="checkbox"
+                      checked={isAllSelected}
+                      onChange={toggleAll}
+                      className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer accent-primary"
+                    />
+                  </TableHead>
+                  <TableHead className="w-[50px] text-center">STT</TableHead>
+                  <TableHead>Nội dung</TableHead>
+                  <TableHead>Người chi</TableHead>
+                  <TableHead className="text-right">Số tiền</TableHead>
+                  <TableHead>Chia cho</TableHead>
+                  <TableHead className="w-[100px]"></TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredBills.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
+                      Không có dữ liệu hóa đơn nào.
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filteredBills.map((b, index) => {
+                    const isSelected = selectedIds.has(b.id);
+                    return (
+                      <TableRow
+                        key={b.id}
+                        className={cn(
+                          "group transition-colors",
+                          isSelected ? "bg-primary/5 hover:bg-primary/10" : "hover:bg-muted/40"
                         )}
-                      </div>
-                    </td>
-
-                    <td>
-                      <div className="flex-center" style={{ justifyContent: 'flex-start', gap: '0.75rem' }}>
-                        <div className="avatar" style={{ background: getAvatarColor(b.payer) }}>
-                          {b.payer.charAt(0).toUpperCase()}
-                        </div>
-                        <span className="font-medium">{b.payer}</span>
-                      </div>
-                    </td>
-
-                    <td className="text-right">
-                      <span style={{ fontWeight: 700, fontSize: '1.1rem', color: '#111827' }}>
-                        {formatMoney(b.amount)}
-                      </span>
-                    </td>
-
-                    <td>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-                        {b.type === 'SHARED' ? (
-                          <span className="tag" style={{ background: '#e0e7ff', color: '#3730a3' }}>
-                            👥 Tất cả
-                          </span>
-                        ) : (
-                          (b.beneficiaries || []).map((name, idx) => (
-                            <div key={idx} className="flex-center" style={{ gap: '0.5rem' }}>
-                              <div className="avatar avatar-sm" style={{ background: getAvatarColor(name) }}>
-                                {name.charAt(0).toUpperCase()}
-                              </div>
-                              <span style={{ fontSize: '0.9rem', fontWeight: 500 }}>{name}</span>
+                      >
+                        <TableCell className="text-center">
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => toggleRow(b.id)}
+                            className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer accent-primary mt-1"
+                          />
+                        </TableCell>
+                        <TableCell className="text-center font-medium text-muted-foreground">
+                          {index + 1}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex flex-col gap-1">
+                            <div className="flex items-center gap-2">
+                              <Badge variant={b.type === 'SHARED' ? 'secondary' : 'default'} className={cn(
+                                b.type === 'SHARED' ? 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200 border-none' : 'bg-orange-100 text-orange-800 hover:bg-orange-200 border-none'
+                              )}>
+                                {b.type === 'SHARED' ? 'CHUNG' : 'RIÊNG'}
+                              </Badge>
+                              <span className="font-semibold text-foreground">{b.note}</span>
                             </div>
-                          ))
-                        )}
-                      </div>
-                    </td>
+                            {b.date && (
+                              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                                <Calendar className="w-3 h-3" />
+                                {new Date(b.date).toLocaleDateString('vi-VN')}
+                              </div>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <div className={cn("w-7 h-7 rounded-full flex items-center justify-center text-white font-bold text-xs shadow-sm", getAvatarColor(b.payer))}>
+                              {b.payer.charAt(0).toUpperCase()}
+                            </div>
+                            <span className="font-medium text-sm">{b.payer}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <span className="font-bold text-base text-foreground tabular-nums">
+                            {formatMoney(b.amount)}
+                          </span>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex flex-wrap items-center gap-1.5">
+                            {b.type === 'SHARED' ? (
+                              <Badge variant="outline" className="bg-slate-50 text-slate-600 border-slate-200 gap-1 font-normal">
+                                <Users className="w-3 h-3" /> Tất cả
+                              </Badge>
+                            ) : (
+                              (b.beneficiaries || []).map((name, idx) => (
+                                <Badge key={idx} variant="outline" className="bg-slate-50 text-slate-600 border-slate-200 gap-1 font-normal pr-2">
+                                  <div className={cn("w-4 h-4 rounded-full flex items-center justify-center text-[9px] text-white font-bold mr-1", getAvatarColor(name))}>
+                                    {name.charAt(0).toUpperCase()}
+                                  </div>
+                                  {name}
+                                </Badge>
+                              ))
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                              onClick={() => setEditingBill(b)}
+                              title="Sửa"
+                            >
+                              <Edit className="w-4 h-4" />
+                            </Button>
 
-                    <td>
-                      <div className="flex-center" style={{ justifyContent: 'flex-end', gap: '0.5rem' }}>
-                        <button
-                          className="btn-icon btn-icon-gray"
-                          onClick={() => setEditingBill(b)}
-                          title="Sửa"
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" style={{ width: '20px', height: '20px' }}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
-                          </svg>
-                        </button>
-
-                        <button
-                          className="btn-icon btn-icon-danger"
-                          onClick={() => handleDeleteClick(b.id)}
-                          disabled={deletingId === b.id}
-                        >
-                          {deletingId === b.id ? '...' : (
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" style={{ width: '20px', height: '20px' }}>
-                              <path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
-                            </svg>
-                          )}
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                              onClick={() => handleDeleteClick(b.id)}
+                              disabled={deletingId === b.id}
+                              title="Xóa"
+                            >
+                              {deletingId === b.id ? (
+                                <span className="animate-spin text-xs">⏳</span>
+                              ) : (
+                                <Trash2 className="w-4 h-4" />
+                              )}
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
 
         {editingBill && (
           <EditBillModal
@@ -364,7 +366,7 @@ export default function HistoryTable({ bills, members, onDelete }: Props) {
             }}
           />
         )}
-      </div>
+      </Card>
     </>
   );
 }

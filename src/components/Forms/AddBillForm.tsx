@@ -1,15 +1,13 @@
 'use client';
 import React, { useState } from 'react';
 import { useToast } from '@/components/ui/ToastProvider';
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label'; // Need to make Label if it doesn't exist? Use generic label for now.
 import { PlusCircle, Wallet, Calendar, Users, Calculator, Check, CheckCircle2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Badge } from '@/components/ui/badge';
 
-// Quick inline Label component if not exists
+// Quick inline Label component to avoid module not found error if not created yet
 function Label({ children, className, ...props }: React.LabelHTMLAttributes<HTMLLabelElement>) {
     return <label className={cn("text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-foreground/90", className)} {...props}>{children}</label>
 }
@@ -115,134 +113,157 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData }: Pr
     };
 
     return (
-        <input
-            type="text"
-            value={description}
-            onChange={e => setDescription(e.target.value)}
-        />
-                    </div >
-        <div>
-            <label>Ngày (Tuỳ chọn)</label>
-            <input
-                type="date"
-                value={date}
-                onChange={e => setDate(e.target.value)}
-            />
-        </div>
-                </div >
+        <Card className="w-full shadow-lg border-t-4 border-t-green-500 overflow-hidden" id="add-bill-form">
+            <CardHeader className="bg-gradient-to-r from-green-50/50 to-transparent pb-4">
+                <CardTitle className="text-xl flex items-center gap-2 text-green-700">
+                    <PlusCircle className="w-6 h-6" />
+                    Thêm Hóa Đơn Mới
+                </CardTitle>
+            </CardHeader>
 
-                <div style={{ display: 'grid', gap: '1rem', gridTemplateColumns: '1fr 1fr' }}>
-                    <div>
-                        <label>Số tiền (VNĐ)</label>
-                        <input
-                            type="number"
-                            value={amount}
-                            onChange={e => setAmount(e.target.value)}
-                        />
+            <CardContent className="p-6 pt-2 space-y-5">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="md:col-span-2 space-y-2">
+                        <Label>Nội dung chi tiêu <span className="text-red-500">*</span></Label>
+                        <div className="relative">
+                            <Wallet className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                            <Input
+                                placeholder="Ví dụ: Ăn tối, Tiền điện..."
+                                value={description}
+                                onChange={e => setDescription(e.target.value)}
+                                className="pl-9"
+                                autoFocus
+                            />
+                        </div>
                     </div>
-                    <div>
-                        <label>Người chi</label>
-                        <select value={payerId} onChange={e => setPayerId(e.target.value)}>
-                            {members.map(m => (
-                                <option key={m.id} value={m.id}>{m.name}</option>
-                            ))}
-                        </select>
+                    <div className="space-y-2">
+                        <Label>Ngày (Tuỳ chọn)</Label>
+                        <div className="relative">
+                            <Calendar className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                            <Input
+                                type="date"
+                                value={date}
+                                onChange={e => setDate(e.target.value)}
+                                className="pl-9"
+                            />
+                        </div>
                     </div>
                 </div>
 
-                <div>
-                    <label>Loại chi tiêu</label>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                        <Label>Số tiền (VNĐ) <span className="text-red-500">*</span></Label>
+                        <div className="relative">
+                            <Calculator className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                            <Input
+                                type="number"
+                                placeholder="0"
+                                value={amount}
+                                onChange={e => setAmount(e.target.value)}
+                                className="pl-9 font-mono font-bold text-lg text-green-700"
+                            />
+                        </div>
+                    </div>
+                    <div className="space-y-2">
+                        <Label>Người chi <span className="text-red-500">*</span></Label>
+                        <div className="relative">
+                            <Users className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                            <select
+                                className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 pl-9 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                value={payerId}
+                                onChange={e => setPayerId(e.target.value)}
+                            >
+                                {members.map(m => (
+                                    <option key={m.id} value={m.id}>{m.name}</option>
+                                ))}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="space-y-3">
+                    <Label className="block">Loại chi tiêu</Label>
+                    <div className="grid grid-cols-2 gap-4">
                         <button
                             type="button"
                             onClick={() => setType('SHARED')}
-                            style={{
-                                display: 'flex',
-                                flexDirection: 'column',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                padding: '0.75rem',
-                                background: type === 'SHARED' ? '#3b82f6' : 'white', // Solid Blue
-                                border: `1px solid ${type === 'SHARED' ? '#3b82f6' : '#e5e7eb'}`,
-                                color: type === 'SHARED' ? 'white' : '#6b7280',
-                                borderRadius: 'var(--radius-lg)',
-                                cursor: 'pointer',
-                                transition: 'all 0.2s ease',
-                                height: 'auto',
-                                boxShadow: type === 'SHARED' ? '0 4px 6px -1px rgba(59, 130, 246, 0.5)' : 'none'
-                            }}
+                            className={cn(
+                                "flex flex-col items-center justify-center p-3 rounded-lg border-2 transition-all duration-200",
+                                type === 'SHARED'
+                                    ? "border-blue-500 bg-blue-50 text-blue-700 shadow-sm"
+                                    : "border-muted bg-transparent text-muted-foreground hover:bg-muted/20"
+                            )}
                         >
-                            <span style={{ fontSize: '1rem', fontWeight: 600 }}>Chung</span>
+                            <span className="text-base font-bold flex items-center gap-2">
+                                {type === 'SHARED' && <CheckCircle2 className="w-4 h-4" />} Chung
+                            </span>
+                            <span className="text-xs opacity-80 mt-1">Chia đều cho tất cả</span>
                         </button>
 
                         <button
                             type="button"
                             onClick={() => setType('PRIVATE')}
-                            style={{
-                                display: 'flex',
-                                flexDirection: 'column',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                padding: '0.75rem',
-                                background: type === 'PRIVATE' ? '#f97316' : 'white', // Solid Orange
-                                border: `1px solid ${type === 'PRIVATE' ? '#f97316' : '#e5e7eb'}`,
-                                color: type === 'PRIVATE' ? 'white' : '#6b7280',
-                                borderRadius: 'var(--radius-lg)',
-                                cursor: 'pointer',
-                                transition: 'all 0.2s ease',
-                                height: 'auto',
-                                boxShadow: type === 'PRIVATE' ? '0 4px 6px -1px rgba(249, 115, 22, 0.5)' : 'none'
-                            }}
+                            className={cn(
+                                "flex flex-col items-center justify-center p-3 rounded-lg border-2 transition-all duration-200",
+                                type === 'PRIVATE'
+                                    ? "border-orange-500 bg-orange-50 text-orange-700 shadow-sm"
+                                    : "border-muted bg-transparent text-muted-foreground hover:bg-muted/20"
+                            )}
                         >
-                            <span style={{ fontSize: '1rem', fontWeight: 600 }}>Riêng</span>
+                            <span className="text-base font-bold flex items-center gap-2">
+                                {type === 'PRIVATE' && <CheckCircle2 className="w-4 h-4" />} Riêng
+                            </span>
+                            <span className="text-xs opacity-80 mt-1">Chỉ tính cho một số người</span>
                         </button>
                     </div>
                 </div>
 
-    {
-        type === 'PRIVATE' && (
-            <div className="fade-in" style={{ marginTop: '0.5rem', padding: '1rem', background: '#fff7ed', borderRadius: 'var(--radius-lg)', border: '1px dashed #fdba74' }}>
-                <label style={{ marginBottom: '0.75rem', display: 'block', color: '#c2410c', fontWeight: 600 }}>
-                    Chọn người thụ hưởng (Ai phải trả khoản này?):
-                </label>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(110px, 1fr))', gap: '0.75rem' }}>
-                    {members.map(m => {
-                        const isSelected = beneficiaryIds.includes(m.id.toString());
-                        return (
-                            <button
-                                key={m.id}
-                                type="button"
-                                onClick={() => toggleBeneficiary(m.id.toString())}
-                                style={{
-                                    width: '100%',
-                                    padding: '0.5rem',
-                                    borderRadius: 'var(--radius-md)',
-                                    background: isSelected ? '#f97316' : 'white',
-                                    border: isSelected ? '1px solid #ea580c' : '1px solid #fed7aa',
-                                    color: isSelected ? 'white' : '#9a3412',
-                                    fontWeight: 600,
-                                    boxShadow: isSelected ? '0 2px 4px rgba(234, 88, 12, 0.3)' : 'none',
-                                    transition: 'all 0.15s ease',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    gap: '0.25rem'
-                                }}
-                            >
-                                {isSelected && <span>✓</span>}
-                                {m.name}
-                            </button>
-                        );
-                    })}
-                </div>
-            </div>
-        )
-    }
+                {type === 'PRIVATE' && (
+                    <div className="animate-in fade-in slide-in-from-top-2 duration-300 p-4 bg-orange-50/50 border border-orange-100 rounded-lg space-y-3">
+                        <Label className="text-orange-800 flex items-center gap-2">
+                            <span className="bg-orange-100 p-1 rounded-full"><Users className="w-3 h-3 text-orange-700" /></span>
+                            Chọn người thụ hưởng:
+                        </Label>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                            {members.map(m => {
+                                const isSelected = beneficiaryIds.includes(m.id.toString());
+                                return (
+                                    <button
+                                        key={m.id}
+                                        type="button"
+                                        onClick={() => toggleBeneficiary(m.id.toString())}
+                                        className={cn(
+                                            "flex items-center justify-center gap-2 p-2 rounded-md text-sm font-medium transition-all",
+                                            isSelected
+                                                ? "bg-orange-500 text-white shadow-md hover:bg-orange-600"
+                                                : "bg-white border border-gray-200 text-gray-700 hover:bg-gray-50"
+                                        )}
+                                    >
+                                        {isSelected && <Check className="w-3 h-3" />}
+                                        {m.name}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
+                )}
 
-    <button type="submit" disabled={isSubmitting} style={{ marginTop: '1.5rem', width: '100%', fontSize: '1rem', padding: '0.875rem' }}>
-        {isSubmitting ? 'Đang lưu...' : 'Lưu Hóa Đơn'}
-    </button>
-            </form >
-        </div >
+                <Button
+                    onClick={handleSubmit as any}
+                    disabled={isSubmitting}
+                    className="w-full h-11 text-base font-semibold bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 shadow-md transition-all hover:scale-[1.01]"
+                >
+                    {isSubmitting ? (
+                        <>
+                            <span className="animate-spin mr-2">⏳</span> Đang lưu...
+                        </>
+                    ) : (
+                        <>
+                            <PlusCircle className="mr-2 h-5 w-5" /> Lưu Hóa Đơn
+                        </>
+                    )}
+                </Button>
+            </CardContent>
+        </Card>
     );
 }
