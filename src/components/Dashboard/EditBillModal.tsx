@@ -15,22 +15,31 @@ export default function EditBillModal({ bill, members, onClose, onSave }: Props)
     const [description, setDescription] = useState(bill.note || '');
     const [amount, setAmount] = useState(bill.amount.toString());
 
-    // Find payer ID by name (since Bill type stores name usually, but we need ID for API)
-    // We need to match name back to ID.
+    // Find payer ID by name
     const initialPayer = members.find(m => m.name === bill.payer);
-    const [payerId, setPayerId] = useState<string>(initialPayer?.id.toString() || members[0]?.id.toString());
+    // Safe fallback if member not found or members list empty
+    const defaultPayerId = members.length > 0 ? members[0].id.toString() : '';
+    const [payerId, setPayerId] = useState<string>(initialPayer?.id.toString() || defaultPayerId);
 
     const [type, setType] = useState<'SHARED' | 'PRIVATE'>(bill.type);
 
     // For beneficiaries, we might only have names in 'bill.beneficiaries'.
-    // Need to map names back to IDs.
     const initialBenes = (bill.beneficiaries || [])
         .map(name => members.find(m => m.name === name)?.id.toString())
         .filter(id => id !== undefined) as string[];
 
     const [beneficiaryIds, setBeneficiaryIds] = useState<string[]>(initialBenes);
-    // Fix: Add date state
-    const [date, setDate] = useState(bill.date ? new Date(bill.date).toISOString().split('T')[0] : '');
+
+    // Fix: Handle invalid date
+    const formatDate = (dateString?: string | Date) => {
+        if (!dateString) return '';
+        try {
+            return new Date(dateString).toISOString().split('T')[0];
+        } catch (e) {
+            return '';
+        }
+    };
+    const [date, setDate] = useState(formatDate(bill.date));
 
     const [isSubmitting, setIsSubmitting] = useState(false);
 
