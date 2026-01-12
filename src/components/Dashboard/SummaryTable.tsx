@@ -1,8 +1,8 @@
 import React from 'react';
-import { CalculationResult } from '@/types/expense';
+import { CalculationResult, Member } from '@/types/expense';
 
 interface Props {
-    members: { name: string }[];
+    members: Member[];
     calculations: CalculationResult;
 }
 
