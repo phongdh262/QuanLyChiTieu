@@ -187,6 +187,8 @@ export default function Home() {
     splits: e.splits ? e.splits.map((s: any) => ({
       member: { name: s.member?.name || s.member || '' },
       isPaid: s.isPaid,
+      isPending: s.isPending,
+      paidAt: s.paidAt,
       amount: s.amount
     })) : []
   }));
