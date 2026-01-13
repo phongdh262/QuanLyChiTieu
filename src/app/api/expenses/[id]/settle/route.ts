@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getSession } from '@/lib/auth';
 import prisma from '@/lib/prisma';
+import { logActivity } from '@/lib/logger';
 
 export async function POST(
     request: Request,
@@ -12,6 +13,9 @@ export async function POST(
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
+        const actorId = sessionPayload.id as number;
+        const actorName = sessionPayload.name as string;
+
         const { id } = await params;
         const expenseId = parseInt(id);
         const body = await request.json();
@@ -20,12 +24,14 @@ export async function POST(
         // AUTH CHECK: Verify if user is owner of expense or Admin
         const expense = await prisma.expense.findUnique({
             where: { id: expenseId },
-            include: { payer: true }
+            include: { payer: true, sheet: true }
         });
 
         if (!expense) {
             return NextResponse.json({ error: 'Expense not found' }, { status: 404 });
         }
+
+        const workspaceId = expense.sheet.workspaceId;
 
         // Check if user is Payer OR Admin
         const userId = String(sessionPayload.id);
@@ -46,7 +52,7 @@ export async function POST(
                 const member = await prisma.member.findFirst({
                     where: {
                         name: paymentFor,
-                        workspaceId: parseInt(sessionPayload.workspaceId as string)
+                        workspaceId: workspaceId
                     }
                 });
 
@@ -70,7 +76,7 @@ export async function POST(
             const member = await prisma.member.findFirst({
                 where: {
                     name: paymentFor,
-                    workspaceId: parseInt(sessionPayload.workspaceId as string)
+                    workspaceId: workspaceId
                 }
             });
 
@@ -79,10 +85,6 @@ export async function POST(
             }
 
             // Update specific split
-            // Note: We need to find the split associated with this expense and member
-            // Since we don't have composite ID, we use findFirst/updateMany or find split ID first
-
-            // Safe approach: updateMany (should be unique per expense/member combo)
             await prisma.split.updateMany({
                 where: {
                     expenseId: expenseId,
@@ -106,6 +108,17 @@ export async function POST(
                 data: { isSettled: allPaid }
             });
 
+            // Log activity
+            await logActivity(
+                workspaceId,
+                actorId,
+                actorName,
+                'UPDATE',
+                'EXPENSE',
+                expenseId,
+                `Đã đánh dấu ${isPaid ? 'ĐÃ TRẢ' : 'CHƯA TRẢ'} cho ${paymentFor} trong khoản chi: ${expense.description}`
+            );
+
             return NextResponse.json({
                 success: true,
                 settledMember: paymentFor,
@@ -113,11 +126,7 @@ export async function POST(
             });
         }
 
-        // CASE 2: Legacy Global Settle (Toggle whole bill)
-        // Ideally we should mark all splits as paid too?
-        // For now, keep legacy behavior impacting 'isSettled' flag on Expense, 
-        // OR better: Update ALL splits to match isSettled status.
-
+        // CASE 2: Global Settle (Toggle whole bill)
         await prisma.$transaction([
             prisma.expense.update({
                 where: { id: expenseId },
@@ -128,6 +137,17 @@ export async function POST(
                 data: { isPaid: !!isSettled }
             })
         ]);
+
+        // Log activity
+        await logActivity(
+            workspaceId,
+            actorId,
+            actorName,
+            'UPDATE',
+            'EXPENSE',
+            expenseId,
+            `Đã đánh dấu ${isSettled ? 'ĐÃ QUYẾT TOÁN' : 'CHƯA QUYẾT TOÁN'} toàn bộ khoản chi: ${expense.description}`
+        );
 
         return NextResponse.json({ success: true });
     } catch (error) {
