@@ -93,7 +93,24 @@ export async function POST(
                 }
             });
 
-            return NextResponse.json({ success: true, settledMember: paymentFor });
+            // Check if all splits for this expense are now paid
+            const allSplits = await prisma.split.findMany({
+                where: { expenseId: expenseId }
+            });
+
+            const allPaid = allSplits.every(s => s.isPaid);
+
+            // Update the global expense status based on split status
+            await prisma.expense.update({
+                where: { id: expenseId },
+                data: { isSettled: allPaid }
+            });
+
+            return NextResponse.json({
+                success: true,
+                settledMember: paymentFor,
+                isGlobalSettled: allPaid
+            });
         }
 
         // CASE 2: Legacy Global Settle (Toggle whole bill)
