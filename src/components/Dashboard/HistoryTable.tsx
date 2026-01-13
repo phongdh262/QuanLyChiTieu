@@ -160,14 +160,14 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, curre
       return;
     }
 
-    // CASE: Payer confirms a PENDING split
-    if (split?.isPending && !split?.isPaid && (currentUser?.role === 'ADMIN' || currentUser?.name === bill.payer)) {
+    // CASE: Payer/Admin marks an UNPAID split as PAID
+    if (memberName && !isCurrentlyPaid && (currentUser?.role === 'ADMIN' || currentUser?.name === bill.payer)) {
       const ok = await confirm({
         title: 'Xác nhận thanh toán',
-        message: `Bạn đã nhận tiền thanh toán từ ${memberName} chưa?`,
+        message: `Bạn xác nhận ${memberName} đã thanh toán khoản này?`,
         type: 'info',
-        confirmText: 'Đã nhận',
-        cancelText: 'Chưa'
+        confirmText: 'Xác nhận',
+        cancelText: 'Hủy'
       });
       if (!ok) return;
     }
