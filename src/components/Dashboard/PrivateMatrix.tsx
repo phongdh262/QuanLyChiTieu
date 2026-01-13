@@ -40,52 +40,54 @@ export default function PrivateMatrix({ members, matrixData }: Props) {
             {
                 isOpen && (
                     <CardContent className="fade-in pt-0">
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>Người Nợ</TableHead>
-                                    {members.map(m => (
-                                        <TableHead key={m.name} className="text-right whitespace-nowrap">Trả cho {m.name}</TableHead>
-                                    ))}
-                                    <TableHead className="text-right font-bold text-destructive">Tổng Nợ</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {members.map((debtor) => {
-                                    let totalDebt = 0;
-                                    return (
-                                        <TableRow key={debtor.name}>
-                                            <TableCell className="font-medium">{debtor.name}</TableCell>
-                                            {members.map((creditor) => {
-                                                const amount = matrix[creditor.name]?.[debtor.name] || 0;
+                        <div className="overflow-x-auto">
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Người Nợ</TableHead>
+                                        {members.map(m => (
+                                            <TableHead key={m.name} className="text-right whitespace-nowrap">Trả cho {m.name}</TableHead>
+                                        ))}
+                                        <TableHead className="text-right font-bold text-destructive">Tổng Nợ</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {members.map((debtor) => {
+                                        let totalDebt = 0;
+                                        return (
+                                            <TableRow key={debtor.name}>
+                                                <TableCell className="font-medium">{debtor.name}</TableCell>
+                                                {members.map((creditor) => {
+                                                    const amount = matrix[creditor.name]?.[debtor.name] || 0;
 
-                                                if (creditor.name === debtor.name) {
-                                                    return <TableCell key={creditor.name} className="bg-muted/50" />;
-                                                }
+                                                    if (creditor.name === debtor.name) {
+                                                        return <TableCell key={creditor.name} className="bg-muted/50" />;
+                                                    }
 
-                                                if (amount > 0) {
-                                                    totalDebt += amount;
+                                                    if (amount > 0) {
+                                                        totalDebt += amount;
+                                                        return (
+                                                            <TableCell key={creditor.name} className="text-right font-bold bg-yellow-50 text-yellow-900 dark:bg-yellow-900/20 dark:text-yellow-200">
+                                                                {formatMoney(amount)}
+                                                            </TableCell>
+                                                        );
+                                                    }
+
                                                     return (
-                                                        <TableCell key={creditor.name} className="text-right font-bold bg-yellow-50 text-yellow-900 dark:bg-yellow-900/20 dark:text-yellow-200">
-                                                            {formatMoney(amount)}
+                                                        <TableCell key={creditor.name} className="text-right text-muted-foreground">
+                                                            -
                                                         </TableCell>
                                                     );
-                                                }
-
-                                                return (
-                                                    <TableCell key={creditor.name} className="text-right text-muted-foreground">
-                                                        -
-                                                    </TableCell>
-                                                );
-                                            })}
-                                            <TableCell className="text-right font-bold text-destructive">
-                                                {totalDebt > 0 ? formatMoney(totalDebt) : '-'}
-                                            </TableCell>
-                                        </TableRow>
-                                    );
-                                })}
-                            </TableBody>
-                        </Table>
+                                                })}
+                                                <TableCell className="text-right font-bold text-destructive">
+                                                    {totalDebt > 0 ? formatMoney(totalDebt) : '-'}
+                                                </TableCell>
+                                            </TableRow>
+                                        );
+                                    })}
+                                </TableBody>
+                            </Table>
+                        </div>
                     </CardContent>
                 )
             }

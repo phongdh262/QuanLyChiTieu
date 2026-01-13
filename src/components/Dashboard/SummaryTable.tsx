@@ -30,35 +30,37 @@ export default function SummaryTable({ members, calculations }: Props) {
 
             {isOpen && (
                 <CardContent className="fade-in pt-0">
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Thành viên</TableHead>
-                                <TableHead className="text-right">Tổng Tiền</TableHead>
-                                <TableHead className="text-right">Dư / Nợ Tiền Ăn Chung</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {members.map(member => {
-                                const m = member.name;
-                                const s = stats[m] || { sharedPaid: 0, totalPaid: 0 };
-                                const bal = balances[m] || 0;
-                                const privateBal = privateBalances[m] || 0;
-                                const sharedBalance = bal - privateBal;
+                    <div className="overflow-x-auto">
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Thành viên</TableHead>
+                                    <TableHead className="text-right">Tổng Tiền</TableHead>
+                                    <TableHead className="text-right">Dư / Nợ Tiền Ăn Chung</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {members.map(member => {
+                                    const m = member.name;
+                                    const s = stats[m] || { sharedPaid: 0, totalPaid: 0 };
+                                    const bal = balances[m] || 0;
+                                    const privateBal = privateBalances[m] || 0;
+                                    const sharedBalance = bal - privateBal;
 
-                                const balText = sharedBalance === 0 ? '-' : (sharedBalance > 0 ? `+${formatMoney(sharedBalance)}` : formatMoney(sharedBalance));
-                                const textClass = sharedBalance > 0 ? 'text-green-600 font-bold' : (sharedBalance < 0 ? 'text-red-500 font-bold' : '');
+                                    const balText = sharedBalance === 0 ? '-' : (sharedBalance > 0 ? `+${formatMoney(sharedBalance)}` : formatMoney(sharedBalance));
+                                    const textClass = sharedBalance > 0 ? 'text-green-600 font-bold' : (sharedBalance < 0 ? 'text-red-500 font-bold' : '');
 
-                                return (
-                                    <TableRow key={member.id}>
-                                        <TableCell className="font-medium">{member.name}</TableCell>
-                                        <TableCell className="text-right font-bold">{formatMoney(s.sharedPaid)}</TableCell>
-                                        <TableCell className={cn("text-right", textClass)}>{balText}</TableCell>
-                                    </TableRow>
-                                );
-                            })}
-                        </TableBody>
-                    </Table>
+                                    return (
+                                        <TableRow key={member.id}>
+                                            <TableCell className="font-medium">{member.name}</TableCell>
+                                            <TableCell className="text-right font-bold">{formatMoney(s.sharedPaid)}</TableCell>
+                                            <TableCell className={cn("text-right", textClass)}>{balText}</TableCell>
+                                        </TableRow>
+                                    );
+                                })}
+                            </TableBody>
+                        </Table>
+                    </div>
                 </CardContent>
             )}
         </Card>
