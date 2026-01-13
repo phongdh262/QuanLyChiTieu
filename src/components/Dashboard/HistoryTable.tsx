@@ -149,8 +149,8 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, curre
   };
 
   const handleToggleSettle = async (bill: Bill, memberName?: string) => {
-    // Permission Check
-    const canSettleGlobal = currentUser?.role === 'ADMIN' || currentUser?.name === bill.payer;
+    // Permission Check: Strictly Payer only
+    const canSettleGlobal = currentUser?.name === bill.payer;
 
     // Special logic for unmarking a PAID split
     const split = memberName ? bill.splits?.find(s => s.member.name === memberName) : null;
@@ -161,8 +161,8 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, curre
       return;
     }
 
-    // CASE: Payer/Admin marks an UNPAID split as PAID
-    if (memberName && !isCurrentlyPaid && (currentUser?.role === 'ADMIN' || currentUser?.name === bill.payer)) {
+    // CASE: Payer marks an UNPAID split as PAID
+    if (memberName && !isCurrentlyPaid && currentUser?.name === bill.payer) {
       const ok = await confirm({
         title: 'Xác nhận thanh toán',
         message: `Bạn xác nhận ${memberName} đã thanh toán khoản này?`,
@@ -333,8 +333,9 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, curre
                 ) : (
                   filteredBills.map((b) => {
                     const isSelected = selectedIds.has(b.id);
-                    const canSettleGlobal = currentUser?.role === 'ADMIN' || currentUser?.name === b.payer;
-                    const canDelete = currentUser?.name === b.payer;
+                    // Permission: Strictly Payer only
+                    const isPayer = currentUser?.name === b.payer;
+                    const canDelete = isPayer;
 
                     return (
                       <TableRow
@@ -403,9 +404,11 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, curre
                               // - If Paid: Only Payer/Admin can untoggle
                               // - If Pending: Debtor can cancel, Payer/Admin can confirm
                               // - If Unpaid: Both can mark as Paid (Debtor -> Pending, Payer -> Paid)
+                              const isBeneficiary = currentUser?.name === name;
+
                               const canToggle = isPaid
-                                ? (currentUser?.name === name) // Debtors can revert their own paid status
-                                : (canSettleGlobal || currentUser?.name === name);
+                                ? isPayer // Only Payer can untoggle 'Paid'
+                                : (isPayer || isBeneficiary); // Payer or Debtor can mark 'Paid'
 
                               const formattedPaidAt = paidAt ? new Date(paidAt).toLocaleString('vi-VN', {
                                 day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit'
@@ -469,15 +472,15 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, curre
                         <TableCell className="text-center py-4">
                           <button
                             onClick={() => handleToggleSettle(b)}
-                            disabled={!canSettleGlobal}
+                            disabled={!isPayer}
                             className={cn(
                               "relative inline-flex items-center justify-center w-8 h-8 rounded-full transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-100",
-                              canSettleGlobal ? "cursor-pointer" : "cursor-not-allowed opacity-40 grayscale",
+                              isPayer ? "cursor-pointer" : "cursor-not-allowed opacity-40 grayscale",
                               b.isSettled
                                 ? "bg-green-100 text-green-600 hover:bg-green-200 ring-1 ring-green-200 shadow-sm"
                                 : "bg-white text-slate-300 border-2 border-slate-200 hover:border-blue-400 hover:text-blue-500"
                             )}
-                            title={!canSettleGlobal ? "Chỉ người chi mới có quyền xác nhận toàn bộ" : (b.isSettled ? "Hóa đơn đã quyết toán xong (Trạng thái đã khóa)" : "Đánh dấu tất cả đã trả")}
+                            title={!isPayer ? "Chỉ người chi mới có quyền xác nhận toàn bộ" : (b.isSettled ? "Hóa đơn đã quyết toán xong (Trạng thái đã khóa)" : "Đánh dấu tất cả đã trả")}
                           >
                             {b.isSettled ? (
                               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
