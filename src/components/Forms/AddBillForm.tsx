@@ -144,16 +144,16 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
             </CardHeader>
 
             <CardContent className="p-6 pt-2 space-y-5">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="md:col-span-2 space-y-2">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
                         <Label>Nội dung chi tiêu <span className="text-red-500">*</span></Label>
                         <div className="relative">
-                            <Wallet className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                            <Wallet className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                             <Input
                                 placeholder="Ví dụ: Ăn tối, Tiền điện..."
                                 value={description}
                                 onChange={e => setDescription(e.target.value)}
-                                className="pl-9"
+                                className="pl-9 h-10"
                                 autoFocus
                             />
                         </div>
@@ -162,22 +162,24 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
                         <Label>Ngày</Label>
                         <Popover>
                             <PopoverTrigger asChild>
-                                <Button
-                                    variant={"outline"}
-                                    className={cn(
-                                        "w-full h-10 pl-3 text-left font-normal",
-                                        !date && "text-muted-foreground"
-                                    )}
-                                >
-                                    {date ? (
-                                        format(date, "dd/MM/yyyy")
-                                    ) : (
-                                        <span>Chọn ngày</span>
-                                    )}
-                                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                </Button>
+                                <div className="relative cursor-pointer">
+                                    <CalendarIcon className="absolute left-3 top-3 h-4 w-4 text-muted-foreground z-10" />
+                                    <Button
+                                        variant={"outline"}
+                                        className={cn(
+                                            "w-full h-10 pl-9 text-left font-normal border-input bg-background hover:bg-slate-50 transition-colors justify-start",
+                                            !date && "text-muted-foreground"
+                                        )}
+                                    >
+                                        {date ? (
+                                            format(date, "dd/MM/yyyy")
+                                        ) : (
+                                            "Chọn ngày"
+                                        )}
+                                    </Button>
+                                </div>
                             </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0" align="start">
+                            <PopoverContent className="w-auto p-0" align="end">
                                 <Calendar
                                     mode="single"
                                     selected={date}
@@ -186,6 +188,7 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
                                         date > new Date() || date < new Date("1900-01-01")
                                     }
                                     initialFocus
+                                    locale={vi}
                                 />
                             </PopoverContent>
                         </Popover>
@@ -196,20 +199,20 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
                     <div className="space-y-2">
                         <Label>Số tiền (VNĐ) <span className="text-red-500">*</span></Label>
                         <div className="relative">
-                            <Calculator className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                            <Calculator className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                             <Input
                                 type="number"
                                 placeholder="0"
                                 value={amount}
                                 onChange={e => setAmount(e.target.value)}
-                                className="pl-9 font-mono font-bold text-lg text-green-700"
+                                className="pl-9 h-10 font-mono font-bold text-lg text-green-700"
                             />
                         </div>
                     </div>
                     <div className="space-y-2">
                         <Label>Người chi <span className="text-red-500">*</span></Label>
                         <div className="relative">
-                            <Users className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                            <Users className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                             <select
                                 className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 pl-9 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                                 value={payerId}
