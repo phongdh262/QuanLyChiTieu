@@ -4,7 +4,7 @@ import prisma from '@/lib/prisma';
 
 export async function POST(
     request: Request,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
         const sessionPayload = await getSession();
@@ -12,7 +12,8 @@ export async function POST(
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        const expenseId = parseInt(params.id);
+        const { id } = await params;
+        const expenseId = parseInt(id);
         const body = await request.json();
         const { isSettled } = body;
 
