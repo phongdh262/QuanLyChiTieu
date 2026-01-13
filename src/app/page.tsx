@@ -9,12 +9,15 @@ import AddBillForm from '@/components/Forms/AddBillForm';
 import SheetSelector from '@/components/Dashboard/SheetSelector';
 import ActivityLogList from '@/components/Dashboard/ActivityLogList';
 
+import Link from 'next/link';
+
 import MemberManager from '@/components/Dashboard/MemberManager';
 import StatisticsSection from '@/components/Dashboard/StatisticsSection';
 import Header from '@/components/Layout/Header';
 import Footer from '@/components/Layout/Footer';
 
 import { Bill, Member, CalculationResult, DebtTransaction } from '@/types/expense';
+import { calculateFinalBalances, calculatePrivateMatrix, calculateDebts } from '@/services/expenseService';
 
 export default function Home() {
   const [loading, setLoading] = useState(true);
@@ -119,6 +122,57 @@ export default function Home() {
     fetchWorkspace();
   };
 
+  const handleOptimisticAdd = (newBill: Bill) => {
+    if (!sheetData || !members) return;
+
+    // 1. Update List
+    const updatedExpenses = [...sheetData.expenses, {
+      ...newBill,
+      // Mock relation structures if needed by UI, though we mapped them in 'bills' variable
+      payer: { name: newBill.payer },
+      splits: (newBill.beneficiaries || []).map(name => ({ member: { name } }))
+    }];
+
+    // Update raw sheet data so 'bills' mapping in render works
+    setSheetData({
+      ...sheetData,
+      expenses: updatedExpenses
+    });
+
+    // 2. Recalculate Logic
+    // We need to map the raw expenses back to Bill[] format for the service
+    const memberNames = members.map(m => m.name);
+
+    // We can't just use 'bills' const here because it's derived in render. 
+    // We must reconstruct bills array from the updatedExpenses
+    const currentBills: Bill[] = updatedExpenses.map((e: any) => ({
+      id: e.id,
+      amount: e.amount,
+      payer: e.payer.name,
+      type: e.type,
+      beneficiaries: e.splits.map((s: any) => s.member.name),
+      note: e.description,
+      date: e.date
+    }));
+
+    const { balances, stats, privateBalances } = calculateFinalBalances(memberNames, currentBills);
+    const { matrix: pMatrix, totals: matrixTotals } = calculatePrivateMatrix(memberNames, currentBills);
+    const globalDebts = calculateDebts(balances);
+
+    // Update calculations state
+    setCalculations({
+      balances,
+      stats,
+      privateBalances,
+      matrix: { matrix: pMatrix, totals: matrixTotals },
+      globalDebts,
+      // privateDebts is missing in state type above but logic exists in service. 
+      // We can ignore or add if needed, but 'calculations' state type in line 30 might need update if we used it.
+      // Looking at line 30: CalculationResult & { globalDebts: ...; matrix: ... }
+      // It doesn't seem to strictly require privateDebts.
+    } as any);
+  };
+
   if (!workspace && !loading) return <div style={{ padding: 20 }}>No Workspace Found. Seed database.</div>;
   if (!sheetData && !loading) return <div style={{ padding: 20 }}>No Sheet Selected. Create one.</div>;
   if (loading && !sheetData) return <div style={{ padding: 20 }}>Loading...</div>;
@@ -159,6 +213,7 @@ export default function Home() {
                 members={members}
                 sheetId={currentSheetId!}
                 onAdd={reload}
+                onOptimisticAdd={handleOptimisticAdd}
                 initialData={billToDuplicate}
               />
               {currentUser?.role === 'ADMIN' && (

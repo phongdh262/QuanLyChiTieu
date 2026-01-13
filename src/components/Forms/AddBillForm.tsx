@@ -27,9 +27,10 @@ interface Props {
         type: 'SHARED' | 'PRIVATE';
         beneficiaryIds?: number[];
     } | null;
+    onOptimisticAdd?: (data: any) => void;
 }
 
-export default function AddBillForm({ members, sheetId, onAdd, initialData }: Props) {
+export default function AddBillForm({ members, sheetId, onAdd, initialData, onOptimisticAdd }: Props) {
     const { addToast } = useToast();
     const [description, setDescription] = useState('');
     const [amount, setAmount] = useState('');
@@ -75,10 +76,27 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData }: Pr
             addToast('Vui lòng chọn người thụ hưởng cho chi tiêu riêng', 'warning');
             return;
         }
-
         setIsSubmitting(true);
+
+        const payerName = members.find(m => m.id === parseInt(payerId))?.name || 'Unknown';
+        const beneficiaryNames = beneficiaryIds.map(id => members.find(m => m.id === parseInt(id))?.name || 'Unknown');
+
+        // OPTIMISTIC UPDATE
+        if (onOptimisticAdd) {
+            onOptimisticAdd({
+                id: Date.now(), // Temp ID
+                amount: parseFloat(amount),
+                payer: payerName,
+                type,
+                beneficiaries: type === 'PRIVATE' ? beneficiaryNames : members.map(m => m.name),
+                note: description,
+                date: date ? date.toISOString() : new Date().toISOString()
+            });
+        }
+
         try {
             const res = await fetch('/api/expenses', {
+                // ... (rest same)
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
