@@ -1,4 +1,16 @@
+import React, { useEffect, useState } from 'react';
 import { Member } from '@/types/expense';
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { History, ChevronDown } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+interface Log {
+    id: number;
+    description: string;
+    actorName: string;
+    action: string;
+    createdAt: string;
+}
 
 interface Props {
     members: Member[];
@@ -14,7 +26,7 @@ export default function ActivityLogList({ members }: Props) {
         if (isOpen && logs.length === 0) {
             fetchLogs();
         }
-    }, [isOpen]);
+    }, [isOpen, logs.length]);
 
     const fetchLogs = async () => {
         setLoading(true);
