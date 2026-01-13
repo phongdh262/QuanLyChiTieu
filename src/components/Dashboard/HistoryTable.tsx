@@ -499,18 +499,26 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, curre
                             >
                               <Edit className="w-4 h-4" />
                             </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-9 w-9 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all active:scale-90"
-                              onClick={() => handleDeleteClick(b.id)}
-                            >
-                              {deletingId === b.id ? (
-                                <div className="w-4 h-4 border-2 border-red-500 border-t-transparent rounded-full animate-spin" />
-                              ) : (
-                                <Trash2 className="w-4 h-4" />
-                              )}
-                            </Button>
+                            <div title={canSettleGlobal ? "Xóa hóa đơn" : "Chỉ người tạo mới được xóa"}>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className={cn(
+                                  "h-9 w-9 rounded-xl transition-all active:scale-90",
+                                  canSettleGlobal
+                                    ? "text-slate-400 hover:text-red-600 hover:bg-red-50"
+                                    : "text-slate-200 cursor-not-allowed hover:bg-transparent"
+                                )}
+                                onClick={() => canSettleGlobal && handleDeleteClick(b.id)}
+                                disabled={!canSettleGlobal}
+                              >
+                                {deletingId === b.id ? (
+                                  <div className="w-4 h-4 border-2 border-red-500 border-t-transparent rounded-full animate-spin" />
+                                ) : (
+                                  <Trash2 className="w-4 h-4" />
+                                )}
+                              </Button>
+                            </div>
                           </div>
                         </TableCell>
                       </TableRow>

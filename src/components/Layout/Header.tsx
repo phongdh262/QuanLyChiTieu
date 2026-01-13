@@ -72,19 +72,25 @@ export default function Header({ user, title, onUpdated }: Props) {
                                 variant="ghost"
                                 size="icon"
                                 className={cn(
-                                    "relative h-11 w-11 rounded-2xl transition-all duration-500",
+                                    "relative h-12 w-12 rounded-2xl transition-all duration-500 overflow-visible group/bell",
                                     pendingCount > 0
-                                        ? "bg-indigo-50/80 text-indigo-600 hover:bg-indigo-100 shadow-indigo-100/50 shadow-inner"
-                                        : "text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+                                        ? "bg-white/80 text-indigo-600 shadow-indigo-100/50 shadow-lg ring-1 ring-indigo-50"
+                                        : "bg-white/40 text-slate-400 hover:bg-white/60 hover:text-slate-600 hover:shadow-md"
                                 )}
                                 onClick={() => setIsConfirmModalOpen(true)}
                             >
+                                <div className={cn(
+                                    "absolute inset-0 bg-indigo-50/50 rounded-2xl opacity-0 group-hover/bell:opacity-100 transition-opacity duration-500",
+                                    pendingCount > 0 && "animate-pulse"
+                                )} />
                                 <Bell className={cn(
-                                    "w-5 h-5 transition-all duration-500",
-                                    pendingCount > 0 && "animate-float fill-indigo-200 text-indigo-600"
+                                    "w-6 h-6 transition-all duration-500 relative z-10",
+                                    pendingCount > 0
+                                        ? "animate-[swing_2s_ease-in-out_infinite] fill-indigo-100 text-indigo-600 drop-shadow-sm"
+                                        : "group-hover/bell:scale-110 group-hover/bell:rotate-12"
                                 )} />
                                 {pendingCount > 0 && (
-                                    <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-gradient-to-tr from-rose-500 via-pink-500 to-orange-400 text-[10px] font-black text-white ring-4 ring-white shadow-lg animate-pulse">
+                                    <span className="absolute -top-1.5 -right-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-tr from-rose-500 via-red-500 to-orange-500 text-[10px] font-black text-white ring-4 ring-white/90 shadow-lg animate-in zoom-in duration-300 z-20">
                                         {pendingCount}
                                     </span>
                                 )}

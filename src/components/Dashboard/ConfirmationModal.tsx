@@ -7,7 +7,17 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/components/ui/ToastProvider';
 import { useConfirm } from '@/components/ui/ConfirmProvider';
-import { Check, Clock, History as HistoryIcon, Search, User as UserIcon, Send, X } from 'lucide-react';
+import {
+    Check,
+    Clock,
+    History as HistoryIcon,
+    Search,
+    User as UserIcon,
+    Send,
+    X,
+    BellRing,
+    Filter
+} from 'lucide-react';
 import { format } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
@@ -59,13 +69,13 @@ export default function ConfirmationModal({ open, onOpenChange, onUpdated }: Pro
     const handleAction = async (splitId: number, action: 'confirm' | 'reject') => {
         const isReject = action === 'reject';
         const ok = await confirm({
-            title: isReject ? 'Từ chối thanh toán?' : 'Xác nhận thanh toán',
+            title: isReject ? 'Từ chối thanh toán?' : 'Nhận tiền thành công?',
             message: isReject
-                ? 'Bạn chắc chắn muốn từ chối yêu cầu này? Người nợ sẽ phải gửi lại yêu cầu.'
-                : 'Bạn đã thực sự nhận được tiền từ người này chưa?',
+                ? 'Người yêu cầu sẽ nhận được thông báo bị từ chối và phải gửi lại yêu cầu mới.'
+                : 'Xác nhận rằng bạn ĐÃ nhận được tiền thực tế (Tiền mặt/Chuyển khoản).',
             type: isReject ? 'danger' : 'info',
-            confirmText: isReject ? 'Từ chối' : 'Đã nhận tiền',
-            cancelText: 'Hủy'
+            confirmText: isReject ? 'Từ chối ngay' : 'Đã nhận đủ tiền',
+            cancelText: 'Hủy bỏ'
         });
 
         if (!ok) return;
@@ -78,7 +88,7 @@ export default function ConfirmationModal({ open, onOpenChange, onUpdated }: Pro
             });
 
             if (res.ok) {
-                addToast(isReject ? 'Đã từ chối bàn giao' : 'Đã xác nhận thanh toán', 'success');
+                addToast(isReject ? 'Đã từ chối yêu cầu' : 'Xác nhận thanh toán thành công', 'success');
                 mutate();
                 onUpdated();
             } else {
@@ -102,164 +112,180 @@ export default function ConfirmationModal({ open, onOpenChange, onUpdated }: Pro
         );
     }, [data, activeTab, searchTerm]);
 
+    const getTabLabel = (tab: TabType) => {
+        switch (tab) {
+            case 'pendingPayer': return 'Cần duyệt';
+            case 'pendingDebtor': return 'Đã gửi';
+            case 'history': return 'Lịch sử';
+        }
+    };
+
+    const getTabIcon = (tab: TabType) => {
+        switch (tab) {
+            case 'pendingPayer': return <BellRing className="w-4 h-4" />;
+            case 'pendingDebtor': return <Send className="w-4 h-4" />;
+            case 'history': return <HistoryIcon className="w-4 h-4" />;
+        }
+    };
+
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-md p-0 overflow-hidden rounded-2xl border-none shadow-2xl">
-                <DialogHeader className="p-6 pb-2 bg-gradient-to-r from-indigo-50 to-white">
-                    <DialogTitle className="flex items-center gap-2 text-indigo-700 text-xl font-extrabold uppercase tracking-tight">
-                        <Check className="w-6 h-6 text-indigo-500" />
-                        Trung tâm thông báo
+            <DialogContent className="max-w-xl p-0 overflow-hidden rounded-3xl border-none shadow-2xl bg-[#fafafa]">
+                <DialogHeader className="p-6 pb-4 bg-white border-b border-indigo-50/50 sticky top-0 z-10">
+                    <DialogTitle className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                            <div className="p-2.5 bg-indigo-50 rounded-xl text-indigo-600">
+                                <BellRing className="w-6 h-6" />
+                            </div>
+                            <div>
+                                <h2 className="text-xl font-black text-slate-800 tracking-tight">Trung tâm hoạt động</h2>
+                                <p className="text-xs font-medium text-slate-400 uppercase tracking-widest mt-0.5">Thông báo & Sự kiện</p>
+                            </div>
+                        </div>
+                        <div className="flex bg-slate-100/80 p-1 rounded-xl">
+                            {(['pendingPayer', 'pendingDebtor', 'history'] as TabType[]).map((tab) => (
+                                <button
+                                    key={tab}
+                                    onClick={() => setActiveTab(tab)}
+                                    className={cn(
+                                        "px-4 py-2 rounded-lg text-xs font-bold transition-all duration-300 flex items-center gap-2",
+                                        activeTab === tab
+                                            ? "bg-white text-indigo-700 shadow-sm scale-100"
+                                            : "text-slate-500 hover:text-slate-700 hover:bg-white/50"
+                                    )}
+                                >
+                                    {getTabIcon(tab)}
+                                    {getTabLabel(tab)}
+                                    <span className={cn(
+                                        "ml-1 px-1.5 py-0.5 rounded-full text-[9px]",
+                                        activeTab === tab ? "bg-indigo-100 text-indigo-700" : "bg-slate-200 text-slate-600"
+                                    )}>
+                                        {data ? (data[tab]?.length || 0) : 0}
+                                    </span>
+                                </button>
+                            ))}
+                        </div>
                     </DialogTitle>
                 </DialogHeader>
 
-                {/* Tabs Switcher */}
-                <div className="px-6 flex gap-1 mt-4">
-                    <div className="flex p-1 bg-slate-100 rounded-xl w-full">
-                        <button
-                            onClick={() => setActiveTab('pendingPayer')}
-                            className={cn(
-                                "flex-1 flex flex-col items-center justify-center py-2 px-1 text-[10px] font-bold rounded-lg transition-all gap-1",
-                                activeTab === 'pendingPayer' ? "bg-white text-indigo-600 shadow-sm" : "text-slate-500 hover:text-slate-700"
-                            )}
-                        >
-                            <Clock className="w-4 h-4" />
-                            Cần xác nhận ({data?.pendingPayer?.length || 0})
-                        </button>
-                        <button
-                            onClick={() => setActiveTab('pendingDebtor')}
-                            className={cn(
-                                "flex-1 flex flex-col items-center justify-center py-2 px-1 text-[10px] font-bold rounded-lg transition-all gap-1",
-                                activeTab === 'pendingDebtor' ? "bg-white text-indigo-600 shadow-sm" : "text-slate-500 hover:text-slate-700"
-                            )}
-                        >
-                            <Send className="w-4 h-4" />
-                            Đã gửi ({data?.pendingDebtor?.length || 0})
-                        </button>
-                        <button
-                            onClick={() => setActiveTab('history')}
-                            className={cn(
-                                "flex-1 flex flex-col items-center justify-center py-2 px-1 text-[10px] font-bold rounded-lg transition-all gap-1",
-                                activeTab === 'history' ? "bg-white text-indigo-600 shadow-sm" : "text-slate-500 hover:text-slate-700"
-                            )}
-                        >
-                            <HistoryIcon className="w-4 h-4" />
-                            Lịch sử ({data?.history?.length || 0})
-                        </button>
-                    </div>
-                </div>
-
-                {/* Search Bar */}
-                <div className="px-6 mt-4">
-                    <div className="relative">
-                        <Search className="absolute left-3 top-2.5 w-4 h-4 text-slate-400" />
-                        <Input
-                            placeholder="Tìm kiếm theo tên, nội dung..."
-                            className="pl-9 h-9 bg-slate-50 border-slate-100 rounded-lg text-sm focus-visible:ring-indigo-500"
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                        />
-                    </div>
-                </div>
-
-                <div className="space-y-4 p-6 pt-4 max-h-[450px] overflow-y-auto min-h-[350px]">
-                    {filteredList.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center py-20 text-slate-400 italic">
-                            {searchTerm ? (
-                                <p>Không tìm thấy kết quả nào khớp với &quot;{searchTerm}&quot;</p>
-                            ) : activeTab === 'pendingPayer' ? (
-                                <>
-                                    <Clock className="w-12 h-12 mb-3 opacity-20" />
-                                    <p>Hết việc rồi! Không có yêu cầu nào.</p>
-                                </>
-                            ) : activeTab === 'pendingDebtor' ? (
-                                <>
-                                    <Send className="w-12 h-12 mb-3 opacity-20" />
-                                    <p>Bạn chưa gửi yêu cầu trả tiền nào.</p>
-                                </>
-                            ) : (
-                                <>
-                                    <HistoryIcon className="w-12 h-12 mb-3 opacity-20" />
-                                    <p>Chưa có lịch sử xác nhận gần đây.</p>
-                                </>
-                            )}
+                <div className="bg-slate-50/50 min-h-[500px] flex flex-col">
+                    {/* Search & Filter Bar */}
+                    <div className="px-6 py-4 flex gap-3">
+                        <div className="relative flex-1 group">
+                            <Search className="absolute left-3 top-2.5 w-4 h-4 text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
+                            <Input
+                                placeholder="Tìm kiếm giao dịch..."
+                                className="pl-10 h-10 bg-white border-slate-100 rounded-xl text-sm focus-visible:ring-2 focus-visible:ring-indigo-100 shadow-sm transition-all"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                            />
                         </div>
-                    ) : (
-                        filteredList.map(p => (
-                            <div key={p.id} className={cn(
-                                "p-4 rounded-xl border space-y-3 transition-all",
-                                activeTab === 'pendingPayer'
-                                    ? "border-amber-100 bg-amber-50/20 hover:bg-amber-50/40"
-                                    : activeTab === 'pendingDebtor'
-                                        ? "border-blue-100 bg-blue-50/20"
-                                        : "border-slate-100 bg-slate-50/50 hover:bg-slate-50"
-                            )}>
-                                <div className="flex justify-between items-start">
-                                    <div className="flex items-center gap-2">
-                                        <div className={cn(
-                                            "w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold shadow-sm ring-2 ring-white",
-                                            activeTab === 'pendingPayer' ? "bg-amber-100 text-amber-700" : "bg-indigo-100 text-indigo-700"
-                                        )}>
-                                            {p.member.name.charAt(0).toUpperCase()}
-                                        </div>
-                                        <div>
-                                            <p className="font-bold text-slate-800 text-sm">
-                                                {activeTab === 'pendingDebtor' ? `Tới: ${p.expense.payer.name}` : p.member.name}
-                                            </p>
-                                            <p className="text-[10px] text-slate-500 flex items-center gap-1">
-                                                <Clock className="w-3 h-3" />
-                                                {p.paidAt ? format(new Date(p.paidAt), 'HH:mm dd/MM', { locale: vi }) : '---'}
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <div className="text-right">
-                                        <p className={cn(
-                                            "font-black font-mono text-sm",
-                                            activeTab === 'pendingPayer' ? "text-amber-600" : "text-indigo-600"
-                                        )}>
-                                            {p.amount.toLocaleString()}đ
-                                        </p>
-                                        <span className={cn(
-                                            "text-[9px] font-bold px-1.5 py-0.5 rounded-full uppercase tracking-wider",
-                                            activeTab === 'pendingPayer' ? "bg-amber-100 text-amber-700" :
-                                                activeTab === 'pendingDebtor' ? "bg-blue-100 text-blue-700" : "bg-green-100 text-green-700"
-                                        )}>
-                                            {activeTab === 'pendingPayer' ? 'CẦN XÁC NHẬN' :
-                                                activeTab === 'pendingDebtor' ? 'CHỜ XÁC NHẬN' : 'ĐÃ HOÀN TẤT'}
-                                        </span>
-                                    </div>
-                                </div>
+                        <Button variant="outline" className="h-10 w-10 p-0 rounded-xl border-slate-200 bg-white hover:bg-slate-50 text-slate-500">
+                            <Filter className="w-4 h-4" />
+                        </Button>
+                    </div>
 
-                                <div className="bg-white/90 p-2.5 rounded-lg border border-slate-100 shadow-sm">
-                                    <div className="flex items-start gap-2">
-                                        <UserIcon className="w-3 h-3 text-slate-400 mt-0.5" />
-                                        <p className="text-[11px] text-slate-600 leading-relaxed italic">
-                                            {p.expense.description}
-                                        </p>
-                                    </div>
+                    {/* Content List */}
+                    <div className="flex-1 overflow-y-auto px-6 pb-6 space-y-4">
+                        {filteredList.length === 0 ? (
+                            <div className="flex flex-col items-center justify-center py-20 text-center animate-in fade-in duration-500">
+                                <div className="w-24 h-24 bg-indigo-50 rounded-full flex items-center justify-center mb-4">
+                                    {activeTab === 'pendingPayer' && <BellRing className="w-10 h-10 text-indigo-200" />}
+                                    {activeTab === 'pendingDebtor' && <Send className="w-10 h-10 text-indigo-200" />}
+                                    {activeTab === 'history' && <HistoryIcon className="w-10 h-10 text-indigo-200" />}
                                 </div>
-
-                                {activeTab === 'pendingPayer' && (
-                                    <div className="flex gap-2">
-                                        <Button
-                                            variant="outline"
-                                            className="flex-1 h-9 border-red-200 text-red-600 hover:bg-red-50 font-bold rounded-xl active:scale-[0.98] transition-all"
-                                            onClick={() => handleAction(p.id, 'reject')}
-                                        >
-                                            <X className="w-4 h-4 mr-2" />
-                                            Từ chối
-                                        </Button>
-                                        <Button
-                                            className="flex-[2] h-9 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl shadow-md active:scale-[0.98] transition-all"
-                                            onClick={() => handleAction(p.id, 'confirm')}
-                                        >
-                                            <Check className="w-4 h-4 mr-2" />
-                                            Xác nhận
-                                        </Button>
-                                    </div>
-                                )}
+                                <h3 className="text-slate-900 font-bold mb-1">Không có dữ liệu</h3>
+                                <p className="text-slate-400 text-sm max-w-[200px]">
+                                    {searchTerm ? 'Không tìm thấy kết quả phù hợp.' : 'Hiện tại chưa có hoạt động nào trong mục này.'}
+                                </p>
                             </div>
-                        ))
-                    )}
+                        ) : (
+                            filteredList.map((p, idx) => (
+                                <div
+                                    key={p.id}
+                                    className={cn(
+                                        "premium-card p-5 group transition-all duration-300 hover:-translate-y-1 relative overflow-hidden",
+                                        activeTab === 'pendingPayer' && "border-amber-100/50 bg-gradient-to-br from-white to-amber-50/30",
+                                        activeTab === 'pendingDebtor' && "border-blue-100/50 bg-gradient-to-br from-white to-blue-50/30"
+                                    )}
+                                    style={{ animationDelay: `${idx * 50}ms` }}
+                                >
+                                    <div className="flex justify-between items-start mb-4">
+                                        <div className="flex items-center gap-3">
+                                            <div className={cn(
+                                                "w-10 h-10 rounded-2xl flex items-center justify-center text-sm font-black shadow-lg",
+                                                activeTab === 'pendingPayer' ? "bg-gradient-to-br from-amber-400 to-orange-500 text-white shadow-amber-200" :
+                                                    activeTab === 'pendingDebtor' ? "bg-gradient-to-br from-blue-400 to-indigo-500 text-white shadow-blue-200" :
+                                                        "bg-gradient-to-br from-slate-100 to-slate-200 text-slate-500"
+                                            )}>
+                                                {p.member.name.charAt(0).toUpperCase()}
+                                            </div>
+                                            <div>
+                                                <div className="flex items-center gap-2">
+                                                    <span className="font-bold text-slate-800">
+                                                        {activeTab === 'pendingDebtor' ? `Gửi tới: ${p.expense.payer.name}` : p.member.name}
+                                                    </span>
+                                                    {activeTab === 'pendingPayer' && (
+                                                        <span className="px-1.5 py-0.5 bg-amber-100 text-amber-700 text-[9px] font-bold rounded-md uppercase tracking-wide">Mới</span>
+                                                    )}
+                                                </div>
+                                                <div className="flex items-center gap-1.5 mt-0.5 text-xs text-slate-400 font-medium">
+                                                    <Clock className="w-3 h-3" />
+                                                    {p.paidAt ? format(new Date(p.paidAt), 'HH:mm dd/MM', { locale: vi }) : '---'}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="text-right">
+                                            <div className={cn(
+                                                "font-black text-lg tracking-tight tabular-nums",
+                                                activeTab === 'pendingPayer' ? "text-amber-600" : "text-indigo-600"
+                                            )}>
+                                                {p.amount.toLocaleString()}đ
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="bg-white/60 backdrop-blur-sm rounded-xl p-3 border border-slate-100 mb-4">
+                                        <div className="flex items-start gap-2.5">
+                                            <div className="p-1 bg-indigo-50 rounded-lg shrink-0">
+                                                <UserIcon className="w-3 h-3 text-indigo-500" />
+                                            </div>
+                                            <p className="text-sm text-slate-600 font-medium leading-relaxed line-clamp-2">
+                                                {p.expense.description}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    {activeTab === 'pendingPayer' && (
+                                        <div className="flex gap-3 mt-2">
+                                            <Button
+                                                variant="outline"
+                                                className="flex-1 h-10 rounded-xl border-red-100 text-red-600 hover:bg-red-50 hover:border-red-200 font-bold transition-all active:scale-95"
+                                                onClick={() => handleAction(p.id, 'reject')}
+                                            >
+                                                <X className="w-4 h-4 mr-2" />
+                                                Từ chối
+                                            </Button>
+                                            <Button
+                                                className="flex-[2] h-10 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white shadow-lg shadow-green-200 font-bold transition-all active:scale-95"
+                                                onClick={() => handleAction(p.id, 'confirm')}
+                                            >
+                                                <Check className="w-4 h-4 mr-2" />
+                                                Xác nhận đã nhận tiền
+                                            </Button>
+                                        </div>
+                                    )}
+
+                                    {activeTab === 'pendingDebtor' && (
+                                        <div className="flex items-center justify-center py-2 bg-blue-50/50 rounded-xl border border-blue-100/50 text-blue-600 text-xs font-bold gap-2">
+                                            <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
+                                            Đang chờ người chi xác nhận...
+                                        </div>
+                                    )}
+                                </div>
+                            ))
+                        )}
+                    </div>
                 </div>
             </DialogContent>
         </Dialog>
