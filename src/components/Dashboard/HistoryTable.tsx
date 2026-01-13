@@ -234,7 +234,7 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, curre
 
   return (
     <>
-      <Card className="w-full premium-card overflow-hidden border-none soft-shadow group/history">
+      <Card className="w-full premium-card border-none soft-shadow group/history overflow-visible">
         <CardHeader className="pb-6 bg-gradient-to-br from-indigo-50/50 via-white to-transparent border-b border-indigo-50/50">
           <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6">
             <CardTitle className="text-xl flex items-center gap-3 text-slate-800">
@@ -259,7 +259,7 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, curre
                 </Button>
               )}
 
-              <div className="relative flex-1 md:w-40 lg:w-56">
+              <div className="relative flex-1 md:w-48 lg:w-64">
                 <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder="Tìm nội dung..."
@@ -272,7 +272,7 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, curre
               <div className="flex items-center gap-3">
                 <div className="relative group/sel">
                   <select
-                    className="h-9 w-[150px] appearance-none rounded-xl border border-slate-100 bg-white/50 pl-4 pr-10 text-xs font-black uppercase tracking-widest text-slate-500 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-400 transition-all cursor-pointer hover:bg-white"
+                    className="h-9 w-[160px] appearance-none rounded-xl border border-slate-100 bg-white/50 pl-4 pr-10 text-xs font-bold uppercase tracking-wide text-slate-500 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-400 transition-all cursor-pointer hover:bg-white"
                     value={filterType}
                     onChange={e => setFilterType(e.target.value)}
                   >
@@ -285,7 +285,7 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, curre
 
                 <div className="relative group/sel">
                   <select
-                    className="h-9 w-[180px] appearance-none rounded-xl border border-slate-100 bg-white/50 pl-4 pr-10 text-xs font-black uppercase tracking-widest text-slate-500 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-400 transition-all cursor-pointer hover:bg-white"
+                    className="h-9 w-[240px] appearance-none rounded-xl border border-slate-100 bg-white/50 pl-4 pr-10 text-xs font-bold uppercase tracking-wide text-slate-500 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-400 transition-all cursor-pointer hover:bg-white"
                     value={filterPayer}
                     onChange={e => setFilterPayer(e.target.value)}
                   >
@@ -333,8 +333,8 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, curre
                 ) : (
                   filteredBills.map((b) => {
                     const isSelected = selectedIds.has(b.id);
-                    // Permission for Layout Global Settle (Only Payer/Admin)
                     const canSettleGlobal = currentUser?.role === 'ADMIN' || currentUser?.name === b.payer;
+                    const canDelete = currentUser?.name === b.payer;
 
                     return (
                       <TableRow
@@ -499,18 +499,18 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, curre
                             >
                               <Edit className="w-4 h-4" />
                             </Button>
-                            <div title={canSettleGlobal ? "Xóa hóa đơn" : `Chỉ người chi (${b.payer}) mới có quyền xóa`}>
+                            <div title={canDelete ? "Xóa hóa đơn" : `Chỉ người chi (${b.payer}) mới có quyền xóa`}>
                               <Button
                                 variant="ghost"
                                 size="icon"
                                 className={cn(
                                   "h-8 w-8 rounded-lg transition-all",
-                                  canSettleGlobal
+                                  canDelete
                                     ? "text-slate-400 hover:text-red-600 hover:bg-red-50"
                                     : "text-slate-200 cursor-not-allowed hover:bg-transparent opacity-50"
                                 )}
-                                onClick={() => canSettleGlobal && handleDeleteClick(b.id)}
-                                disabled={!canSettleGlobal}
+                                onClick={() => canDelete && handleDeleteClick(b.id)}
+                                disabled={!canDelete}
                               >
                                 {deletingId === b.id ? (
                                   <div className="w-4 h-4 border-2 border-red-500 border-t-transparent rounded-full animate-spin" />
