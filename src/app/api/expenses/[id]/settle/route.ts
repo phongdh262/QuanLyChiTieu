@@ -17,6 +17,25 @@ export async function POST(
         const body = await request.json();
         const { isSettled, paymentFor, isPaid } = body;
 
+        // AUTH CHECK: Verify if user is owner of expense or Admin
+        const expense = await prisma.expense.findUnique({
+            where: { id: expenseId },
+            include: { payer: true }
+        });
+
+        if (!expense) {
+            return NextResponse.json({ error: 'Expense not found' }, { status: 404 });
+        }
+
+        // Check if user is Payer OR Admin
+        const isPayer = expense.payerId === parseInt(sessionPayload.id as string);
+        const isAdmin = sessionPayload.role === 'ADMIN';
+
+        if (!isPayer && !isAdmin) {
+            return NextResponse.json({ error: 'Forbidden: Only the Payer can settle this bill' }, { status: 403 });
+        }
+
+
         // CASE 1: Settle for specific beneficiary (Split level)
         if (paymentFor) {
             // Find member ID first

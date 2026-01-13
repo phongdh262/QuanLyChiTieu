@@ -1,6 +1,14 @@
 export interface Member {
     id: number;
     name: string;
+    role?: string;
+}
+
+export interface CurrentUser {
+    id: number;
+    name: string;
+    username?: string;
+    role: string;
 }
 
 export interface Bill {

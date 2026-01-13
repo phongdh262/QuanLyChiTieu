@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Bill, Member } from '@/types/expense';
+import { Bill, Member, CurrentUser } from '@/types/expense';
 import EditBillModal from './EditBillModal';
 import { useConfirm } from '@/components/ui/ConfirmProvider';
 import { useToast } from '@/components/ui/ToastProvider';
@@ -33,11 +33,12 @@ interface Props {
   members: Member[];
   onDelete: () => void;
   onUpdate?: () => void;
+  currentUser: CurrentUser | null;
 }
 
 const formatMoney = (amount: number) => amount.toLocaleString('vi-VN') + ' ₫';
 
-export default function HistoryTable({ bills, members, onDelete, onUpdate }: Props) {
+export default function HistoryTable({ bills, members, onDelete, onUpdate, currentUser }: Props) {
   const { confirm } = useConfirm();
   const { addToast } = useToast();
   const [deletingId, setDeletingId] = useState<number | string | null>(null);
@@ -145,6 +146,13 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate }: Pro
   };
 
   const handleToggleSettle = async (bill: Bill, memberName?: string) => {
+    // Permission Check
+    const canEdit = currentUser?.role === 'ADMIN' || currentUser?.name === bill.payer;
+    if (!canEdit) {
+      addToast('Bạn không có quyền xác nhận thanh toán cho hóa đơn này (chỉ người chi hoặc Admin mới được phép)', 'warning');
+      return;
+    }
+
     try {
       // If memberName is provided, we settle for that specific split
       // Otherwise fallback to old behavior (or maybe ignore if we only want split settlement)
@@ -165,13 +173,16 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate }: Pro
         body: JSON.stringify(payload)
       });
 
-      if (!res.ok) throw new Error('Failed to update status');
+      if (!res.ok) {
+        if (res.status === 403) throw new Error('Không có quyền thực hiện');
+        throw new Error('Failed to update status');
+      }
 
       addToast('Đã cập nhật trạng thái thanh toán', 'success');
       if (onDelete) onDelete(); // Reload
       if (onUpdate) onUpdate();
-    } catch (e) {
-      addToast('Lỗi cập nhật trạng thái', 'error');
+    } catch (e: any) {
+      addToast(e.message || 'Lỗi cập nhật trạng thái', 'error');
       console.error(e);
     }
   };
@@ -283,6 +294,9 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate }: Pro
                 ) : (
                   filteredBills.map((b) => {
                     const isSelected = selectedIds.has(b.id);
+                    // CHECK PERMISSION
+                    const canSettle = currentUser?.role === 'ADMIN' || currentUser?.name === b.payer;
+
                     return (
                       <TableRow
                         key={b.id}
@@ -353,13 +367,15 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate }: Pro
                                       e.stopPropagation();
                                       handleToggleSettle(b, name);
                                     }}
+                                    disabled={!canSettle}
                                     className={cn(
-                                      "flex items-center gap-1.5 border rounded-full pl-0.5 pr-2 py-0.5 transition-all hover:shadow-md active:scale-95",
+                                      "flex items-center gap-1.5 border rounded-full pl-0.5 pr-2 py-0.5 transition-all",
+                                      canSettle ? "hover:shadow-md active:scale-95 cursor-pointer" : "cursor-not-allowed opacity-70",
                                       isPaid
                                         ? "bg-green-50 border-green-200 hover:bg-green-100"
                                         : "bg-slate-50 border-slate-200 hover:bg-slate-100"
                                     )}
-                                    title={isPaid ? `${name} đã trả (Click để hoàn tác)` : `Đánh dấu ${name} đã trả`}
+                                    title={!canSettle ? 'Chỉ người chi mới được xác nhận' : (isPaid ? `${name} đã trả (Click để hoàn tác)` : `Đánh dấu ${name} đã trả`)}
                                   >
                                     <div className={cn("w-4 h-4 rounded-full flex items-center justify-center text-white font-bold text-[8px] relative", getAvatarColor(name))}>
                                       {name.charAt(0).toUpperCase()}
@@ -383,13 +399,15 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate }: Pro
                         <TableCell className="text-center py-3">
                           <button
                             onClick={() => handleToggleSettle(b)}
+                            disabled={!canSettle}
                             className={cn(
                               "relative inline-flex items-center justify-center p-1.5 rounded-full transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-100",
+                              canSettle ? "cursor-pointer" : "cursor-not-allowed opacity-50",
                               b.isSettled
                                 ? "bg-green-100 text-green-600 hover:bg-green-200 ring-1 ring-green-200"
                                 : "bg-white text-slate-300 border border-slate-200 hover:border-blue-300 hover:text-blue-400 hover:shadow-sm"
                             )}
-                            title={b.isSettled ? "Đã thanh toán (Click để hoàn tác)" : "Đánh dấu đã thanh toán"}
+                            title={!canSettle ? "Bạn không có quyền thay đổi trạng thái" : (b.isSettled ? "Đã thanh toán (Click để hoàn tác)" : "Đánh dấu đã thanh toán")}
                           >
                             {b.isSettled ? (
                               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">

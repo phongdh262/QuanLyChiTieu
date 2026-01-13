@@ -3,20 +3,17 @@
 import React, { useEffect, useState } from 'react';
 import SummaryTable from '@/components/Dashboard/SummaryTable';
 import PrivateMatrix from '@/components/Dashboard/PrivateMatrix';
-import DebtsTable from '@/components/Dashboard/DebtsTable';
 import HistoryTable from '@/components/Dashboard/HistoryTable';
 import AddBillForm from '@/components/Forms/AddBillForm';
 import SheetSelector from '@/components/Dashboard/SheetSelector';
 import ActivityLogList from '@/components/Dashboard/ActivityLogList';
-
-import Link from 'next/link';
 
 import MemberManager from '@/components/Dashboard/MemberManager';
 import StatisticsSection from '@/components/Dashboard/StatisticsSection';
 import Header from '@/components/Layout/Header';
 import Footer from '@/components/Layout/Footer';
 
-import { Bill, Member, CalculationResult, DebtTransaction } from '@/types/expense';
+import { Bill, Member, CalculationResult, DebtTransaction, CurrentUser } from '@/types/expense';
 import { calculateFinalBalances, calculatePrivateMatrix, calculateDebts } from '@/services/expenseService';
 
 export default function Home() {
@@ -31,10 +28,9 @@ export default function Home() {
   const [sheetData, setSheetData] = useState<any>(null);
   const [members, setMembers] = useState<Member[]>([]);
   const [calculations, setCalculations] = useState<CalculationResult & { globalDebts: DebtTransaction[]; matrix: any } | null>(null);
-  const [billToDuplicate, setBillToDuplicate] = useState<any>(null); // State for duplication
 
   // User Data
-  const [currentUser, setCurrentUser] = useState<{ id: number; role: string; name?: string; username?: string } | null>(null);
+  const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
 
   // Initial Fetch: Workspace & Sheets & User
   useEffect(() => {
@@ -221,7 +217,6 @@ export default function Home() {
                 sheetId={currentSheetId!}
                 onAdd={reload}
                 onOptimisticAdd={handleOptimisticAdd}
-                initialData={billToDuplicate}
               />
               {currentUser?.role === 'ADMIN' && (
                 <MemberManager members={members} workspaceId={workspace!.id} onUpdate={reload} />
