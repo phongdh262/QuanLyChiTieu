@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { calculateFinalBalances, calculatePrivateMatrix, calculateDebts } from '@/services/expenseService';
 import { Bill } from '@/types/expense';
+import { getSession } from '@/lib/auth';
+import { logActivity } from '@/lib/logger';
 
 export async function GET(
     request: Request,
@@ -84,6 +86,10 @@ export async function PUT(
     { params }: { params: Promise<{ sheetId: string }> }
 ) {
     try {
+        const session = await getSession();
+        const actorId = session ? (session.id as number) : 0;
+        const actorName = session ? (session.name as string) : 'Hệ thống';
+
         const sheetId = parseInt((await params).sheetId);
         const body = await request.json();
         const { name } = body;
@@ -92,6 +98,16 @@ export async function PUT(
             where: { id: sheetId },
             data: { name }
         });
+
+        await logActivity(
+            sheet.workspaceId,
+            actorId,
+            actorName,
+            'UPDATE',
+            'SHEET',
+            sheet.id,
+            `Đã đổi tên bảng chi tiêu thành: ${name}`
+        );
 
         return NextResponse.json(sheet);
     } catch (error) {
@@ -106,6 +122,10 @@ export async function DELETE(
     { params }: { params: Promise<{ sheetId: string }> }
 ) {
     try {
+        const session = await getSession();
+        const actorId = session ? (session.id as number) : 0;
+        const actorName = session ? (session.name as string) : 'Hệ thống';
+
         const sheetId = parseInt((await params).sheetId);
 
         // Update status instead of deleting
@@ -115,17 +135,15 @@ export async function DELETE(
         });
 
         // Log the deletion
-        await prisma.activityLog.create({
-            data: {
-                action: 'DELETE',
-                entityType: 'SHEET',
-                entityId: sheet.id,
-                description: `Đã xóa bảng chi tiêu: ${sheet.name}`,
-                actorId: 0, // System/Admin
-                actorName: 'Hệ thống',
-                workspaceId: sheet.workspaceId
-            }
-        });
+        await logActivity(
+            sheet.workspaceId,
+            actorId,
+            actorName,
+            'DELETE',
+            'SHEET',
+            sheet.id,
+            `Đã xóa bảng chi tiêu: ${sheet.name}`
+        );
 
         return NextResponse.json({ success: true });
     } catch (error) {

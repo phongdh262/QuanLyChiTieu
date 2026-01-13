@@ -1,11 +1,17 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { getSession } from '@/lib/auth';
+import { logActivity } from '@/lib/logger';
 
 export async function POST(
     request: Request,
     { params }: { params: Promise<{ sheetId: string }> }
 ) {
     try {
+        const session = await getSession();
+        const actorId = session ? (session.id as number) : 0;
+        const actorName = session ? (session.name as string) : 'Hệ thống';
+
         const sheetId = parseInt((await params).sheetId);
 
         const sheet = await prisma.sheet.update({
@@ -14,17 +20,15 @@ export async function POST(
         });
 
         // Log restoration
-        await prisma.activityLog.create({
-            data: {
-                action: 'UPDATE',
-                entityType: 'SHEET',
-                entityId: sheet.id,
-                description: `Đã khôi phục bảng chi tiêu: ${sheet.name}`,
-                actorId: 0,
-                actorName: 'Hệ thống',
-                workspaceId: sheet.workspaceId
-            }
-        });
+        await logActivity(
+            sheet.workspaceId,
+            actorId,
+            actorName,
+            'UPDATE',
+            'SHEET',
+            sheet.id,
+            `Đã khôi phục bảng chi tiêu: ${sheet.name}`
+        );
 
         return NextResponse.json({ success: true, sheet });
     } catch (error) {

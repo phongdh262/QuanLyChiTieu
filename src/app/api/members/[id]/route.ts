@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { getSession } from '@/lib/auth';
+import { logActivity } from '@/lib/logger';
 
 // UPDATE Member
 export async function PUT(
@@ -7,6 +9,10 @@ export async function PUT(
     { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const session = await getSession();
+        const actorId = session ? (session.id as number) : 0;
+        const actorName = session ? (session.name as string) : 'Hệ thống';
+
         const id = parseInt((await params).id);
         const body = await request.json();
         const { name } = body;
@@ -15,6 +21,16 @@ export async function PUT(
             where: { id },
             data: { name }
         });
+
+        await logActivity(
+            member.workspaceId,
+            actorId,
+            actorName,
+            'UPDATE',
+            'MEMBER',
+            member.id,
+            `Đã đổi tên thành viên thành: ${name}`
+        );
 
         return NextResponse.json(member);
     } catch (error) {
@@ -29,11 +45,28 @@ export async function DELETE(
     { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const session = await getSession();
+        const actorId = session ? (session.id as number) : 0;
+        const actorName = session ? (session.name as string) : 'Hệ thống';
+
         const id = parseInt((await params).id);
+
+        const member = await prisma.member.findUnique({ where: { id } });
+        if (!member) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
         await prisma.member.delete({
             where: { id }
         });
+
+        await logActivity(
+            member.workspaceId,
+            actorId,
+            actorName,
+            'DELETE',
+            'MEMBER',
+            id,
+            `Đã xóa thành viên: ${member.name}`
+        );
 
         return NextResponse.json({ success: true });
     } catch (error: any) {
