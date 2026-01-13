@@ -326,16 +326,19 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate }: Pro
                         </TableCell>
 
                         <TableCell className="py-3">
-                          <div className="flex -space-x-1 overflow-hidden p-1">
+                          <div className="flex flex-wrap items-center gap-1.5">
                             {b.type === 'SHARED' ? (
-                              <span className="text-xs text-slate-400 font-medium italic pl-1">Tất cả</span>
+                              <span className="text-xs text-slate-400 font-medium italic">Tất cả</span>
                             ) : (
                               (b.beneficiaries || []).map((name, idx) => (
                                 <div key={idx}
-                                  className={cn("w-5 h-5 rounded-full flex items-center justify-center text-white font-bold text-[9px] ring-1 ring-white shadow-sm", getAvatarColor(name))}
+                                  className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-full pl-0.5 pr-2 py-0.5"
                                   title={name}
                                 >
-                                  {name.charAt(0).toUpperCase()}
+                                  <div className={cn("w-4 h-4 rounded-full flex items-center justify-center text-white font-bold text-[8px]", getAvatarColor(name))}>
+                                    {name.charAt(0).toUpperCase()}
+                                  </div>
+                                  <span className="text-[10px] font-semibold text-slate-700">{name}</span>
                                 </div>
                               ))
                             )}
