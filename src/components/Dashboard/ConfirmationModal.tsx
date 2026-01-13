@@ -6,7 +6,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/components/ui/ToastProvider';
-import { useConfirm } from '@/components/ui/ConfirmProvider';
 import {
     Check,
     Clock,
@@ -62,21 +61,9 @@ export default function ConfirmationModal({ open, onOpenChange, onUpdated }: Pro
         refreshInterval: 10000
     });
 
-    const { confirm } = useConfirm();
 
     const handleAction = async (splitId: number, action: 'confirm' | 'reject') => {
         const isReject = action === 'reject';
-        const ok = await confirm({
-            title: isReject ? 'Từ chối thanh toán?' : 'Nhận tiền thành công?',
-            message: isReject
-                ? 'Người yêu cầu sẽ nhận được thông báo bị từ chối và phải gửi lại yêu cầu mới.'
-                : 'Xác nhận rằng bạn ĐÃ nhận được tiền thực tế (Tiền mặt/Chuyển khoản).',
-            type: isReject ? 'danger' : 'info',
-            confirmText: isReject ? 'Từ chối ngay' : 'Đã nhận đủ tiền',
-            cancelText: 'Hủy bỏ'
-        });
-
-        if (!ok) return;
 
         try {
             const res = await fetch('/api/payments/confirm', {
