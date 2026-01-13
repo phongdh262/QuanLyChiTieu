@@ -185,7 +185,14 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, curre
         throw new Error('Failed to update status');
       }
 
-      addToast('Đã cập nhật trạng thái thanh toán', 'success');
+      const data = await res.json();
+
+      if (data.isPending) {
+        addToast('Đã gửi yêu cầu xác nhận tới người chi tiền. Chờ xác nhận để cập nhật số dư.', 'warning');
+      } else {
+        addToast('Đã cập nhật trạng thái thanh toán', 'success');
+      }
+
       if (onDelete) onDelete(); // Reload
       if (onUpdate) onUpdate();
     } catch (e: any) {
@@ -364,6 +371,7 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, curre
                               // Find split status
                               const split = b.splits?.find(s => s.member.name === name);
                               const isPaid = split?.isPaid;
+                              const isPending = split?.isPending;
 
                               // Permission: Payer, Admin, OR The Beneficiary themselves
                               const canSettleSplit = canSettleGlobal || currentUser?.name === name;
@@ -380,9 +388,19 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, curre
                                     canSettleSplit ? "hover:shadow-md active:scale-95 cursor-pointer" : "cursor-not-allowed opacity-70",
                                     isPaid
                                       ? "bg-green-50 border-green-200 hover:bg-green-100"
-                                      : "bg-slate-50 border-slate-200 hover:bg-slate-100"
+                                      : isPending
+                                        ? "bg-amber-50 border-amber-200 hover:bg-amber-100"
+                                        : "bg-slate-50 border-slate-200 hover:bg-slate-100"
                                   )}
-                                  title={!canSettleSplit ? 'Chỉ người chi hoặc người nợ mới được xác nhận' : (isPaid ? `${name} đã trả (Click để hoàn tác)` : `Đánh dấu ${name} đã trả`)}
+                                  title={
+                                    !canSettleSplit
+                                      ? 'Chỉ người chi hoặc người nợ mới được xác nhận'
+                                      : isPaid
+                                        ? `${name} đã trả (Click để hoàn tác)`
+                                        : isPending
+                                          ? `${name} đang chờ người chi xác nhận`
+                                          : `Đánh dấu ${name} đã trả`
+                                  }
                                 >
                                   <div className={cn("w-5 h-5 rounded-full flex items-center justify-center text-white font-bold text-[9px] relative", getAvatarColor(name))}>
                                     {name.charAt(0).toUpperCase()}
@@ -393,8 +411,19 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, curre
                                         </svg>
                                       </div>
                                     )}
+                                    {isPending && !isPaid && (
+                                      <div className="absolute -bottom-1 -right-1 bg-amber-500 rounded-full w-3 h-3 border-2 border-white flex items-center justify-center">
+                                        <Clock className="w-2 h-2 text-white" />
+                                      </div>
+                                    )}
                                   </div>
-                                  <span className={cn("text-xs font-semibold", isPaid ? "text-green-700" : "text-slate-700")}>{name}</span>
+                                  <span className={cn(
+                                    "text-xs font-semibold",
+                                    isPaid ? "text-green-700" : isPending ? "text-amber-700" : "text-slate-700"
+                                  )}>
+                                    {name}
+                                    {isPending && !isPaid && <span className="ml-1 text-[9px] opacity-70">(Chờ...)</span>}
+                                  </span>
                                 </button>
                               )
                             })}

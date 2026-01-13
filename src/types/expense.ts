@@ -24,6 +24,8 @@ export interface Bill {
     splits?: {
         member: { name: string };
         isPaid: boolean;
+        isPending?: boolean; // New
+        paidAt?: string;    // New
         amount?: number;
     }[];
 }

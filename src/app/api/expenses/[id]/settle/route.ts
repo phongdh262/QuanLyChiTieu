@@ -84,18 +84,36 @@ export async function POST(
                 return NextResponse.json({ error: 'Member not found' }, { status: 404 });
             }
 
+            let updateData: any = {};
+            let logMsg = "";
+
+            if (!isPaid) {
+                // Anyone with permission can mark as unpaid (revert)
+                updateData = { isPaid: false, isPending: false, paidAt: null };
+                logMsg = `Đã đánh dấu CHƯA TRẢ cho ${paymentFor} trong khoản chi: ${expense.description}`;
+            } else {
+                // Marking as PAID
+                if (isPayer || isAdmin) {
+                    // Payer or Admin confirms directly
+                    updateData = { isPaid: true, isPending: false, paidAt: new Date() };
+                    logMsg = `Đã xác nhận thanh toán cho ${paymentFor} trong khoản chi: ${expense.description}`;
+                } else {
+                    // Beneficiary requests confirmation
+                    updateData = { isPaid: false, isPending: true, paidAt: new Date() };
+                    logMsg = `Đã gửi yêu cầu xác nhận thanh toán cho ${paymentFor} trong khoản chi: ${expense.description}`;
+                }
+            }
+
             // Update specific split
             await prisma.split.updateMany({
                 where: {
                     expenseId: expenseId,
                     memberId: member.id
                 },
-                data: {
-                    isPaid: !!isPaid
-                }
+                data: updateData
             });
 
-            // Check if all splits for this expense are now paid
+            // Check if all splits for this expense are now paid (only confirmed ones)
             const allSplits = await prisma.split.findMany({
                 where: { expenseId: expenseId }
             });
@@ -116,17 +134,18 @@ export async function POST(
                 'UPDATE',
                 'EXPENSE',
                 expenseId,
-                `Đã đánh dấu ${isPaid ? 'ĐÃ TRẢ' : 'CHƯA TRẢ'} cho ${paymentFor} trong khoản chi: ${expense.description}`
+                logMsg
             );
 
             return NextResponse.json({
                 success: true,
                 settledMember: paymentFor,
-                isGlobalSettled: allPaid
+                isGlobalSettled: allPaid,
+                isPending: updateData.isPending
             });
         }
 
-        // CASE 2: Global Settle (Toggle whole bill)
+        // CASE 2: Global Settle (Toggle whole bill) - Only for Payer/Admin
         await prisma.$transaction([
             prisma.expense.update({
                 where: { id: expenseId },
@@ -134,7 +153,11 @@ export async function POST(
             }),
             prisma.split.updateMany({
                 where: { expenseId: expenseId },
-                data: { isPaid: !!isSettled }
+                data: {
+                    isPaid: !!isSettled,
+                    isPending: false,
+                    paidAt: isSettled ? new Date() : null
+                }
             })
         ]);
 

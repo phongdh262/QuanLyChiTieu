@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { LogOut, User as UserIcon, Shield } from 'lucide-react';
+import { LogOut, User as UserIcon, Shield, Bell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
@@ -11,6 +11,12 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import useSWR from 'swr';
+import ConfirmationModal from '@/components/Dashboard/ConfirmationModal';
+import { cn } from "@/lib/utils";
+import ChangePasswordModal from '@/components/Auth/ChangePasswordModal';
+
+const fetcher = (url: string) => fetch(url).then(res => res.json());
 
 interface User {
     id: number;
@@ -22,12 +28,18 @@ interface User {
 interface Props {
     user: User | null;
     title: string;
+    onUpdated?: () => void;
 }
 
-import ChangePasswordModal from '@/components/Auth/ChangePasswordModal';
-
-export default function Header({ user, title }: Props) {
+export default function Header({ user, title, onUpdated }: Props) {
     const [isChangePasswordOpen, setIsChangePasswordOpen] = React.useState(false);
+    const [isConfirmModalOpen, setIsConfirmModalOpen] = React.useState(false);
+
+    const { data: notifications, mutate } = useSWR('/api/notifications', fetcher, {
+        refreshInterval: 10000
+    });
+
+    const pendingCount = Array.isArray(notifications) ? notifications.length : 0;
 
     const handleLogout = async () => {
         await fetch('/api/auth/logout', { method: 'POST' });
@@ -52,8 +64,29 @@ export default function Header({ user, title }: Props) {
                     {title}
                 </h1>
 
-                {/* User Menu */}
-                <div className="flex items-center gap-2">
+                {/* Right Actions */}
+                <div className="flex items-center gap-2 md:gap-4">
+                    {user && (
+                        <div className="relative">
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className={cn(
+                                    "relative rounded-full hover:bg-slate-100 transition-all",
+                                    pendingCount > 0 ? "text-indigo-600" : "text-slate-400"
+                                )}
+                                onClick={() => setIsConfirmModalOpen(true)}
+                            >
+                                <Bell className={cn("w-5 h-5", pendingCount > 0 && "fill-indigo-50")} />
+                                {pendingCount > 0 && (
+                                    <span className="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white ring-2 ring-white">
+                                        {pendingCount}
+                                    </span>
+                                )}
+                            </Button>
+                        </div>
+                    )}
+
                     {user ? (
                         <>
                             <DropdownMenu>
@@ -63,7 +96,7 @@ export default function Header({ user, title }: Props) {
                                             {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
                                         </div>
                                         <div className="flex flex-col items-start sr-only md:not-sr-only">
-                                            <span className="text-sm font-semibold text-slate-700 leading-none">{user.name || user.username}</span>
+                                            <span className="text-sm font-semibold text-slate-700 leading-none text-left">{user.name || user.username}</span>
                                             <span className="text-[10px] text-slate-400 leading-none mt-0.5 max-w-[80px] truncate">@{user.username}</span>
                                         </div>
                                     </Button>
@@ -100,6 +133,15 @@ export default function Header({ user, title }: Props) {
                                 open={isChangePasswordOpen}
                                 onOpenChange={setIsChangePasswordOpen}
                             />
+
+                            <ConfirmationModal
+                                open={isConfirmModalOpen}
+                                onOpenChange={setIsConfirmModalOpen}
+                                onUpdated={() => {
+                                    if (onUpdated) onUpdated();
+                                    mutate();
+                                }}
+                            />
                         </>
                     ) : (
                         <Button variant="outline" size="sm" onClick={() => window.location.href = '/login'}>
@@ -109,7 +151,7 @@ export default function Header({ user, title }: Props) {
                 </div>
             </div>
 
-            {/* Mobile Title (Only visible on small screens) */}
+            {/* Mobile Title */}
             <div className="md:hidden border-t border-slate-50 py-2 bg-slate-50/50">
                 <h2 className="text-center text-sm font-bold text-slate-600 uppercase tracking-wider">
                     {title}

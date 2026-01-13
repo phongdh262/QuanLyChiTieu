@@ -77,6 +77,8 @@ model Split {
   memberId  Int
   
   isPaid    Boolean @default(false)
+  isPending Boolean @default(false) // Whether payment request is sent
+  paidAt    DateTime?             // When the debtor marked as paid
 }
 
 model ActivityLog {
