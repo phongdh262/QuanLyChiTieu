@@ -219,7 +219,7 @@ export default function Home() {
               onOptimisticAdd={handleOptimisticAdd}
             />
 
-            <ActivityLogList />
+            <ActivityLogList members={members} />
 
             {currentUser?.role === 'ADMIN' && (
               <MemberManager members={members} workspaceId={workspace!.id} onUpdate={reload} />

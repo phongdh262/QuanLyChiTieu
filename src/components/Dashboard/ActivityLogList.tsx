@@ -1,21 +1,14 @@
-import React, { useEffect, useState } from 'react';
+import { Member } from '@/types/expense';
 
-interface Log {
-    id: number;
-    description: string;
-    actorName: string;
-    action: string;
-    createdAt: string;
+interface Props {
+    members: Member[];
 }
 
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { History, ChevronDown, ChevronUp } from "lucide-react";
-import { cn } from "@/lib/utils";
-
-export default function ActivityLogList() {
+export default function ActivityLogList({ members }: Props) {
     const [isOpen, setIsOpen] = useState(true); // Default OPEN
     const [logs, setLogs] = useState<Log[]>([]);
     const [loading, setLoading] = useState(false);
+    const [selectedUser, setSelectedUser] = useState<string>('all');
 
     useEffect(() => {
         if (isOpen && logs.length === 0) {
@@ -56,18 +49,42 @@ export default function ActivityLogList() {
         }
     };
 
+    const filteredLogs = selectedUser === 'all'
+        ? logs
+        : logs.filter(log => log.actorName === selectedUser);
+
     return (
         <Card className="w-full shadow-md hover:shadow-lg transition-all duration-300 border-t-4 border-t-purple-500 bg-white group/card">
             <CardHeader
-                className="p-4 cursor-pointer hover:bg-slate-50 transition-colors flex flex-row items-center justify-between"
+                className="p-4 cursor-pointer hover:bg-slate-50 transition-colors flex flex-row items-center justify-between gap-2"
                 onClick={() => setIsOpen(!isOpen)}
             >
-                <CardTitle className="text-base flex items-center gap-2 text-purple-700">
-                    <History className="w-5 h-5 text-purple-500" />
-                    Nhật Ký Hoạt Động
-                </CardTitle>
-                <div className={cn("transition-transform duration-300 text-slate-400", isOpen && "rotate-180")}>
-                    <ChevronDown className="w-5 h-5" />
+                <div className="flex items-center gap-2 overflow-hidden">
+                    <History className="w-5 h-5 text-purple-500 shrink-0" />
+                    <CardTitle className="text-base text-purple-700 truncate">
+                        Nhật Ký
+                    </CardTitle>
+                </div>
+
+                <div className="flex items-center gap-2">
+                    <select
+                        className="text-[10px] h-7 bg-slate-100 border-none rounded-md px-2 font-medium text-slate-600 focus:ring-1 focus:ring-purple-200"
+                        value={selectedUser}
+                        onChange={(e) => {
+                            e.stopPropagation();
+                            setSelectedUser(e.target.value);
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <option value="all">Tất cả user</option>
+                        {members.map(m => (
+                            <option key={m.id} value={m.name}>{m.name}</option>
+                        ))}
+                    </select>
+
+                    <div className={cn("transition-transform duration-300 text-slate-400", isOpen && "rotate-180")}>
+                        <ChevronDown className="w-5 h-5" />
+                    </div>
                 </div>
             </CardHeader>
 
@@ -76,10 +93,12 @@ export default function ActivityLogList() {
                     <div className="h-[350px] overflow-y-auto p-4 space-y-3 custom-scrollbar">
                         {loading ? (
                             <div className="flex justify-center p-4 text-slate-400 font-medium italic">Đang tải dữ liệu...</div>
-                        ) : logs.length === 0 ? (
-                            <div className="text-center p-4 text-slate-400 italic">Chưa có hoạt động nào được ghi lại.</div>
+                        ) : filteredLogs.length === 0 ? (
+                            <div className="text-center p-4 text-slate-400 italic">
+                                {selectedUser === 'all' ? 'Chưa có hoạt động nào.' : `Không có hoạt động nào từ ${selectedUser}.`}
+                            </div>
                         ) : (
-                            logs.map(log => (
+                            filteredLogs.map(log => (
                                 <div
                                     key={log.id}
                                     className="p-3 rounded-lg border border-slate-100 bg-white shadow-sm hover:shadow-md transition-shadow duration-200 flex flex-col gap-1.5"
