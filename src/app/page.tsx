@@ -233,26 +233,20 @@ export default function Home() {
                 {/* 1. TOP STATS CARDS */}
                 <StatisticsSection members={members} calculations={calculations} />
 
-                {/* 2. MAIN HUB: TABLE AREA */}
+                {/* 2. REPORTING AREA: Summary & Matrix grouped */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 pt-4">
+                  <SummaryTable members={members} calculations={calculations} />
+                  <PrivateMatrix members={members} matrixData={matrix} />
+                </div>
+
+                {/* 3. MAIN HUB: TABLE AREA (Move to bottom) */}
                 <div className="space-y-6">
-                  <div className="flex items-center justify-between">
-                    <h2 className="text-xl font-bold text-slate-800 tracking-tight flex items-center gap-2">
-                      <span className="w-1.5 h-6 bg-blue-600 rounded-full"></span>
-                      Lịch sử chi tiêu
-                    </h2>
-                  </div>
                   <HistoryTable
                     bills={bills}
                     members={members}
                     onDelete={reload}
                     currentUser={currentUser}
                   />
-                </div>
-
-                {/* 3. REPORTING AREA: Summary & Matrix grouped */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 pt-4">
-                  <SummaryTable members={members} calculations={calculations} />
-                  <PrivateMatrix members={members} matrixData={matrix} />
                 </div>
               </div>
             )}
