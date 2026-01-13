@@ -25,7 +25,6 @@ import { Input } from "@/components/ui/input";
 import {
   Search,
   ChevronDown,
-  Check,
   Clock,
   Trash2,
   Edit
@@ -186,7 +185,7 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, curre
     }
 
     try {
-      const payload: any = { isSettled: !bill.isSettled };
+      const payload: { isSettled: boolean; paymentFor?: string; isPaid?: boolean } = { isSettled: !bill.isSettled };
 
       if (memberName) {
         if (split) {
@@ -216,8 +215,9 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, curre
 
       if (onDelete) onDelete(); // Reload
       if (onUpdate) onUpdate();
-    } catch (e: any) {
-      addToast(e.message || 'Lỗi cập nhật trạng thái', 'error');
+    } catch (e: unknown) {
+      const errorMessage = e instanceof Error ? e.message : 'Lỗi cập nhật trạng thái';
+      addToast(errorMessage, 'error');
       console.error(e);
     }
   };
@@ -241,7 +241,7 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, curre
               <div className="p-2 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl shadow-lg shadow-blue-100 group-hover/history:scale-110 group-hover/history:rotate-3 transition-all duration-500">
                 <Clock className="w-5 h-5 text-white" />
               </div>
-              <span className="font-black tracking-tight">Lịch Sử Chi Tiêu</span>
+              <span className="font-bold tracking-tight text-slate-800">Lịch Sử Chi Tiêu</span>
             </CardTitle>
 
             <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
@@ -314,12 +314,12 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, curre
                       className="h-4 w-4 rounded-lg border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer accent-indigo-600"
                     />
                   </TableHead>
-                  <TableHead className="w-[110px] text-[10px] font-black uppercase tracking-widest text-slate-400 whitespace-nowrap">Ngày</TableHead>
-                  <TableHead className="w-auto min-w-[250px] text-[10px] font-black uppercase tracking-widest text-slate-400">Nội dung</TableHead>
-                  <TableHead className="w-[150px] text-right text-[10px] font-black uppercase tracking-widest text-slate-400">Số tiền</TableHead>
-                  <TableHead className="w-[180px] text-left text-[10px] font-black uppercase tracking-widest text-slate-400 pl-6">Người chi</TableHead>
-                  <TableHead className="w-[30%] min-w-[300px] text-left text-[10px] font-black uppercase tracking-widest text-slate-400">Chia cho</TableHead>
-                  <TableHead className="w-[120px] text-center text-[10px] font-black uppercase tracking-widest text-slate-400">Trạng thái</TableHead>
+                  <TableHead className="w-[110px] text-[10px] font-bold uppercase tracking-wider text-slate-500 whitespace-nowrap px-4">Ngày</TableHead>
+                  <TableHead className="w-auto min-w-[250px] text-[10px] font-bold uppercase tracking-wider text-slate-500 px-4">Nội dung</TableHead>
+                  <TableHead className="w-[150px] text-right text-[10px] font-bold uppercase tracking-wider text-slate-500 px-4">Số tiền</TableHead>
+                  <TableHead className="w-[180px] text-left text-[10px] font-bold uppercase tracking-wider text-slate-500 pl-6">Người chi</TableHead>
+                  <TableHead className="w-[30%] min-w-[300px] text-left text-[10px] font-bold uppercase tracking-wider text-slate-500 px-4">Chia cho</TableHead>
+                  <TableHead className="w-[120px] text-center text-[10px] font-bold uppercase tracking-wider text-slate-500">Trạng thái</TableHead>
                   <TableHead className="w-[70px]"></TableHead>
                 </TableRow>
               </TableHeader>
@@ -355,12 +355,12 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, curre
                         </TableCell>
                         <TableCell className="py-5">
                           <div className="flex flex-col">
-                            <span className={cn("text-sm font-black tracking-tight", b.isSettled ? "text-slate-400 line-through" : "text-slate-700")}>
+                            <span className={cn("text-sm font-semibold text-slate-700 font-mono", b.isSettled ? "text-slate-400 line-through" : "")}>
                               {b.date ? new Date(b.date).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' }) : '-'}
                             </span>
                             <span className={cn(
-                              "text-[9px] uppercase font-black mt-1.5 w-fit px-2 py-0.5 rounded-md tracking-widest",
-                              b.type === 'SHARED' ? "text-indigo-600 bg-indigo-50 border border-indigo-100" : "text-orange-600 bg-orange-50 border border-orange-100"
+                              "text-[9px] uppercase font-bold mt-1.5 w-fit px-2 py-0.5 rounded-md tracking-wider border",
+                              b.type === 'SHARED' ? "text-indigo-600 bg-indigo-50 border-indigo-100" : "text-amber-600 bg-amber-50 border-amber-100"
                             )}>
                               {b.type === 'SHARED' ? 'CHUNG' : 'RIÊNG'}
                             </span>
@@ -376,7 +376,7 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, curre
                         </TableCell>
 
                         <TableCell className="text-right py-5">
-                          <span className={cn("text-lg font-black tabular-nums tracking-tighter", b.isSettled ? "text-slate-300 line-through" : "text-slate-900")}>
+                          <span className={cn("text-base font-bold tabular-nums tracking-tight", b.isSettled ? "text-slate-300 line-through" : "text-slate-900")}>
                             {formatMoney(b.amount)}
                           </span>
                         </TableCell>
@@ -499,15 +499,15 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, curre
                             >
                               <Edit className="w-4 h-4" />
                             </Button>
-                            <div title={canSettleGlobal ? "Xóa hóa đơn" : "Chỉ người tạo mới được xóa"}>
+                            <div title={canSettleGlobal ? "Xóa hóa đơn" : `Chỉ người chi (${b.payer}) mới có quyền xóa`}>
                               <Button
                                 variant="ghost"
                                 size="icon"
                                 className={cn(
-                                  "h-9 w-9 rounded-xl transition-all active:scale-90",
+                                  "h-8 w-8 rounded-lg transition-all",
                                   canSettleGlobal
                                     ? "text-slate-400 hover:text-red-600 hover:bg-red-50"
-                                    : "text-slate-200 cursor-not-allowed hover:bg-transparent"
+                                    : "text-slate-200 cursor-not-allowed hover:bg-transparent opacity-50"
                                 )}
                                 onClick={() => canSettleGlobal && handleDeleteClick(b.id)}
                                 disabled={!canSettleGlobal}
