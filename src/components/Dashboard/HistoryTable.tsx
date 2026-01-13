@@ -407,8 +407,8 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, curre
                               const isBeneficiary = currentUser?.name === name;
 
                               const canToggle = isPaid
-                                ? isPayer // Only Payer can untoggle 'Paid'
-                                : (isPayer || isBeneficiary); // Payer or Debtor can mark 'Paid'
+                                ? false // LOCKED: Once paid, it cannot be undone via this table
+                                : (isPayer || isBeneficiary);
 
                               const formattedPaidAt = paidAt ? new Date(paidAt).toLocaleString('vi-VN', {
                                 day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit'
@@ -432,8 +432,8 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, curre
                                   )}
                                   title={
                                     !canToggle
-                                      ? (isPaid ? 'Chỉ người chi mới được hủy xác nhận' : 'Bạn không có quyền thao tác phần này')
-                                      : isPaid
+                                      ? (isPaid ? 'Đã xác nhận thanh toán (Không thể hoàn tác)' : 'Bạn không có quyền thao tác phần này')
+                                      : isPending
                                         ? `${name} đã trả (Xác nhận lúc: ${formattedPaidAt}).${currentUser?.name === name ? ' Click để hoàn tác.' : ''}`
                                         : isPending
                                           ? `${name} đang chờ người chi xác nhận. Click để hủy yêu cầu.`

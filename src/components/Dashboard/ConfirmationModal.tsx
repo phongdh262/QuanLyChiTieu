@@ -13,7 +13,6 @@ import {
     History as HistoryIcon,
     Search,
     Send,
-    X,
     BellRing,
     Filter
 } from 'lucide-react';
@@ -261,8 +260,7 @@ export default function ConfirmationModal({ open, onOpenChange, onUpdated }: Pro
                                                 className="flex-1 h-10 rounded-xl border-red-100 text-red-600 hover:bg-red-50 hover:border-red-200 font-bold transition-all active:scale-95"
                                                 onClick={() => handleAction(p.id, 'reject')}
                                             >
-                                                <X className="w-4 h-4 mr-2" />
-                                                Từ chối
+                                                Không xác nhận
                                             </Button>
                                             <Button
                                                 className="flex-[2] h-10 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white shadow-lg shadow-green-200 font-bold transition-all active:scale-95"
