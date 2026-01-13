@@ -28,11 +28,39 @@ export async function POST(
         }
 
         // Check if user is Payer OR Admin
-        const isPayer = expense.payerId === parseInt(sessionPayload.id as string);
+        const userId = String(sessionPayload.id);
+        const payerId = String(expense.payerId);
+
+        const isPayer = payerId === userId;
         const isAdmin = sessionPayload.role === 'ADMIN';
 
-        if (!isPayer && !isAdmin) {
-            return NextResponse.json({ error: 'Forbidden: Only the Payer can settle this bill' }, { status: 403 });
+        // Check if user is the Beneficiary being settled for
+        let isBeneficiary = false;
+
+        if (paymentFor) {
+            // Strategy 1: Check by Name from Session (Fastest)
+            if (sessionPayload.name && sessionPayload.name === paymentFor) {
+                isBeneficiary = true;
+            } else {
+                // Strategy 2: Check by DB Lookup (Most Reliable)
+                const member = await prisma.member.findFirst({
+                    where: {
+                        name: paymentFor,
+                        workspaceId: parseInt(sessionPayload.workspaceId as string)
+                    }
+                });
+
+                if (member && String(member.id) === userId) {
+                    isBeneficiary = true;
+                }
+            }
+        }
+
+        if (!isPayer && !isAdmin && !isBeneficiary) {
+            return NextResponse.json({
+                error: 'Forbidden',
+                details: `User ${sessionPayload.name} (ID: ${userId}) cannot settle for ${paymentFor || 'Global'}`
+            }, { status: 403 });
         }
 
 
