@@ -190,7 +190,16 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, curre
       if (memberName) {
         if (split) {
           payload.paymentFor = memberName;
-          payload.isPaid = !split.isPaid;
+          // Standard toggle
+          let nextState = !split.isPaid;
+
+          // Special Case: Debtor cancelling their own PENDING request
+          // If it's Pending (and logically isPaid is false), clicking it should revert to false (Unpaid), not toggle to true.
+          if (split.isPending && currentUser?.name === memberName) {
+            nextState = false;
+          }
+
+          payload.isPaid = nextState;
         }
       }
 
