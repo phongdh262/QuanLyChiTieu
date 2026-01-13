@@ -386,7 +386,7 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, curre
                               // - If Pending: Debtor can cancel, Payer/Admin can confirm
                               // - If Unpaid: Both can mark as Paid (Debtor -> Pending, Payer -> Paid)
                               const canToggle = isPaid
-                                ? canSettleGlobal
+                                ? false // Lock status once confirmed
                                 : (canSettleGlobal || currentUser?.name === name);
 
                               const formattedPaidAt = paidAt ? new Date(paidAt).toLocaleString('vi-VN', {
@@ -413,7 +413,7 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, curre
                                     !canToggle
                                       ? (isPaid ? 'Chỉ người chi mới được hủy xác nhận' : 'Bạn không có quyền thao tác phần này')
                                       : isPaid
-                                        ? `${name} đã trả (Xác nhận lúc: ${formattedPaidAt}). Click để hoàn tác.`
+                                        ? `${name} đã trả (Đã khóa sau khi xác nhận lúc: ${formattedPaidAt}).`
                                         : isPending
                                           ? `${name} đang chờ người chi xác nhận. Click để hủy yêu cầu.`
                                           : `Đánh dấu ${name} đã trả`
@@ -459,7 +459,7 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, curre
                                 ? "bg-green-100 text-green-600 hover:bg-green-200 ring-1 ring-green-200 shadow-sm"
                                 : "bg-white text-slate-300 border-2 border-slate-200 hover:border-blue-400 hover:text-blue-500"
                             )}
-                            title={!canSettleGlobal ? "Chỉ người chi mới có quyền xác nhận toàn bộ" : (b.isSettled ? "Đã thanh toán hết (Click để hoàn tác)" : "Đánh dấu tất cả đã trả")}
+                            title={!canSettleGlobal ? "Chỉ người chi mới có quyền xác nhận toàn bộ" : (b.isSettled ? "Hóa đơn đã quyết toán xong (Trạng thái đã khóa)" : "Đánh dấu tất cả đã trả")}
                           >
                             {b.isSettled ? (
                               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">

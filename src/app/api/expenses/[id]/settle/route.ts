@@ -22,7 +22,7 @@ export async function POST(
         const { isSettled, paymentFor, isPaid } = body;
 
         // AUTH CHECK: Verify if user is owner of expense or Admin
-        const expense = await prisma.expense.findUnique({
+        const expense: any = await prisma.expense.findUnique({
             where: { id: expenseId },
             include: { payer: true, sheet: true }
         });
@@ -84,11 +84,21 @@ export async function POST(
                 return NextResponse.json({ error: 'Member not found' }, { status: 404 });
             }
 
+            // Fetch current split status to prevent illegal transitions
+            const existingSplit: any = await prisma.split.findFirst({
+                where: { expenseId: expenseId, memberId: member.id }
+            });
+
+            if (existingSplit?.isPaid && !isPaid) {
+                return NextResponse.json({ error: 'Trạng thái đã khóa. Không thể chuyển từ "Đã trả" sang "Chưa trả" sau khi đã xác nhận.' }, { status: 403 });
+            }
+
             let updateData: any = {};
             let logMsg = "";
 
             if (!isPaid) {
-                // Anyone with permission can mark as unpaid (revert)
+                // If we reach here, it means existingSplit wasn't isPaid. 
+                // However, it could be isPending. Cancelling a pending request is allowed for the debtor.
                 updateData = { isPaid: false, isPending: false, paidAt: null };
                 logMsg = `Đã đánh dấu CHƯA TRẢ cho ${paymentFor} trong khoản chi: ${expense.description}`;
             } else {
@@ -105,7 +115,7 @@ export async function POST(
             }
 
             // Update specific split
-            await prisma.split.updateMany({
+            await (prisma.split as any).updateMany({
                 where: {
                     expenseId: expenseId,
                     memberId: member.id
@@ -114,14 +124,14 @@ export async function POST(
             });
 
             // Check if all splits for this expense are now paid (only confirmed ones)
-            const allSplits = await prisma.split.findMany({
+            const allSplits: any[] = await prisma.split.findMany({
                 where: { expenseId: expenseId }
             });
 
             const allPaid = allSplits.every(s => s.isPaid);
 
             // Update the global expense status based on split status
-            await prisma.expense.update({
+            await (prisma.expense as any).update({
                 where: { id: expenseId },
                 data: { isSettled: allPaid }
             });
@@ -146,12 +156,16 @@ export async function POST(
         }
 
         // CASE 2: Global Settle (Toggle whole bill) - Only for Payer/Admin
+        if (expense.isSettled && !isSettled) {
+            return NextResponse.json({ error: 'Khoản chi đã được quyết toán toàn bộ và đã khóa.' }, { status: 403 });
+        }
+
         await prisma.$transaction([
-            prisma.expense.update({
+            (prisma.expense as any).update({
                 where: { id: expenseId },
                 data: { isSettled: !!isSettled }
             }),
-            prisma.split.updateMany({
+            (prisma.split as any).updateMany({
                 where: { expenseId: expenseId },
                 data: {
                     isPaid: !!isSettled,
