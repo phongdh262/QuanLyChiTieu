@@ -39,7 +39,9 @@ export async function GET() {
                 sheets: {
                     where: { NOT: { status: 'DELETED' } }
                 },
-                members: true
+                members: {
+                    where: { NOT: { status: 'DELETED' } }
+                }
             }
         });
         return NextResponse.json(workspaces);

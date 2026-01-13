@@ -17,7 +17,7 @@ function Label({ children, className, ...props }: React.LabelHTMLAttributes<HTML
 }
 
 interface Props {
-    members: { id: number; name: string }[];
+    members: { id: number; name: string, status?: string }[];
     sheetId: number;
     onAdd: () => void;
     initialData?: {
@@ -40,12 +40,14 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
     const [beneficiaryIds, setBeneficiaryIds] = useState<string[]>([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
+    const activeMembers = members.filter(m => m.status !== 'DELETED');
+
     // Initial load & Duplication Effect
     React.useEffect(() => {
-        if (members.length > 0 && !payerId) {
-            setPayerId(members[0].id.toString());
+        if (activeMembers.length > 0 && !payerId) {
+            setPayerId(activeMembers[0].id.toString());
         }
-    }, [members, payerId]);
+    }, [activeMembers, payerId]);
 
     // Lifted initialData Effect
     React.useEffect(() => {
@@ -218,7 +220,7 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
                                 value={payerId}
                                 onChange={e => setPayerId(e.target.value)}
                             >
-                                {members.map(m => (
+                                {activeMembers.map(m => (
                                     <option key={m.id} value={m.id}>{m.name}</option>
                                 ))}
                             </select>
@@ -270,7 +272,7 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
                             Chọn người thụ hưởng:
                         </Label>
                         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                            {members.map(m => {
+                            {activeMembers.map(m => {
                                 const isSelected = beneficiaryIds.includes(m.id.toString());
                                 return (
                                     <button

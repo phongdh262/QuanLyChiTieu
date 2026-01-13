@@ -2,6 +2,7 @@ export interface Member {
     id: number;
     name: string;
     role?: string;
+    status?: string;
 }
 
 export interface CurrentUser {

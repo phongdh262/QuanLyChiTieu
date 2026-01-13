@@ -39,7 +39,7 @@ export async function PUT(
     }
 }
 
-// DELETE Member
+// DELETE Member (Soft Delete)
 export async function DELETE(
     request: Request,
     { params }: { params: Promise<{ id: string }> }
@@ -54,8 +54,10 @@ export async function DELETE(
         const member = await prisma.member.findUnique({ where: { id } });
         if (!member) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
-        await prisma.member.delete({
-            where: { id }
+        // Soft delete
+        await prisma.member.update({
+            where: { id },
+            data: { status: 'DELETED' }
         });
 
         await logActivity(
@@ -65,15 +67,12 @@ export async function DELETE(
             'DELETE',
             'MEMBER',
             id,
-            `Đã xóa thành viên: ${member.name}`
+            `Đã chuyển thành viên vào thùng rác: ${member.name}`
         );
 
         return NextResponse.json({ success: true });
     } catch (error: any) {
         console.error(error);
-        if (error.code === 'P2003') {
-            return NextResponse.json({ error: 'Không thể xóa thành viên đã có giao dịch!' }, { status: 400 });
-        }
         return NextResponse.json({ error: 'Failed' }, { status: 500 });
     }
 }
