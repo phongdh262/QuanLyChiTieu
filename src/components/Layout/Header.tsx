@@ -65,21 +65,26 @@ export default function Header({ user, title, onUpdated }: Props) {
                 </h1>
 
                 {/* Right Actions */}
-                <div className="flex items-center gap-2 md:gap-4">
+                <div className="flex items-center gap-3">
                     {user && (
-                        <div className="relative">
+                        <div className="relative group">
                             <Button
                                 variant="ghost"
                                 size="icon"
                                 className={cn(
-                                    "relative rounded-full hover:bg-slate-100 transition-all",
-                                    pendingCount > 0 ? "text-indigo-600" : "text-slate-400"
+                                    "relative h-10 w-10 rounded-xl transition-all duration-300",
+                                    pendingCount > 0
+                                        ? "bg-indigo-50/50 text-indigo-600 hover:bg-indigo-100/80"
+                                        : "text-slate-400 hover:bg-slate-100 hover:text-slate-600"
                                 )}
                                 onClick={() => setIsConfirmModalOpen(true)}
                             >
-                                <Bell className={cn("w-5 h-5", pendingCount > 0 && "fill-indigo-50")} />
+                                <Bell className={cn(
+                                    "w-5 h-5 transition-transform duration-500",
+                                    pendingCount > 0 && "animate-bounce fill-indigo-100"
+                                )} />
                                 {pendingCount > 0 && (
-                                    <span className="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white ring-2 ring-white">
+                                    <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-gradient-to-tr from-pink-500 to-red-500 text-[10px] font-black text-white ring-2 ring-white shadow-sm animate-pulse">
                                         {pendingCount}
                                     </span>
                                 )}
@@ -91,13 +96,13 @@ export default function Header({ user, title, onUpdated }: Props) {
                         <>
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" className="relative h-10 px-2 md:px-3 rounded-full hover:bg-slate-100 gap-2 overflow-hidden border border-transparent hover:border-slate-200 transition-all">
-                                        <div className="w-7 h-7 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-xs ring-2 ring-white shadow-sm">
+                                    <Button variant="ghost" className="relative h-11 px-2 md:pl-2 md:pr-4 rounded-xl hover:bg-slate-50 gap-3 border border-slate-100 shadow-sm hover:shadow-md hover:border-indigo-100 transition-all duration-300 group">
+                                        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-blue-600 text-white flex items-center justify-center font-black text-sm shadow-indigo-200 shadow-lg group-hover:scale-105 transition-transform">
                                             {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
                                         </div>
                                         <div className="flex flex-col items-start sr-only md:not-sr-only">
-                                            <span className="text-sm font-semibold text-slate-700 leading-none text-left">{user.name || user.username}</span>
-                                            <span className="text-[10px] text-slate-400 leading-none mt-0.5 max-w-[80px] truncate">@{user.username}</span>
+                                            <span className="text-sm font-bold text-slate-800 leading-tight tracking-tight">{user.name || user.username}</span>
+                                            <span className="text-[10px] font-bold text-indigo-500/70 leading-none mt-0.5 tracking-wider uppercase">@{user.username}</span>
                                         </div>
                                     </Button>
                                 </DropdownMenuTrigger>
