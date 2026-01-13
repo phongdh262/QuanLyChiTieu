@@ -13,7 +13,7 @@ const formatMoney = (amount: number) => amount.toLocaleString('vi-VN');
 
 export default function SummaryTable({ members, calculations }: Props) {
     const { balances, stats, privateBalances } = calculations;
-    const [isOpen, setIsOpen] = React.useState(false);
+    const [isOpen, setIsOpen] = React.useState(true);
 
     return (
         <Card className="shadow-lg border-t-4 border-t-indigo-500 overflow-hidden mb-6 hover:shadow-xl transition-all duration-300">

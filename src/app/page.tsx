@@ -219,11 +219,11 @@ export default function Home() {
               onOptimisticAdd={handleOptimisticAdd}
             />
 
+            <ActivityLogList />
+
             {currentUser?.role === 'ADMIN' && (
               <MemberManager members={members} workspaceId={workspace!.id} onUpdate={reload} />
             )}
-
-            <ActivityLogList />
           </aside>
 
           {/* MAIN CONTENT Area */}
@@ -251,14 +251,8 @@ export default function Home() {
 
                 {/* 3. REPORTING AREA: Summary & Matrix grouped */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 pt-4">
-                  <div className="space-y-4">
-                    <h2 className="text-lg font-bold text-slate-800 tracking-tight pl-2">Tổng kết cân đối</h2>
-                    <SummaryTable members={members} calculations={calculations} />
-                  </div>
-                  <div className="space-y-4">
-                    <h2 className="text-lg font-bold text-slate-800 tracking-tight pl-2">Ma trận đối soát</h2>
-                    <PrivateMatrix members={members} matrixData={matrix} />
-                  </div>
+                  <SummaryTable members={members} calculations={calculations} />
+                  <PrivateMatrix members={members} matrixData={matrix} />
                 </div>
               </div>
             )}
