@@ -37,35 +37,31 @@ export function calculateFinalBalances(members: string[], bills: Bill[]): Calcul
             stats[payer].privatePaid += amount;
         }
 
-        // If settled, DO NOT calculate debt/balance
-        if (bill.isSettled) return;
+        // If settled globally, we still track stats but skip balance debt
+        const isGlobalSettled = !!bill.isSettled;
 
-        // Main Balance Logic (Global)
-        balances[payer] += amount;
-
-        // Private Balance Logic (Isolated)
-        if (type === 'PRIVATE') {
-            privateBalances[payer] += amount;
+        // Use splits if available, otherwise construct synthetic splits from beneficiaries (legacy)
+        let effectiveSplits = bill.splits || [];
+        if (effectiveSplits.length === 0) {
+            const beneficiaryList = type === 'SHARED' ? members : (beneficiaries || []);
+            const splitAmt = amount / (beneficiaryList.length || 1);
+            effectiveSplits = beneficiaryList.map(name => ({
+                member: { name },
+                isPaid: isGlobalSettled,
+                amount: splitAmt
+            }));
         }
 
-        let billBeneficiaries: string[] = [];
-        if (type === 'SHARED') {
-            billBeneficiaries = members;
-        } else if (type === 'PRIVATE') {
-            if (!beneficiaries || beneficiaries.length === 0) return;
-            billBeneficiaries = beneficiaries.filter(b => balances.hasOwnProperty(b));
-        }
+        let totalPayerCredit = 0;
 
-        if (billBeneficiaries.length === 0) return;
+        effectiveSplits.forEach(split => {
+            const person = split.member.name;
+            if (!balances.hasOwnProperty(person)) return;
 
-        const splitAmount = amount / billBeneficiaries.length;
+            const splitAmount = split.amount || (amount / effectiveSplits.length);
+            const isPaid = isGlobalSettled || !!split.isPaid;
 
-        // Beneficiaries consume
-        billBeneficiaries.forEach(person => {
-            // Global Balance
-            balances[person] -= splitAmount;
-
-            // Stats Consumed
+            // Stats Consumed (Always track what everyone ate/used)
             stats[person].totalConsumed += splitAmount;
             if (type === 'SHARED') {
                 stats[person].sharedConsumed += splitAmount;
@@ -73,11 +69,24 @@ export function calculateFinalBalances(members: string[], bills: Bill[]): Calcul
                 stats[person].privateConsumed += splitAmount;
             }
 
-            // Private Balance (Isolated)
-            if (type === 'PRIVATE') {
-                privateBalances[person] -= splitAmount;
+            // Balance Logic: Only apply if NOT paid and NOT global settled
+            if (!isPaid) {
+                if (person !== payer) {
+                    balances[person] -= splitAmount;
+                    totalPayerCredit += splitAmount;
+
+                    if (type === 'PRIVATE') {
+                        privateBalances[person] -= splitAmount;
+                    }
+                }
             }
         });
+
+        // Payer gets credit for all unpaid shares
+        balances[payer] += totalPayerCredit;
+        if (type === 'PRIVATE') {
+            privateBalances[payer] += totalPayerCredit;
+        }
     });
 
     // Rounding
