@@ -197,49 +197,73 @@ export default function Home() {
     <div className="min-h-screen flex flex-col bg-slate-50/30">
       <Header user={currentUser} title={activeSheetName} />
 
-      <main className="flex-1 container mx-auto max-w-[1600px] px-4 py-6">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          <div className="lg:col-span-4 xl:col-span-3 space-y-6">
-            {/* LEFT COLUMN: Controls */}
-            <div className="sticky top-24 space-y-4">
-              {workspace && (
-                <SheetSelector
-                  sheets={sheets}
-                  currentSheetId={currentSheetId}
-                  workspaceId={workspace.id}
-                  onChange={setCurrentSheetId}
-                  onCreated={reload}
-                />
-              )}
-              <ActivityLogList />
-              <AddBillForm
-                members={members}
-                sheetId={currentSheetId!}
-                onAdd={reload}
-                onOptimisticAdd={handleOptimisticAdd}
-              />
-              {currentUser?.role === 'ADMIN' && (
-                <MemberManager members={members} workspaceId={workspace!.id} onUpdate={reload} />
-              )}
-            </div>
-          </div>
+      <main className="flex-1 container mx-auto max-w-[1600px] px-4 py-8">
+        <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 items-start">
 
-          <div className="lg:col-span-8 xl:col-span-9 space-y-6">
-            {/* RIGHT COLUMN: Data */}
-            {calculations && (
-              <>
-                <StatisticsSection members={members} calculations={calculations} />
-                <SummaryTable members={members} calculations={calculations} />
-                <PrivateMatrix members={members} matrixData={matrix} />
-              </>
+          {/* SIDEBAR actions - Sticky and focused */}
+          <aside className="xl:col-span-3 space-y-6 sidebar-action-sticky">
+            {workspace && (
+              <SheetSelector
+                sheets={sheets}
+                currentSheetId={currentSheetId}
+                workspaceId={workspace.id}
+                onChange={setCurrentSheetId}
+                onCreated={reload}
+              />
             )}
-            <HistoryTable
-              bills={bills}
+
+            <AddBillForm
               members={members}
-              onDelete={reload}
-              currentUser={currentUser}
+              sheetId={currentSheetId!}
+              onAdd={reload}
+              onOptimisticAdd={handleOptimisticAdd}
             />
-          </div>
+
+            {currentUser?.role === 'ADMIN' && (
+              <MemberManager members={members} workspaceId={workspace!.id} onUpdate={reload} />
+            )}
+
+            <ActivityLogList />
+          </aside>
+
+          {/* MAIN CONTENT Area */}
+          <section className="xl:col-span-9 space-y-8 min-w-0">
+            {calculations && (
+              <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                {/* 1. TOP STATS CARDS */}
+                <StatisticsSection members={members} calculations={calculations} />
+
+                {/* 2. MAIN HUB: TABLE AREA */}
+                <div className="space-y-6">
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-xl font-bold text-slate-800 tracking-tight flex items-center gap-2">
+                      <span className="w-1.5 h-6 bg-blue-600 rounded-full"></span>
+                      Lịch sử chi tiêu
+                    </h2>
+                  </div>
+                  <HistoryTable
+                    bills={bills}
+                    members={members}
+                    onDelete={reload}
+                    currentUser={currentUser}
+                  />
+                </div>
+
+                {/* 3. REPORTING AREA: Summary & Matrix grouped */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 pt-4">
+                  <div className="space-y-4">
+                    <h2 className="text-lg font-bold text-slate-800 tracking-tight pl-2">Tổng kết cân đối</h2>
+                    <SummaryTable members={members} calculations={calculations} />
+                  </div>
+                  <div className="space-y-4">
+                    <h2 className="text-lg font-bold text-slate-800 tracking-tight pl-2">Ma trận đối soát</h2>
+                    <PrivateMatrix members={members} matrixData={matrix} />
+                  </div>
+                </div>
+              </div>
+            )}
+          </section>
+
         </div>
       </main>
 
