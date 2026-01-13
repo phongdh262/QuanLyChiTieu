@@ -147,9 +147,16 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, curre
 
   const handleToggleSettle = async (bill: Bill, memberName?: string) => {
     // Permission Check
-    const canEdit = currentUser?.role === 'ADMIN' || currentUser?.name === bill.payer;
-    if (!canEdit) {
-      addToast('Bạn không có quyền xác nhận thanh toán cho hóa đơn này (chỉ người chi hoặc Admin mới được phép)', 'warning');
+    const canSettleGlobal = currentUser?.role === 'ADMIN' || currentUser?.name === bill.payer;
+    const canSettleSplit = canSettleGlobal || (memberName && currentUser?.name === memberName);
+
+    if (memberName && !canSettleSplit) {
+      addToast('Bạn chỉ có thể tự xác nhận phần của chính mình!', 'warning');
+      return;
+    }
+
+    if (!memberName && !canSettleGlobal) {
+      addToast('Chỉ người chi hoặc Admin mới được xác nhận toàn bộ hóa đơn!', 'warning');
       return;
     }
 
@@ -267,21 +274,21 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, curre
             <Table>
               <TableHeader className="bg-slate-50 border-b border-slate-100">
                 <TableRow className="hover:bg-transparent">
-                  <TableHead className="w-[40px] text-center p-2">
+                  <TableHead className="w-[50px] text-center p-2">
                     <input
                       type="checkbox"
                       checked={isAllSelected}
                       onChange={toggleAll}
-                      className="h-3.5 w-3.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer accent-blue-600"
+                      className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer accent-blue-600"
                     />
                   </TableHead>
-                  <TableHead className="w-[100px] text-xs font-semibold uppercase text-slate-500">Ngày</TableHead>
-                  <TableHead className="min-w-[200px] text-xs font-semibold uppercase text-slate-500">Nội dung</TableHead>
-                  <TableHead className="w-[120px] text-right text-xs font-semibold uppercase text-slate-500">Số tiền</TableHead>
-                  <TableHead className="w-[140px] text-left text-xs font-semibold uppercase text-slate-500 pl-6">Người chi</TableHead>
-                  <TableHead className="w-[140px] text-left text-xs font-semibold uppercase text-slate-500">Chia cho</TableHead>
-                  <TableHead className="w-[100px] text-center text-xs font-semibold uppercase text-slate-500">Trạng thái</TableHead>
-                  <TableHead className="w-[60px]"></TableHead>
+                  <TableHead className="w-[110px] text-xs font-semibold uppercase text-slate-500 whitespace-nowrap">Ngày</TableHead>
+                  <TableHead className="w-auto min-w-[250px] text-xs font-semibold uppercase text-slate-500">Nội dung</TableHead>
+                  <TableHead className="w-[150px] text-right text-xs font-semibold uppercase text-slate-500">Số tiền</TableHead>
+                  <TableHead className="w-[180px] text-left text-xs font-semibold uppercase text-slate-500 pl-6">Người chi</TableHead>
+                  <TableHead className="w-[30%] min-w-[300px] text-left text-xs font-semibold uppercase text-slate-500">Chia cho</TableHead>
+                  <TableHead className="w-[120px] text-center text-xs font-semibold uppercase text-slate-500">Trạng thái</TableHead>
+                  <TableHead className="w-[70px]"></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -294,8 +301,8 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, curre
                 ) : (
                   filteredBills.map((b) => {
                     const isSelected = selectedIds.has(b.id);
-                    // CHECK PERMISSION
-                    const canSettle = currentUser?.role === 'ADMIN' || currentUser?.name === b.payer;
+                    // Permission for Layout Global Settle (Only Payer/Admin)
+                    const canSettleGlobal = currentUser?.role === 'ADMIN' || currentUser?.name === b.payer;
 
                     return (
                       <TableRow
@@ -311,55 +318,58 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, curre
                             type="checkbox"
                             checked={isSelected}
                             onChange={() => toggleRow(b.id)}
-                            className="h-3.5 w-3.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer accent-blue-600"
+                            className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer accent-blue-600"
                           />
                         </TableCell>
-                        <TableCell className="py-3">
+                        <TableCell className="py-4">
                           <div className="flex flex-col">
-                            <span className={cn("text-xs font-semibold", b.isSettled ? "text-slate-500 line-through" : "text-slate-700")}>
+                            <span className={cn("text-sm font-semibold", b.isSettled ? "text-slate-500 line-through" : "text-slate-700")}>
                               {b.date ? new Date(b.date).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' }) : '-'}
                             </span>
                             <span className={cn(
-                              "text-[10px] uppercase font-bold mt-0.5 w-fit",
-                              b.type === 'SHARED' ? "text-blue-500" : "text-orange-500"
+                              "text-[10px] uppercase font-bold mt-1 w-fit px-1.5 py-0.5 rounded-sm bg-opacity-10",
+                              b.type === 'SHARED' ? "text-blue-600 bg-blue-100" : "text-orange-600 bg-orange-100"
                             )}>
                               {b.type === 'SHARED' ? 'CHUNG' : 'RIÊNG'}
                             </span>
                           </div>
                         </TableCell>
 
-                        <TableCell className="py-3">
+                        <TableCell className="py-4">
                           <div className="flex items-center gap-2">
-                            <span className={cn("text-sm font-medium", b.isSettled ? "text-slate-500 line-through decoration-slate-400" : "text-slate-800")}>
+                            <span className={cn("text-base font-medium", b.isSettled ? "text-slate-500 line-through decoration-slate-400" : "text-slate-800")}>
                               {b.note}
                             </span>
                           </div>
                         </TableCell>
 
-                        <TableCell className="text-right py-3">
-                          <span className={cn("text-sm font-bold tabular-nums", b.isSettled ? "text-slate-400 line-through" : "text-slate-900")}>
+                        <TableCell className="text-right py-4">
+                          <span className={cn("text-base font-bold tabular-nums", b.isSettled ? "text-slate-400 line-through" : "text-slate-900")}>
                             {formatMoney(b.amount)}
                           </span>
                         </TableCell>
 
-                        <TableCell className="pl-6 py-3">
-                          <div className="flex items-center gap-2">
-                            <div className={cn("w-5 h-5 rounded-full flex items-center justify-center text-white font-bold text-[9px] shadow-sm ring-1 ring-white", getAvatarColor(b.payer))}>
+                        <TableCell className="pl-6 py-4">
+                          <div className="flex items-center gap-3">
+                            <div className={cn("w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-xs shadow-sm ring-2 ring-white", getAvatarColor(b.payer))}>
                               {b.payer.charAt(0).toUpperCase()}
                             </div>
-                            <span className="text-sm text-slate-600 font-medium truncate max-w-[80px]">{b.payer}</span>
+                            <span className="text-sm text-slate-700 font-medium truncate max-w-[120px]">{b.payer}</span>
                           </div>
                         </TableCell>
 
-                        <TableCell className="py-3">
-                          <div className="flex flex-wrap items-center gap-1.5">
+                        <TableCell className="py-4">
+                          <div className="flex flex-wrap items-center gap-2">
                             {b.type === 'SHARED' ? (
-                              <span className="text-xs text-slate-400 font-medium italic">Tất cả</span>
+                              <span className="text-sm text-slate-400 font-medium italic bg-slate-100 px-3 py-1 rounded-full">Tất cả thành viên</span>
                             ) : (
                               (b.beneficiaries || []).map((name, idx) => {
                                 // Find split status
                                 const split = b.splits?.find(s => s.member.name === name);
                                 const isPaid = split?.isPaid;
+
+                                // Permission: Payer, Admin, OR The Beneficiary themselves
+                                const canSettleSplit = canSettleGlobal || currentUser?.name === name;
 
                                 return (
                                   <button key={idx}
@@ -367,27 +377,27 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, curre
                                       e.stopPropagation();
                                       handleToggleSettle(b, name);
                                     }}
-                                    disabled={!canSettle}
+                                    disabled={!canSettleSplit}
                                     className={cn(
-                                      "flex items-center gap-1.5 border rounded-full pl-0.5 pr-2 py-0.5 transition-all",
-                                      canSettle ? "hover:shadow-md active:scale-95 cursor-pointer" : "cursor-not-allowed opacity-70",
+                                      "flex items-center gap-2 border rounded-full pl-1 pr-3 py-1 transition-all duration-200",
+                                      canSettleSplit ? "hover:shadow-md active:scale-95 cursor-pointer" : "cursor-not-allowed opacity-70",
                                       isPaid
                                         ? "bg-green-50 border-green-200 hover:bg-green-100"
                                         : "bg-slate-50 border-slate-200 hover:bg-slate-100"
                                     )}
-                                    title={!canSettle ? 'Chỉ người chi mới được xác nhận' : (isPaid ? `${name} đã trả (Click để hoàn tác)` : `Đánh dấu ${name} đã trả`)}
+                                    title={!canSettleSplit ? 'Chỉ người chi hoặc người nợ mới được xác nhận' : (isPaid ? `${name} đã trả (Click để hoàn tác)` : `Đánh dấu ${name} đã trả`)}
                                   >
-                                    <div className={cn("w-4 h-4 rounded-full flex items-center justify-center text-white font-bold text-[8px] relative", getAvatarColor(name))}>
+                                    <div className={cn("w-5 h-5 rounded-full flex items-center justify-center text-white font-bold text-[9px] relative", getAvatarColor(name))}>
                                       {name.charAt(0).toUpperCase()}
                                       {isPaid && (
-                                        <div className="absolute -bottom-1 -right-1 bg-green-500 rounded-full w-2.5 h-2.5 border border-white flex items-center justify-center">
-                                          <svg className="w-1.5 h-1.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <div className="absolute -bottom-1 -right-1 bg-green-500 rounded-full w-3 h-3 border-2 border-white flex items-center justify-center">
+                                          <svg className="w-2 h-2 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={4} d="M5 13l4 4L19 7" />
                                           </svg>
                                         </div>
                                       )}
                                     </div>
-                                    <span className={cn("text-[10px] font-semibold", isPaid ? "text-green-700 decoration-green-500" : "text-slate-700")}>{name}</span>
+                                    <span className={cn("text-xs font-semibold", isPaid ? "text-green-700" : "text-slate-700")}>{name}</span>
                                   </button>
                                 )
                               })
@@ -395,50 +405,50 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, curre
                           </div>
                         </TableCell>
 
-                        {/* Status Column - Compact Logic */}
-                        <TableCell className="text-center py-3">
+                        {/* Status Column - Global Toggle */}
+                        <TableCell className="text-center py-4">
                           <button
                             onClick={() => handleToggleSettle(b)}
-                            disabled={!canSettle}
+                            disabled={!canSettleGlobal}
                             className={cn(
-                              "relative inline-flex items-center justify-center p-1.5 rounded-full transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-100",
-                              canSettle ? "cursor-pointer" : "cursor-not-allowed opacity-50",
+                              "relative inline-flex items-center justify-center w-8 h-8 rounded-full transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-100",
+                              canSettleGlobal ? "cursor-pointer" : "cursor-not-allowed opacity-40 grayscale",
                               b.isSettled
-                                ? "bg-green-100 text-green-600 hover:bg-green-200 ring-1 ring-green-200"
-                                : "bg-white text-slate-300 border border-slate-200 hover:border-blue-300 hover:text-blue-400 hover:shadow-sm"
+                                ? "bg-green-100 text-green-600 hover:bg-green-200 ring-1 ring-green-200 shadow-sm"
+                                : "bg-white text-slate-300 border-2 border-slate-200 hover:border-blue-400 hover:text-blue-500"
                             )}
-                            title={!canSettle ? "Bạn không có quyền thay đổi trạng thái" : (b.isSettled ? "Đã thanh toán (Click để hoàn tác)" : "Đánh dấu đã thanh toán")}
+                            title={!canSettleGlobal ? "Chỉ người chi mới có quyền xác nhận toàn bộ" : (b.isSettled ? "Đã thanh toán hết (Click để hoàn tác)" : "Đánh dấu tất cả đã trả")}
                           >
                             {b.isSettled ? (
-                              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
+                              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
                                 <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd" />
                               </svg>
                             ) : (
-                              <div className="w-4 h-4 border-2 border-current rounded-full" />
+                              <div className="w-1.5 h-1.5 bg-current rounded-full" />
                             )}
                           </button>
                         </TableCell>
 
-                        <TableCell className="py-3 text-right pr-3">
+                        <TableCell className="py-4 text-right pr-3">
                           <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="h-7 w-7 text-slate-400 hover:text-blue-600 hover:bg-blue-50"
+                              className="h-8 w-8 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-full"
                               onClick={() => setEditingBill(b)}
                             >
-                              <Edit className="w-3.5 h-3.5" />
+                              <Edit className="w-4 h-4" />
                             </Button>
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="h-7 w-7 text-slate-400 hover:text-red-600 hover:bg-red-50"
+                              className="h-8 w-8 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-full"
                               onClick={() => handleDeleteClick(b.id)}
                             >
                               {deletingId === b.id ? (
                                 <span className="animate-spin text-[10px]">⏳</span>
                               ) : (
-                                <Trash2 className="w-3.5 h-3.5" />
+                                <Trash2 className="w-4 h-4" />
                               )}
                             </Button>
                           </div>
