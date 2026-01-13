@@ -6,7 +6,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/components/ui/ToastProvider';
-import { Check, Clock, History as HistoryIcon, Search, User as UserIcon, Send } from 'lucide-react';
+import { useConfirm } from '@/components/ui/ConfirmProvider';
+import { Check, Clock, History as HistoryIcon, Search, User as UserIcon, Send, X } from 'lucide-react';
 import { format } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
@@ -53,24 +54,39 @@ export default function ConfirmationModal({ open, onOpenChange, onUpdated }: Pro
         refreshInterval: 10000
     });
 
-    const handleConfirm = async (splitId: number) => {
+    const { confirm } = useConfirm();
+
+    const handleAction = async (splitId: number, action: 'confirm' | 'reject') => {
+        const isReject = action === 'reject';
+        const ok = await confirm({
+            title: isReject ? 'Từ chối thanh toán?' : 'Xác nhận thanh toán',
+            message: isReject
+                ? 'Bạn chắc chắn muốn từ chối yêu cầu này? Người nợ sẽ phải gửi lại yêu cầu.'
+                : 'Bạn đã thực sự nhận được tiền từ người này chưa?',
+            type: isReject ? 'danger' : 'info',
+            confirmText: isReject ? 'Từ chối' : 'Đã nhận tiền',
+            cancelText: 'Hủy'
+        });
+
+        if (!ok) return;
+
         try {
             const res = await fetch('/api/payments/confirm', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ splitId })
+                body: JSON.stringify({ splitId, action })
             });
 
             if (res.ok) {
-                addToast('Đã xác nhận thanh toán', 'success');
+                addToast(isReject ? 'Đã từ chối bàn giao' : 'Đã xác nhận thanh toán', 'success');
                 mutate();
                 onUpdated();
             } else {
-                throw new Error('Failed to confirm');
+                throw new Error('Failed to handle payment');
             }
         } catch (error) {
             console.error(error);
-            addToast('Lỗi xác nhận', 'error');
+            addToast('Có lỗi xảy ra', 'error');
         }
     };
 
@@ -223,13 +239,23 @@ export default function ConfirmationModal({ open, onOpenChange, onUpdated }: Pro
                                 </div>
 
                                 {activeTab === 'pendingPayer' && (
-                                    <Button
-                                        className="w-full h-9 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl shadow-md active:scale-[0.98] transition-all"
-                                        onClick={() => handleConfirm(p.id)}
-                                    >
-                                        <Check className="w-4 h-4 mr-2" />
-                                        Xác nhận đã nhận tiền
-                                    </Button>
+                                    <div className="flex gap-2">
+                                        <Button
+                                            variant="outline"
+                                            className="flex-1 h-9 border-red-200 text-red-600 hover:bg-red-50 font-bold rounded-xl active:scale-[0.98] transition-all"
+                                            onClick={() => handleAction(p.id, 'reject')}
+                                        >
+                                            <X className="w-4 h-4 mr-2" />
+                                            Từ chối
+                                        </Button>
+                                        <Button
+                                            className="flex-[2] h-9 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl shadow-md active:scale-[0.98] transition-all"
+                                            onClick={() => handleAction(p.id, 'confirm')}
+                                        >
+                                            <Check className="w-4 h-4 mr-2" />
+                                            Xác nhận
+                                        </Button>
+                                    </div>
                                 )}
                             </div>
                         ))

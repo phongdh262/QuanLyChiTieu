@@ -15,7 +15,7 @@ export async function POST(request: Request) {
         const isAdmin = sessionPayload.role === 'ADMIN';
 
         const body = await request.json();
-        const { splitId } = body;
+        const { splitId, action } = body; // action can be 'confirm' or 'reject'
 
         if (!splitId) {
             return NextResponse.json({ error: 'Split ID is required' }, { status: 400 });
@@ -42,15 +42,18 @@ export async function POST(request: Request) {
         const isPayer = String(split.expense.payerId) === String(actorId);
 
         if (!isPayer && !isAdmin) {
-            return NextResponse.json({ error: 'Only the original payer or admin can confirm this payment' }, { status: 403 });
+            return NextResponse.json({ error: 'Only the original payer or admin can handle this payment' }, { status: 403 });
         }
 
+        const isReject = action === 'reject';
+
         // Update split status
-        await prisma.split.update({
+        await (prisma.split as any).update({
             where: { id: splitId },
             data: {
-                isPaid: true,
-                isPending: false
+                isPaid: isReject ? false : true,
+                isPending: false,
+                paidAt: isReject ? null : undefined
             }
         });
 
@@ -62,14 +65,18 @@ export async function POST(request: Request) {
         const allPaid = allSplits.every(s => (s as any).isPaid);
 
         // Update the global expense status
-        await prisma.expense.update({
+        await (prisma.expense as any).update({
             where: { id: split.expenseId },
-            data: { isSettled: allPaid } as any
+            data: { isSettled: allPaid }
         });
 
-        const workspaceId = split.expense.sheet.workspaceId;
+        const workspaceId = (split as any).expense.sheet.workspaceId;
 
         // Log activity
+        const logMsg = isReject
+            ? `Đã TỪ CHỐI xác nhận thanh toán cho ${split.member.name} trong khoản chi: ${split.expense.description}`
+            : `Đã xác nhận thanh toán cho ${split.member.name} trong khoản chi: ${split.expense.description}`;
+
         await logActivity(
             workspaceId,
             actorId,
@@ -77,10 +84,10 @@ export async function POST(request: Request) {
             'UPDATE',
             'EXPENSE',
             split.expenseId,
-            `Đã xác nhận thanh toán cho ${split.member.name} trong khoản chi: ${split.expense.description}`
+            logMsg
         );
 
-        return NextResponse.json({ success: true, isGlobalSettled: allPaid });
+        return NextResponse.json({ success: true, isGlobalSettled: allPaid, action });
     } catch (error) {
         console.error('Confirm Payment Error:', error);
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
