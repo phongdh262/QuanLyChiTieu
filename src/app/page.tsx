@@ -201,9 +201,9 @@ export default function Home() {
     <div className="min-h-screen flex flex-col bg-slate-50/30">
       <Header user={currentUser} title={activeSheetName} />
 
-      <main className="flex-1 container mx-auto max-w-7xl px-4 py-6">
+      <main className="flex-1 container mx-auto max-w-[1600px] px-4 py-6">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          <div className="lg:col-span-4 space-y-6">
+          <div className="lg:col-span-4 xl:col-span-3 space-y-6">
             {/* LEFT COLUMN: Controls */}
             <div className="sticky top-24 space-y-4">
               {workspace && (
@@ -229,7 +229,7 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="lg:col-span-8 space-y-6">
+          <div className="lg:col-span-8 xl:col-span-9 space-y-6">
             {/* RIGHT COLUMN: Data */}
             {calculations && (
               <>
@@ -242,6 +242,7 @@ export default function Home() {
               bills={bills}
               members={members}
               onDelete={reload}
+              currentUser={currentUser}
             />
           </div>
         </div>
