@@ -44,7 +44,8 @@ export async function GET(
                 type: e.type as 'SHARED' | 'PRIVATE',
                 beneficiaries: beneficiaries,
                 note: e.description,
-                date: e.date // Map date
+                date: e.date, // Map date
+                isSettled: e.isSettled
             };
         });
 
