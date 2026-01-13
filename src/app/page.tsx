@@ -174,13 +174,10 @@ export default function Home() {
   };
 
   if (!workspace && !loading) return <div style={{ padding: 20 }}>No Workspace Found. Seed database.</div>;
-  // Handle loading state within the UI or just return loading if truly nothing to show yet (but we want Header)
-
-  // if (!sheetData && !loading) ... -> removed.
-
-  const currentSheet = sheetData || { expenses: [] }; // Fallback
+  if (loading && !workspace) return <div style={{ padding: 20 }}>Loading...</div>;
 
   const { globalDebts, matrix } = calculations || {};
+  const currentSheet = sheetData || { expenses: [] }; // Fallback
 
   const bills: Bill[] = (currentSheet.expenses || []).map((e: any) => ({
     id: e.id,
@@ -190,7 +187,7 @@ export default function Home() {
     beneficiaries: e.splits.map((s: any) => s.member.name),
     note: e.description,
     date: e.date,
-    isSettled: e.isSettled // Include isSettled mapping
+    isSettled: e.isSettled
   }));
 
   const activeSheetName = sheets.find(s => s.id === currentSheetId)?.name || 'QUẢN LÝ CHI TIÊU';
@@ -204,13 +201,15 @@ export default function Home() {
           <div className="lg:col-span-4 space-y-6">
             {/* LEFT COLUMN: Controls */}
             <div className="sticky top-24 space-y-4">
-              <SheetSelector
-                sheets={sheets}
-                currentSheetId={currentSheetId}
-                workspaceId={workspace!.id}
-                onChange={setCurrentSheetId}
-                onCreated={reload}
-              />
+              {workspace && (
+                <SheetSelector
+                  sheets={sheets}
+                  currentSheetId={currentSheetId}
+                  workspaceId={workspace.id}
+                  onChange={setCurrentSheetId}
+                  onCreated={reload}
+                />
+              )}
               <ActivityLogList />
               <AddBillForm
                 members={members}
