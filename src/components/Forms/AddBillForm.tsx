@@ -137,11 +137,13 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
     };
 
     return (
-        <Card className="w-full shadow-lg border-t-4 border-t-green-500 overflow-hidden" id="add-bill-form">
-            <CardHeader className="bg-gradient-to-r from-green-50/50 to-transparent pb-4">
-                <CardTitle className="text-xl flex items-center gap-2 text-green-700">
-                    <PlusCircle className="w-6 h-6" />
-                    Thêm Hóa Đơn Mới
+        <Card className="w-full premium-card overflow-hidden border-none soft-shadow" id="add-bill-form">
+            <CardHeader className="bg-gradient-to-br from-indigo-50/80 via-white to-green-50/50 pb-6 border-b border-indigo-50/50">
+                <CardTitle className="text-xl flex items-center gap-3 text-slate-800">
+                    <div className="p-2 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl shadow-lg shadow-green-200">
+                        <PlusCircle className="w-5 h-5 text-white" />
+                    </div>
+                    <span className="font-black tracking-tight">Thêm Hóa Đơn Mới</span>
                 </CardTitle>
             </CardHeader>
 

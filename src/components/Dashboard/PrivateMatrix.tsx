@@ -3,8 +3,6 @@ import { Member } from '@/types/expense';
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
-import { Badge } from "@/components/ui/badge";
-import { ArrowRightCircle, Wallet } from 'lucide-react';
 
 interface Props {
     members: Member[];
@@ -25,12 +23,15 @@ export default function PrivateMatrix({ members, matrixData }: Props) {
     // So Beneficiary (Debtor) owes Payer (Creditor).
 
     return (
-        <Card className="shadow-lg border-t-4 border-t-orange-500 overflow-hidden mb-6 transition-all hover:shadow-xl">
-            <CardHeader className="cursor-pointer flex flex-row items-center justify-between space-y-0 pb-4 bg-orange-50/30" onClick={() => setIsOpen(!isOpen)}>
-                <CardTitle className="text-xl flex items-center gap-2">
-                    <span>💸</span> Bảng Ghi Nợ (Chi Riêng)
+        <Card className="premium-card overflow-hidden border-none soft-shadow mb-6 group/matrix">
+            <CardHeader className="cursor-pointer flex flex-row items-center justify-between pb-6 bg-gradient-to-br from-orange-50/50 via-white to-transparent border-b border-orange-100/50" onClick={() => setIsOpen(!isOpen)}>
+                <CardTitle className="text-xl flex items-center gap-3 text-slate-800">
+                    <div className="p-2 bg-gradient-to-br from-orange-500 to-rose-600 rounded-xl shadow-lg shadow-orange-100 group-hover/matrix:scale-110 group-hover/matrix:rotate-3 transition-all duration-500">
+                        <span className="text-sm">💸</span>
+                    </div>
+                    <span className="font-black tracking-tight">Bảng Ghi Nợ (Chi Riêng)</span>
                 </CardTitle>
-                <div className={cn("rounded-full p-2 bg-secondary text-muted-foreground transition-transform duration-200", isOpen && "rotate-180 bg-primary/10 text-primary")}>
+                <div className={cn("rounded-full p-2 bg-white shadow-sm text-slate-400 ring-1 ring-slate-100 transition-transform duration-300 hover:bg-orange-50 hover:text-orange-600", isOpen && "rotate-180 bg-orange-100 text-orange-600")}>
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
                         <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" />
                     </svg>

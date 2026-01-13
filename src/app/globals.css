@@ -73,8 +73,47 @@
     background: linear-gradient(to bottom right, #ffffff, #fcfdff);
   }
 
+  .premium-card-indigo {
+    @apply border-indigo-100/50 shadow-indigo-100/20;
+    background: linear-gradient(135deg, #ffffff 0%, #f5f7ff 100%);
+  }
+
   .glass-effect {
-    @apply backdrop-blur-md bg-white/70 border border-white/30 shadow-sm;
+    @apply backdrop-blur-xl bg-white/70 border border-white/40 shadow-xl;
+  }
+
+  .glass-indigo {
+    @apply backdrop-blur-xl bg-indigo-50/50 border border-indigo-100/50 shadow-indigo-100/20;
+  }
+
+  .soft-shadow {
+    box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.04), 0 5px 15px -5px rgba(0, 0, 0, 0.02);
+  }
+
+  .deep-shadow {
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.08);
+  }
+
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0% {
+      transform: translateY(0px);
+    }
+
+    50% {
+      transform: translateY(-5px);
+    }
+
+    100% {
+      transform: translateY(0px);
+    }
+  }
+
+  .text-gradient-indigo {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-violet-600;
   }
 }
 

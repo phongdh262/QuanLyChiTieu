@@ -16,10 +16,13 @@ export default function SummaryTable({ members, calculations }: Props) {
     const [isOpen, setIsOpen] = React.useState(true);
 
     return (
-        <Card className="shadow-lg border-t-4 border-t-indigo-500 overflow-hidden mb-6 hover:shadow-xl transition-all duration-300">
-            <CardHeader className="cursor-pointer flex flex-row items-center justify-between space-y-0 pb-4 bg-gradient-to-r from-indigo-50/50 to-transparent" onClick={() => setIsOpen(!isOpen)}>
-                <CardTitle className="text-xl flex items-center gap-2 text-indigo-800">
-                    <span className="bg-indigo-100 p-1.5 rounded-full text-indigo-600 text-sm shadow-sm">📊</span> Bảng Tổng Kết
+        <Card className="premium-card overflow-hidden border-none soft-shadow mb-6 group/summary">
+            <CardHeader className="cursor-pointer flex flex-row items-center justify-between pb-6 bg-gradient-to-br from-indigo-50/50 via-white to-transparent border-b border-indigo-50/50" onClick={() => setIsOpen(!isOpen)}>
+                <CardTitle className="text-xl flex items-center gap-3 text-slate-800">
+                    <div className="p-2 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl shadow-lg shadow-blue-100 group-hover/summary:scale-110 group-hover/summary:rotate-3 transition-all duration-500">
+                        <span className="text-sm">📊</span>
+                    </div>
+                    <span className="font-black tracking-tight">Bảng Tổng Kết</span>
                 </CardTitle>
                 <div className={cn("rounded-full p-2 bg-white shadow-sm text-slate-400 ring-1 ring-slate-100 transition-transform duration-300 hover:bg-indigo-50 hover:text-indigo-600", isOpen && "rotate-180 bg-indigo-100 text-indigo-600")}>
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">

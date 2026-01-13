@@ -122,12 +122,14 @@ export default function MemberManager({ members, workspaceId, onUpdate }: Props)
     };
 
     return (
-        <Card className="w-full shadow-md hover:shadow-lg transition-all duration-300 border-t-4 border-t-indigo-500 bg-white group/manager">
-            <CardHeader className="p-4 pb-2 border-b border-slate-50 bg-gradient-to-r from-indigo-50/50 to-transparent">
+        <Card className="w-full premium-card overflow-hidden border-none soft-shadow group/manager">
+            <CardHeader className="p-4 pb-4 border-b border-indigo-50/50 bg-gradient-to-br from-indigo-50/50 via-white to-transparent">
                 <div className="flex items-center justify-between">
-                    <CardTitle className="text-base flex items-center gap-2 text-indigo-800">
-                        <Users className="w-5 h-5 text-indigo-500" />
-                        Thành Viên
+                    <CardTitle className="text-base flex items-center gap-3 text-slate-800">
+                        <div className="p-2 bg-gradient-to-br from-indigo-500 to-violet-600 rounded-xl shadow-lg shadow-indigo-100 group-hover/manager:scale-110 group-hover/manager:rotate-3 transition-all duration-500">
+                            <Users className="w-4 h-4 text-white" />
+                        </div>
+                        <span className="font-black tracking-tight">Thành Viên</span>
                     </CardTitle>
                     <div className="flex items-center gap-1.5">
                         {/* USER RECYCLE BIN */}

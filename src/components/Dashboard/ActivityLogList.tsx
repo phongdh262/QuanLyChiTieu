@@ -56,15 +56,17 @@ export default function ActivityLogList({ members }: Props) {
         : logs.filter(log => log.actorName === selectedUser);
 
     return (
-        <Card className="w-full shadow-md hover:shadow-lg transition-all duration-300 border-t-4 border-t-purple-500 bg-white group/card">
+        <Card className="w-full premium-card overflow-hidden border-none soft-shadow group/card">
             <CardHeader
-                className="p-4 cursor-pointer hover:bg-slate-50 transition-colors flex flex-row items-center justify-between gap-2"
+                className="p-4 cursor-pointer hover:bg-indigo-50/30 transition-all duration-500 flex flex-row items-center justify-between gap-2 border-b border-indigo-50/50"
                 onClick={() => setIsOpen(!isOpen)}
             >
-                <div className="flex items-center gap-2 overflow-hidden">
-                    <History className="w-5 h-5 text-purple-500 shrink-0" />
-                    <CardTitle className="text-base text-purple-700 truncate">
-                        Nhật Ký
+                <div className="flex items-center gap-3 overflow-hidden">
+                    <div className="p-2 bg-gradient-to-br from-indigo-500 to-violet-600 rounded-xl shadow-lg shadow-indigo-100 group-hover/card:scale-110 group-hover/card:rotate-3 transition-all duration-500">
+                        <History className="w-4 h-4 text-white" />
+                    </div>
+                    <CardTitle className="text-base font-black text-slate-800 tracking-tight truncate">
+                        Nhật Ký <span className="text-[10px] text-indigo-400 font-bold ml-1">LIVE</span>
                     </CardTitle>
                 </div>
 

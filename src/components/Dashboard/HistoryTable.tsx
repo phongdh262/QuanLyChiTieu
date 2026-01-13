@@ -23,10 +23,12 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
-  Trash2,
-  Edit,
+  Search,
+  ChevronDown,
+  Check,
   Clock,
-  Search
+  Trash2,
+  Edit
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -232,12 +234,14 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, curre
 
   return (
     <>
-      <Card className="w-full shadow-lg border-t-4 border-t-blue-500 bg-white">
-        <CardHeader className="pb-4 bg-gradient-to-r from-blue-50/50 to-transparent">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-            <CardTitle className="text-xl flex items-center gap-2 text-blue-800">
-              <Clock className="w-6 h-6 text-blue-600" />
-              Lịch Sử Chi Tiêu
+      <Card className="w-full premium-card overflow-hidden border-none soft-shadow group/history">
+        <CardHeader className="pb-6 bg-gradient-to-br from-indigo-50/50 via-white to-transparent border-b border-indigo-50/50">
+          <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6">
+            <CardTitle className="text-xl flex items-center gap-3 text-slate-800">
+              <div className="p-2 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl shadow-lg shadow-blue-100 group-hover/history:scale-110 group-hover/history:rotate-3 transition-all duration-500">
+                <Clock className="w-5 h-5 text-white" />
+              </div>
+              <span className="font-black tracking-tight">Lịch Sử Chi Tiêu</span>
             </CardTitle>
 
             <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
@@ -265,10 +269,10 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, curre
                 />
               </div>
 
-              <div className="flex items-center gap-2">
-                <div className="relative">
+              <div className="flex items-center gap-3">
+                <div className="relative group/sel">
                   <select
-                    className="h-9 w-[150px] rounded-md border border-input bg-white px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 font-medium"
+                    className="h-9 w-[150px] appearance-none rounded-xl border border-slate-100 bg-white/50 pl-4 pr-10 text-xs font-black uppercase tracking-widest text-slate-500 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-400 transition-all cursor-pointer hover:bg-white"
                     value={filterType}
                     onChange={e => setFilterType(e.target.value)}
                   >
@@ -276,11 +280,12 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, curre
                     <option value="SHARED">Chung</option>
                     <option value="PRIVATE">Riêng</option>
                   </select>
+                  <ChevronDown className="absolute right-3 top-2.5 h-4 w-4 text-slate-400 pointer-events-none group-hover/sel:text-indigo-500 transition-colors" />
                 </div>
 
-                <div className="relative">
+                <div className="relative group/sel">
                   <select
-                    className="h-9 w-[180px] rounded-md border border-input bg-white px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 font-medium"
+                    className="h-9 w-[180px] appearance-none rounded-xl border border-slate-100 bg-white/50 pl-4 pr-10 text-xs font-black uppercase tracking-widest text-slate-500 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-400 transition-all cursor-pointer hover:bg-white"
                     value={filterPayer}
                     onChange={e => setFilterPayer(e.target.value)}
                   >
@@ -289,6 +294,7 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, curre
                       <option key={m.id} value={m.name}>{m.name}</option>
                     ))}
                   </select>
+                  <ChevronDown className="absolute right-3 top-2.5 h-4 w-4 text-slate-400 pointer-events-none group-hover/sel:text-indigo-500 transition-colors" />
                 </div>
               </div>
             </div>
@@ -298,22 +304,22 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, curre
         <CardContent className="p-0">
           <div className="overflow-x-auto">
             <Table>
-              <TableHeader className="bg-slate-50 border-b border-slate-100">
-                <TableRow className="hover:bg-transparent">
+              <TableHeader className="bg-slate-50/50 border-b border-indigo-100/50">
+                <TableRow className="hover:bg-transparent border-none">
                   <TableHead className="w-[50px] text-center p-2">
                     <input
                       type="checkbox"
                       checked={isAllSelected}
                       onChange={toggleAll}
-                      className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer accent-blue-600"
+                      className="h-4 w-4 rounded-lg border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer accent-indigo-600"
                     />
                   </TableHead>
-                  <TableHead className="w-[110px] text-xs font-semibold uppercase text-slate-500 whitespace-nowrap">Ngày</TableHead>
-                  <TableHead className="w-auto min-w-[250px] text-xs font-semibold uppercase text-slate-500">Nội dung</TableHead>
-                  <TableHead className="w-[150px] text-right text-xs font-semibold uppercase text-slate-500">Số tiền</TableHead>
-                  <TableHead className="w-[180px] text-left text-xs font-semibold uppercase text-slate-500 pl-6">Người chi</TableHead>
-                  <TableHead className="w-[30%] min-w-[300px] text-left text-xs font-semibold uppercase text-slate-500">Chia cho</TableHead>
-                  <TableHead className="w-[120px] text-center text-xs font-semibold uppercase text-slate-500">Trạng thái</TableHead>
+                  <TableHead className="w-[110px] text-[10px] font-black uppercase tracking-widest text-slate-400 whitespace-nowrap">Ngày</TableHead>
+                  <TableHead className="w-auto min-w-[250px] text-[10px] font-black uppercase tracking-widest text-slate-400">Nội dung</TableHead>
+                  <TableHead className="w-[150px] text-right text-[10px] font-black uppercase tracking-widest text-slate-400">Số tiền</TableHead>
+                  <TableHead className="w-[180px] text-left text-[10px] font-black uppercase tracking-widest text-slate-400 pl-6">Người chi</TableHead>
+                  <TableHead className="w-[30%] min-w-[300px] text-left text-[10px] font-black uppercase tracking-widest text-slate-400">Chia cho</TableHead>
+                  <TableHead className="w-[120px] text-center text-[10px] font-black uppercase tracking-widest text-slate-400">Trạng thái</TableHead>
                   <TableHead className="w-[70px]"></TableHead>
                 </TableRow>
               </TableHeader>
@@ -334,9 +340,9 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, curre
                       <TableRow
                         key={b.id}
                         className={cn(
-                          "group transition-colors duration-200 border-b border-slate-50 last:border-0",
-                          isSelected ? "bg-blue-50/60" : "hover:bg-slate-50/80",
-                          b.isSettled ? "opacity-60 bg-slate-50/30" : "bg-white"
+                          "group transition-all duration-500 border-b border-indigo-50/50 last:border-0",
+                          isSelected ? "bg-indigo-50/60" : "bg-white hover:bg-indigo-50/30",
+                          b.isSettled ? "opacity-60 bg-slate-50/30 active:scale-[0.99]" : "active:scale-[0.995]"
                         )}
                       >
                         <TableCell className="text-center p-2">
@@ -347,14 +353,14 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, curre
                             className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer accent-blue-600"
                           />
                         </TableCell>
-                        <TableCell className="py-4">
+                        <TableCell className="py-5">
                           <div className="flex flex-col">
-                            <span className={cn("text-sm font-semibold", b.isSettled ? "text-slate-500 line-through" : "text-slate-700")}>
+                            <span className={cn("text-sm font-black tracking-tight", b.isSettled ? "text-slate-400 line-through" : "text-slate-700")}>
                               {b.date ? new Date(b.date).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' }) : '-'}
                             </span>
                             <span className={cn(
-                              "text-[10px] uppercase font-bold mt-1 w-fit px-1.5 py-0.5 rounded-sm bg-opacity-10",
-                              b.type === 'SHARED' ? "text-blue-600 bg-blue-100" : "text-orange-600 bg-orange-100"
+                              "text-[9px] uppercase font-black mt-1.5 w-fit px-2 py-0.5 rounded-md tracking-widest",
+                              b.type === 'SHARED' ? "text-indigo-600 bg-indigo-50 border border-indigo-100" : "text-orange-600 bg-orange-50 border border-orange-100"
                             )}>
                               {b.type === 'SHARED' ? 'CHUNG' : 'RIÊNG'}
                             </span>
@@ -369,8 +375,8 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, curre
                           </div>
                         </TableCell>
 
-                        <TableCell className="text-right py-4">
-                          <span className={cn("text-base font-bold tabular-nums", b.isSettled ? "text-slate-400 line-through" : "text-slate-900")}>
+                        <TableCell className="text-right py-5">
+                          <span className={cn("text-lg font-black tabular-nums tracking-tighter", b.isSettled ? "text-slate-300 line-through" : "text-slate-900")}>
                             {formatMoney(b.amount)}
                           </span>
                         </TableCell>
@@ -483,12 +489,12 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, curre
                           </button>
                         </TableCell>
 
-                        <TableCell className="py-4 text-right pr-3">
-                          <div className="flex items-center justify-end gap-1 transition-opacity">
+                        <TableCell className="py-4 text-right pr-4">
+                          <div className="flex items-center justify-end gap-1.5 transition-opacity duration-300">
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="h-8 w-8 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-full"
+                              className="h-9 w-9 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all active:scale-90"
                               onClick={() => setEditingBill(b)}
                             >
                               <Edit className="w-4 h-4" />
@@ -496,11 +502,11 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, curre
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="h-8 w-8 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-full"
+                              className="h-9 w-9 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all active:scale-90"
                               onClick={() => handleDeleteClick(b.id)}
                             >
                               {deletingId === b.id ? (
-                                <span className="animate-spin text-[10px]">⏳</span>
+                                <div className="w-4 h-4 border-2 border-red-500 border-t-transparent rounded-full animate-spin" />
                               ) : (
                                 <Trash2 className="w-4 h-4" />
                               )}

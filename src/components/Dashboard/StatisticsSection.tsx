@@ -30,7 +30,7 @@ interface Props {
 }
 
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { BarChart3, PieChart as PieChartIcon } from "lucide-react";
+import { BarChart3 } from "lucide-react";
 
 export default function StatisticsSection({ members, calculations }: Props) {
     // ... existing logic ...
@@ -141,14 +141,16 @@ export default function StatisticsSection({ members, calculations }: Props) {
     }
 
     return (
-        <Card className="w-full shadow-lg hover:shadow-xl transition-all duration-300 border-t-4 border-t-indigo-500 bg-white overflow-hidden">
-            <CardHeader className="bg-gradient-to-r from-indigo-50/50 to-transparent pb-4">
-                <CardTitle className="text-xl flex items-center gap-2 text-indigo-700">
-                    <BarChart3 className="w-6 h-6" />
-                    Thống Kê Tổng Quan
+        <Card className="w-full premium-card overflow-hidden border-none soft-shadow group/stats">
+            <CardHeader className="bg-gradient-to-br from-indigo-50/50 via-white to-transparent pb-6 border-b border-indigo-50/50">
+                <CardTitle className="text-xl flex items-center gap-3 text-slate-800">
+                    <div className="p-2 bg-gradient-to-br from-indigo-500 to-violet-600 rounded-xl shadow-lg shadow-indigo-100 group-hover/stats:scale-110 group-hover/stats:rotate-3 transition-all duration-500">
+                        <BarChart3 className="w-5 h-5 text-white" />
+                    </div>
+                    <span className="font-black tracking-tight">Thống Kê Tổng Quan</span>
                 </CardTitle>
             </CardHeader>
-            <CardContent className="p-6">
+            <CardContent className="p-8">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
                     {/* Bar Chart Container */}
                     <div className="min-h-[300px] flex justify-center items-center w-full">
