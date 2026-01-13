@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Member } from '@/types/expense';
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { History, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
+import useSWR from 'swr';
 
 interface Log {
     id: number;
@@ -16,32 +17,21 @@ interface Props {
     members: Member[];
 }
 
+const fetcher = (url: string) => fetch(url).then(r => r.json());
+
 export default function ActivityLogList({ members }: Props) {
     const [isOpen, setIsOpen] = useState(true); // Default OPEN
-    const [logs, setLogs] = useState<Log[]>([]);
-    const [loading, setLoading] = useState(false);
     const [selectedUser, setSelectedUser] = useState<string>('all');
 
-    useEffect(() => {
-        if (isOpen && logs.length === 0) {
-            fetchLogs();
+    const { data: logs = [], isLoading } = useSWR<Log[]>(
+        isOpen ? '/api/activity-logs' : null,
+        fetcher,
+        {
+            refreshInterval: 10000, // Poll every 10 seconds
+            revalidateOnFocus: true,
+            dedupingInterval: 2000
         }
-    }, [isOpen, logs.length]);
-
-    const fetchLogs = async () => {
-        setLoading(true);
-        try {
-            const res = await fetch('/api/activity-logs');
-            if (res.ok) {
-                const data = await res.json();
-                setLogs(data);
-            }
-        } catch (e) {
-            console.error(e);
-        } finally {
-            setLoading(false);
-        }
-    };
+    );
 
     const getActionColor = (action: string) => {
         switch (action) {
@@ -103,7 +93,7 @@ export default function ActivityLogList({ members }: Props) {
             {isOpen && (
                 <CardContent className="p-0 border-t border-slate-100 animate-in slide-in-from-top-2 duration-200">
                     <div className="h-[350px] overflow-y-auto p-4 space-y-3 custom-scrollbar">
-                        {loading ? (
+                        {isLoading && logs.length === 0 ? (
                             <div className="flex justify-center p-4 text-slate-400 font-medium italic">Đang tải dữ liệu...</div>
                         ) : filteredLogs.length === 0 ? (
                             <div className="text-center p-4 text-slate-400 italic">
