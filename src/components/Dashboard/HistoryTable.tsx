@@ -306,8 +306,11 @@ export default function HistoryTable({ bills, members, onDelete }: Props) {
                               <span className="text-xs text-slate-400 font-medium italic">Tất cả</span>
                             ) : (
                               (b.beneficiaries || []).map((name, idx) => (
-                                <div key={idx} className={cn("w-6 h-6 rounded-full flex items-center justify-center text-white font-bold text-xs shadow-sm ring-1 ring-white", getAvatarColor(name))} title={name}>
-                                  {name.charAt(0).toUpperCase()}
+                                <div key={idx} className="flex items-center gap-1.5 bg-white border border-slate-200 rounded-full pl-0.5 pr-2 py-0.5 shadow-sm">
+                                  <div className={cn("w-5 h-5 rounded-full flex items-center justify-center text-white font-bold text-[10px]", getAvatarColor(name))}>
+                                    {name.charAt(0).toUpperCase()}
+                                  </div>
+                                  <span className="text-xs font-medium text-slate-600">{name}</span>
                                 </div>
                               ))
                             )}
