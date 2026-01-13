@@ -174,20 +174,23 @@ export default function Home() {
   };
 
   if (!workspace && !loading) return <div style={{ padding: 20 }}>No Workspace Found. Seed database.</div>;
-  if (!sheetData && !loading) return <div style={{ padding: 20 }}>No Sheet Selected. Create one.</div>;
-  if (loading && !sheetData) return <div style={{ padding: 20 }}>Loading...</div>;
+  // Handle loading state within the UI or just return loading if truly nothing to show yet (but we want Header)
+
+  // if (!sheetData && !loading) ... -> removed.
+
+  const currentSheet = sheetData || { expenses: [] }; // Fallback
 
   const { globalDebts, matrix } = calculations || {};
-  const currentSheet = sheetData;
 
-  const bills: Bill[] = currentSheet.expenses.map((e: any) => ({
+  const bills: Bill[] = (currentSheet.expenses || []).map((e: any) => ({
     id: e.id,
     amount: e.amount,
     payer: e.payer.name,
     type: e.type,
     beneficiaries: e.splits.map((s: any) => s.member.name),
     note: e.description,
-    date: e.date
+    date: e.date,
+    isSettled: e.isSettled // Include isSettled mapping
   }));
 
   const activeSheetName = sheets.find(s => s.id === currentSheetId)?.name || 'QUẢN LÝ CHI TIÊU';
