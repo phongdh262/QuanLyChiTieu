@@ -29,13 +29,16 @@ export function calculateFinalBalances(members: string[], bills: Bill[]): Calcul
             return;
         }
 
-        // Stats: Track Paid Amount
+        // Stats: Track Paid Amount (Always track spending)
         stats[payer].totalPaid += amount;
         if (type === 'SHARED') {
             stats[payer].sharedPaid += amount;
         } else {
             stats[payer].privatePaid += amount;
         }
+
+        // If settled, DO NOT calculate debt/balance
+        if (bill.isSettled) return;
 
         // Main Balance Logic (Global)
         balances[payer] += amount;
