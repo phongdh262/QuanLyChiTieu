@@ -28,6 +28,7 @@ ENV NEXT_TELEMETRY_DISABLED 1
 
 # Generate Prisma Client
 RUN npx prisma generate
+RUN npx prisma db push
 
 RUN \
   if [ -f yarn.lock ]; then yarn run build; \
