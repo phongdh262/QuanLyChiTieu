@@ -61,8 +61,8 @@
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
     background-image:
-      radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.03) 0, transparent 50%),
-      radial-gradient(at 100% 0%, rgba(147, 51, 234, 0.03) 0, transparent 50%);
+      radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.03) 0%, transparent 50%),
+      radial-gradient(at 100% 0%, rgba(147, 51, 234, 0.03) 0%, transparent 50%);
     background-attachment: fixed;
   }
 }
@@ -83,15 +83,15 @@
   }
 
   .glass-indigo {
-    @apply backdrop-blur-xl bg-indigo-50/50 border border-indigo-100/50 shadow-indigo-100/20;
+    @apply backdrop-blur-xl bg-indigo-50/50 border border-indigo-100/50 shadow-indigo-100;
   }
 
   .soft-shadow {
-    box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.04), 0 5px 15px -5px rgba(0, 0, 0, 0.02);
+    @apply shadow-soft;
   }
 
   .deep-shadow {
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.08);
+    @apply shadow-deep;
   }
 
   .animate-float {
@@ -117,75 +117,76 @@
   }
 }
 
-/* Custom Utilities for compatibility during migration */
-.card-header {
-  @apply flex justify-between items-center mb-4 pb-2 border-b;
-}
+@layer utilities {
 
-.card-toggle-icon {
-  @apply w-8 h-8 flex items-center justify-center rounded-full bg-secondary text-muted-foreground transition-all;
-}
+  /* Custom Utilities for compatibility during migration */
+  .card-header {
+    @apply flex justify-between items-center mb-4 pb-2 border-b;
+  }
 
-.card-toggle-icon.open {
-  @apply bg-blue-50 text-primary;
-}
+  .card-toggle-icon {
+    @apply w-8 h-8 flex items-center justify-center rounded-full bg-secondary text-muted-foreground transition-all;
+  }
 
-.table-container {
-  @apply overflow-x-auto;
-}
+  .card-toggle-icon.open {
+    @apply bg-blue-50 text-primary;
+  }
 
-.table-report th {
-  @apply bg-transparent text-muted-foreground font-semibold text-xs uppercase tracking-wider p-4 text-left border-t border-b-2;
-}
+  .table-container {
+    @apply overflow-x-auto;
+  }
 
-.table-report td {
-  @apply p-4 border-b text-secondary-foreground align-middle;
-}
+  .table-report th {
+    @apply bg-transparent text-muted-foreground font-semibold text-xs uppercase tracking-wider p-4 text-left border-t border-b-2;
+  }
 
-.amount {
-  @apply text-right tabular-nums font-semibold;
-}
+  .table-report td {
+    @apply p-4 border-b text-secondary-foreground align-middle;
+  }
 
-.text-success {
-  @apply text-green-500;
-}
+  .amount {
+    @apply text-right tabular-nums font-semibold;
+  }
 
-.text-danger {
-  @apply text-red-500;
-}
+  .text-success {
+    @apply text-green-500;
+  }
 
-.text-muted {
-  @apply text-muted-foreground;
-}
+  .text-danger {
+    @apply text-red-500;
+  }
 
+  .text-muted {
+    @apply text-muted-foreground;
+  }
 
+  .avatar {
+    @apply w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-sm;
+  }
 
-.avatar {
-  @apply w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-sm;
-}
+  .tag {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold gap-1;
+  }
 
-.tag {
-  @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold gap-1;
-}
+  .tag-shared {
+    @apply bg-indigo-100 text-indigo-700;
+  }
 
-.tag-shared {
-  @apply bg-indigo-100 text-indigo-700;
-}
+  .tag-private {
+    @apply bg-orange-100 text-orange-800;
+  }
 
-.tag-private {
-  @apply bg-orange-100 text-orange-800;
-}
+  .btn-icon {
+    @apply w-9 h-9 p-0 rounded-md flex items-center justify-center border-none cursor-pointer transition-colors;
+  }
 
-.btn-icon {
-  @apply w-9 h-9 p-0 rounded-md flex items-center justify-center border-none cursor-pointer transition-colors;
-}
+  .btn-icon-gray {
+    @apply bg-secondary text-secondary-foreground hover:bg-gray-200 hover:text-black;
+  }
 
-.btn-icon-gray {
-  @apply bg-secondary text-secondary-foreground hover:bg-gray-200 hover:text-black;
-}
-
-.btn-icon-danger {
-  @apply bg-red-100 text-red-500 hover:bg-red-200 hover:text-red-700;
+  .btn-icon-danger {
+    @apply bg-red-100 text-red-500 hover:bg-red-200 hover:text-red-700;
+  }
 }
 
 .fade-in {

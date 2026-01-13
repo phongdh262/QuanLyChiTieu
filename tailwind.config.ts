@@ -57,6 +57,11 @@ const config: Config = {
                 lg: 'var(--radius)',
                 md: 'calc(var(--radius) - 2px)',
                 sm: 'calc(var(--radius) - 4px)'
+            },
+            boxShadow: {
+                premium: '0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.02)',
+                soft: '0 10px 30px -5px rgba(0, 0, 0, 0.04), 0 5px 15px -5px rgba(0, 0, 0, 0.02)',
+                deep: '0 25px 50px -12px rgba(0, 0, 0, 0.08)',
             }
         }
     },
