@@ -151,6 +151,7 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, curre
   const handleToggleSettle = async (bill: Bill, memberName?: string) => {
     // Permission Check: Strictly Payer only
     const canSettleGlobal = currentUser?.name === bill.payer;
+    let forceReject = false;
 
     // Special logic for unmarking a PAID split
     const split = memberName ? bill.splits?.find(s => s.member.name === memberName) : null;
@@ -163,14 +164,28 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, curre
 
     // CASE: Payer marks an UNPAID split as PAID
     if (memberName && !isCurrentlyPaid && currentUser?.name === bill.payer) {
-      const ok = await confirm({
-        title: 'Xác nhận thanh toán',
-        message: `Bạn xác nhận ${memberName} đã thanh toán khoản này?`,
+      const result = await confirm({
+        title: 'Xác nhận khoản thu',
+        message: `Bạn muốn xác nhận ${memberName} đã trả tiền hay từ chối yêu cầu này?`,
         type: 'info',
-        confirmText: 'Xác nhận',
-        cancelText: 'Hủy'
+        confirmText: 'Xác nhận đã nhận',
+        cancelText: 'Hủy',
+        rejectText: 'Không xác nhận' // New 3rd option
       });
-      if (!ok) return;
+
+      if (result === false) return; // Cancel
+
+      if (result === 'reject') {
+        forceReject = true;
+      }
+
+      // If 'reject', we treat it as strictly *rejecting* a request (if any) or doing nothing if manual.
+      // Actually, if manual marking, 'Not Confirming' just means cancelling.
+      // But if it's a PENDING request, we need to handle Reject vs Confirm.
+      // Wait, this block is for UNPAID split. So Payer is initiating. 
+      // "Rejecting" implies they don't want to mark it paid. So essentially Cancel.
+      // The USER asked for: "Xác nhận" or "Không xác nhận" when clicking on a PENDING avatar?
+      // Let's verify where Pending logic is handled.
     }
 
     if (isCurrentlyPaid) {
@@ -192,6 +207,10 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, curre
           payload.paymentFor = memberName;
           // Standard toggle
           let nextState = !split.isPaid;
+
+          if (forceReject) {
+            nextState = false;
+          }
 
           // Special Case: Debtor cancelling their own PENDING request
           // If it's Pending (and logically isPaid is false), clicking it should revert to false (Unpaid), not toggle to true.

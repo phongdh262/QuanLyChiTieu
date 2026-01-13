@@ -7,10 +7,11 @@ interface ConfirmOptions {
     confirmText?: string;
     cancelText?: string;
     type?: 'danger' | 'info';
+    rejectText?: string;
 }
 
 interface ConfirmContextType {
-    confirm: (options: ConfirmOptions | string) => Promise<boolean>;
+    confirm: (options: ConfirmOptions | string) => Promise<boolean | 'reject'>;
 }
 
 const ConfirmContext = createContext<ConfirmContextType | undefined>(undefined);
@@ -26,7 +27,7 @@ export const useConfirm = () => {
 export default function ConfirmProvider({ children }: { children: React.ReactNode }) {
     const [isOpen, setIsOpen] = useState(false);
     const [options, setOptions] = useState<ConfirmOptions>({ message: '' });
-    const resolveRef = useRef<(value: boolean) => void>(() => { });
+    const resolveRef = useRef<(value: boolean | 'reject') => void>(() => { });
 
     const confirm = (opts: ConfirmOptions | string) => {
         const finalOptions = typeof opts === 'string' ? { message: opts } : opts;
@@ -38,7 +39,7 @@ export default function ConfirmProvider({ children }: { children: React.ReactNod
             ...finalOptions
         });
         setIsOpen(true);
-        return new Promise<boolean>((resolve) => {
+        return new Promise<boolean | 'reject'>((resolve) => {
             resolveRef.current = resolve;
         });
     };
@@ -51,6 +52,11 @@ export default function ConfirmProvider({ children }: { children: React.ReactNod
     const handleCancel = () => {
         setIsOpen(false);
         resolveRef.current(false);
+    };
+
+    const handleReject = () => {
+        setIsOpen(false);
+        resolveRef.current('reject');
     };
 
     return (
@@ -68,6 +74,14 @@ export default function ConfirmProvider({ children }: { children: React.ReactNod
                                 {options.message}
                             </p>
                             <div className="flex justify-end gap-3">
+                                {options.rejectText && (
+                                    <button
+                                        onClick={handleReject}
+                                        className="px-4 py-2 bg-white border border-red-200 text-red-600 rounded-md font-medium hover:bg-red-50 transition-colors"
+                                    >
+                                        {options.rejectText}
+                                    </button>
+                                )}
                                 <button
                                     onClick={handleCancel}
                                     className="px-4 py-2 bg-white border border-slate-300 rounded-md text-slate-700 font-medium hover:bg-slate-50 transition-colors"
@@ -77,8 +91,8 @@ export default function ConfirmProvider({ children }: { children: React.ReactNod
                                 <button
                                     onClick={handleConfirm}
                                     className={`px-4 py-2 rounded-md text-white font-medium shadow-sm transition-colors ${options.type === 'danger'
-                                            ? 'bg-red-600 hover:bg-red-700 border-red-700'
-                                            : 'bg-blue-600 hover:bg-blue-700 border-blue-700'
+                                        ? 'bg-red-600 hover:bg-red-700 border-red-700'
+                                        : 'bg-blue-600 hover:bg-blue-700 border-blue-700'
                                         }`}
                                 >
                                     {options.confirmText}
