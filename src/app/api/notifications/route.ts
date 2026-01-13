@@ -11,8 +11,8 @@ export async function GET() {
 
         const userId = sessionPayload.id as number;
 
-        // Fetch all pending splits where the parent expense was paid by the current user
-        const pendingPayments = await prisma.split.findMany({
+        // 1. Tasks I need to confirm (I am the Payer)
+        const pendingPayer = await (prisma.split as any).findMany({
             where: {
                 isPending: true,
                 isPaid: false,
@@ -21,7 +21,7 @@ export async function GET() {
                 }
             },
             include: {
-                expense: true,
+                expense: { include: { payer: true } },
                 member: true
             },
             orderBy: {
@@ -29,7 +29,48 @@ export async function GET() {
             }
         });
 
-        return NextResponse.json(pendingPayments);
+        // 2. Requests I sent (I am the Debtor - waiting for confirmation)
+        const pendingDebtor = await (prisma.split as any).findMany({
+            where: {
+                isPending: true,
+                isPaid: false,
+                memberId: userId
+            },
+            include: {
+                expense: { include: { payer: true } },
+                member: true
+            },
+            orderBy: {
+                paidAt: 'desc'
+            }
+        });
+
+        // 3. History: Confirmed splits involving me (as payer or member)
+        const history = await (prisma.split as any).findMany({
+            where: {
+                isPaid: true,
+                isPending: false,
+                OR: [
+                    { expense: { payerId: userId } },
+                    { memberId: userId }
+                ]
+            },
+            include: {
+                expense: { include: { payer: true } },
+                member: true
+            },
+            orderBy: {
+                paidAt: 'desc'
+            },
+            take: 50
+        });
+
+        return NextResponse.json({
+            pendingPayer,
+            pendingDebtor,
+            history,
+            totalPending: pendingPayer.length // For the bell badge
+        });
     } catch (error) {
         console.error('Fetch Notifications Error:', error);
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });

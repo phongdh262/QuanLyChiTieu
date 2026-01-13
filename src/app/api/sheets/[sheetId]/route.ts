@@ -37,8 +37,8 @@ export async function GET(
         // 3. Transform DB Data to Service Types
         const memberNames = members.map(m => m.name);
 
-        const bills: Bill[] = sheet.expenses.map(e => {
-            const beneficiaries = e.splits.map(s => s.member.name);
+        const bills: Bill[] = sheet.expenses.map((e: any) => {
+            const beneficiaries = e.splits.map((s: any) => s.member.name);
             return {
                 id: e.id,
                 amount: e.amount,
@@ -48,9 +48,11 @@ export async function GET(
                 note: e.description,
                 date: e.date, // Map date
                 isSettled: e.isSettled,
-                splits: e.splits.map(s => ({
+                splits: e.splits.map((s: any) => ({
                     member: { name: s.member.name },
                     isPaid: s.isPaid,
+                    isPending: s.isPending,
+                    paidAt: s.paidAt,
                     amount: s.amount
                 }))
             };

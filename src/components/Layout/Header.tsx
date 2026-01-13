@@ -39,7 +39,7 @@ export default function Header({ user, title, onUpdated }: Props) {
         refreshInterval: 10000
     });
 
-    const pendingCount = Array.isArray(notifications) ? notifications.length : 0;
+    const pendingCount = notifications?.totalPending || 0;
 
     const handleLogout = async () => {
         await fetch('/api/auth/logout', { method: 'POST' });

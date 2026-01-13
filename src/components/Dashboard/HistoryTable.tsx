@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState } from 'react';
 import { Bill, Member, CurrentUser } from '@/types/expense';
 import EditBillModal from './EditBillModal';
@@ -148,26 +150,31 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, curre
   const handleToggleSettle = async (bill: Bill, memberName?: string) => {
     // Permission Check
     const canSettleGlobal = currentUser?.role === 'ADMIN' || currentUser?.name === bill.payer;
-    const canSettleSplit = canSettleGlobal || (memberName && currentUser?.name === memberName);
 
-    if (memberName && !canSettleSplit) {
-      addToast('Bạn chỉ có thể tự xác nhận phần của chính mình!', 'warning');
+    // Special logic for unmarking a PAID split
+    const split = memberName ? bill.splits?.find(s => s.member.name === memberName) : null;
+    const isCurrentlyPaid = memberName ? split?.isPaid : bill.isSettled;
+
+    if (isCurrentlyPaid && !canSettleGlobal) {
+      addToast('Chỉ người chi hoặc Admin mới có quyền hủy xác nhận thanh toán!', 'warning');
       return;
     }
 
-    if (!memberName && !canSettleGlobal) {
-      addToast('Chỉ người chi hoặc Admin mới được xác nhận toàn bộ hóa đơn!', 'warning');
-      return;
+    if (isCurrentlyPaid) {
+      const ok = await confirm({
+        title: 'Hủy xác nhận thanh toán?',
+        message: `Bạn có chắc chắn muốn chuyển trạng thái khoản của ${memberName || 'tất cả'} sang 'Chưa trả' không?`,
+        type: 'danger',
+        confirmText: 'Đồng ý',
+        cancelText: 'Hủy'
+      });
+      if (!ok) return;
     }
 
     try {
-      // If memberName is provided, we settle for that specific split
-      // Otherwise fallback to old behavior (or maybe ignore if we only want split settlement)
-
-      const payload: any = { isSettled: !bill.isSettled }; // Defaut legacy
+      const payload: any = { isSettled: !bill.isSettled };
 
       if (memberName) {
-        const split = bill.splits?.find(s => s.member.name === memberName);
         if (split) {
           payload.paymentFor = memberName;
           payload.isPaid = !split.isPaid;
@@ -372,9 +379,19 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, curre
                               const split = b.splits?.find(s => s.member.name === name);
                               const isPaid = split?.isPaid;
                               const isPending = split?.isPending;
+                              const paidAt = split?.paidAt;
 
-                              // Permission: Payer, Admin, OR The Beneficiary themselves
-                              const canSettleSplit = canSettleGlobal || currentUser?.name === name;
+                              // Permission Logic:
+                              // - If Paid: Only Payer/Admin can untoggle
+                              // - If Pending: Debtor can cancel, Payer/Admin can confirm
+                              // - If Unpaid: Both can mark as Paid (Debtor -> Pending, Payer -> Paid)
+                              const canToggle = isPaid
+                                ? canSettleGlobal
+                                : (canSettleGlobal || currentUser?.name === name);
+
+                              const formattedPaidAt = paidAt ? new Date(paidAt).toLocaleString('vi-VN', {
+                                day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit'
+                              }) : '';
 
                               return (
                                 <button key={idx}
@@ -382,10 +399,10 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, curre
                                     e.stopPropagation();
                                     handleToggleSettle(b, name);
                                   }}
-                                  disabled={!canSettleSplit}
+                                  disabled={!canToggle}
                                   className={cn(
                                     "flex items-center gap-2 border rounded-full pl-1 pr-3 py-1 transition-all duration-200",
-                                    canSettleSplit ? "hover:shadow-md active:scale-95 cursor-pointer" : "cursor-not-allowed opacity-70",
+                                    canToggle ? "hover:shadow-md active:scale-95 cursor-pointer" : "cursor-not-allowed opacity-70",
                                     isPaid
                                       ? "bg-green-50 border-green-200 hover:bg-green-100"
                                       : isPending
@@ -393,12 +410,12 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, curre
                                         : "bg-slate-50 border-slate-200 hover:bg-slate-100"
                                   )}
                                   title={
-                                    !canSettleSplit
-                                      ? 'Chỉ người chi hoặc người nợ mới được xác nhận'
+                                    !canToggle
+                                      ? (isPaid ? 'Chỉ người chi mới được hủy xác nhận' : 'Bạn không có quyền thao tác phần này')
                                       : isPaid
-                                        ? `${name} đã trả (Click để hoàn tác)`
+                                        ? `${name} đã trả (Xác nhận lúc: ${formattedPaidAt}). Click để hoàn tác.`
                                         : isPending
-                                          ? `${name} đang chờ người chi xác nhận`
+                                          ? `${name} đang chờ người chi xác nhận. Click để hủy yêu cầu.`
                                           : `Đánh dấu ${name} đã trả`
                                   }
                                 >
