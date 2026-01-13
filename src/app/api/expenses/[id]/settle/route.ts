@@ -23,7 +23,7 @@ export async function POST(
             const member = await prisma.member.findFirst({
                 where: {
                     name: paymentFor,
-                    workspaceId: parseInt(sessionPayload.workspaceId)
+                    workspaceId: parseInt(sessionPayload.workspaceId as string)
                 }
             });
 
