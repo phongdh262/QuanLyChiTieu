@@ -45,11 +45,15 @@ export async function GET() {
             }
         });
 
-        // 3. History: Confirmed splits involving me (as payer or member)
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+        // 3. History: Confirmed splits involving me in the last 30 days
         const history = await (prisma.split as any).findMany({
             where: {
                 isPaid: true,
                 isPending: false,
+                paidAt: { gte: thirtyDaysAgo },
                 OR: [
                     { expense: { payerId: userId } },
                     { memberId: userId }
@@ -62,7 +66,7 @@ export async function GET() {
             orderBy: {
                 paidAt: 'desc'
             },
-            take: 50
+            take: 200 // Safety cap
         });
 
         return NextResponse.json({
