@@ -1,11 +1,12 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useConfirm } from '@/components/ui/ConfirmProvider';
 import { useToast } from '@/components/ui/ToastProvider';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Check, X, Trash2, Edit, Plus } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Check, X, Trash2, Edit, Plus, RotateCcw, History } from "lucide-react";
 
 interface Sheet {
     id: number;
@@ -31,6 +32,32 @@ export default function SheetSelector({ sheets, currentSheetId, workspaceId, onC
     const [isEditing, setIsEditing] = useState(false);
     const [editName, setEditName] = useState('');
 
+    // Recycle Bin State
+    const [isBinOpen, setIsBinOpen] = useState(false);
+    const [deletedSheets, setDeletedSheets] = useState<Sheet[]>([]);
+    const [loadingBin, setLoadingBin] = useState(false);
+
+    const fetchDeletedSheets = async () => {
+        setLoadingBin(true);
+        try {
+            const res = await fetch('/api/sheets/deleted');
+            if (res.ok) {
+                const data = await res.json();
+                setDeletedSheets(data);
+            }
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setLoadingBin(false);
+        }
+    };
+
+    useEffect(() => {
+        if (isBinOpen) {
+            fetchDeletedSheets();
+        }
+    }, [isBinOpen]);
+
     const handleCreate = async () => {
         try {
             const res = await fetch('/api/sheets', {
@@ -54,9 +81,9 @@ export default function SheetSelector({ sheets, currentSheetId, workspaceId, onC
         if (!currentSheetId) return;
         const ok = await confirm({
             title: 'Xóa bảng chi tiêu',
-            message: '⚠️ CẢNH BÁO: Hành động này sẽ xóa TOÀN BỘ dữ liệu chi tiêu trong tháng này và KHÔNG THỂ khôi phục.\n\nBạn có chắc chắn muốn xóa?',
+            message: '⚠️ Bạn có chắc chắn muốn xóa tháng này? Dữ liệu sẽ được chuyển vào Thùng rác và có thể khôi phục lại sau.',
             type: 'danger',
-            confirmText: 'Xóa vĩnh viễn',
+            confirmText: 'Xác nhận xóa',
             cancelText: 'Hủy'
         });
         if (!ok) return;
@@ -65,11 +92,23 @@ export default function SheetSelector({ sheets, currentSheetId, workspaceId, onC
             const res = await fetch(`/api/sheets/${currentSheetId}`, { method: 'DELETE' });
             if (!res.ok) throw new Error('Failed');
             onCreated(); // Reload workspace
-            // Parent will likely reset currentSheetId if it was deleted
-            addToast('Đã xóa bảng', 'success');
+            addToast('Đã chuyển vào thùng rác', 'success');
         } catch (e) {
             console.error(e);
             addToast('Lỗi khi xóa bảng', 'error');
+        }
+    };
+
+    const handleRestore = async (id: number) => {
+        try {
+            const res = await fetch(`/api/sheets/${id}/restore`, { method: 'POST' });
+            if (!res.ok) throw new Error('Failed');
+            onCreated();
+            fetchDeletedSheets();
+            addToast('Đã khôi phục bảng', 'success');
+        } catch (e) {
+            console.error(e);
+            addToast('Lỗi khi khôi phục', 'error');
         }
     };
 
@@ -191,6 +230,50 @@ export default function SheetSelector({ sheets, currentSheetId, workspaceId, onC
                         </Button>
 
                         <div className="w-px h-5 bg-slate-200 mx-1"></div>
+
+                        {/* RECYCLE BIN */}
+                        <Dialog open={isBinOpen} onOpenChange={setIsBinOpen}>
+                            <DialogTrigger asChild>
+                                <Button
+                                    variant="outline"
+                                    size="icon"
+                                    className="h-9 w-9 text-slate-400 hover:text-purple-600 border-slate-200 hover:bg-purple-50"
+                                    title="Thùng rác"
+                                >
+                                    <RotateCcw className="w-4 h-4" />
+                                </Button>
+                            </DialogTrigger>
+                            <DialogContent className="max-w-md">
+                                <DialogHeader>
+                                    <DialogTitle className="flex items-center gap-2">
+                                        <History className="w-5 h-5 text-purple-500" />
+                                        Bảng chi tiêu đã xóa (Thùng rác)
+                                    </DialogTitle>
+                                </DialogHeader>
+                                <div className="space-y-4 py-4 max-h-[400px] overflow-y-auto">
+                                    {loadingBin ? (
+                                        <div className="text-center py-8 text-slate-400 italic">Đang tải...</div>
+                                    ) : deletedSheets.length === 0 ? (
+                                        <div className="text-center py-8 text-slate-400 italic">Thùng rác trống.</div>
+                                    ) : (
+                                        deletedSheets.map(s => (
+                                            <div key={s.id} className="flex items-center justify-between p-3 rounded-lg border border-slate-100 bg-slate-50">
+                                                <span className="font-bold text-slate-700">{s.name}</span>
+                                                <Button
+                                                    size="sm"
+                                                    variant="secondary"
+                                                    onClick={() => handleRestore(s.id)}
+                                                    className="h-8 gap-1.5 bg-white border border-slate-200 hover:bg-green-50 hover:text-green-600 hover:border-green-200"
+                                                >
+                                                    <RotateCcw className="w-3.5 h-3.5" />
+                                                    Khôi phục
+                                                </Button>
+                                            </div>
+                                        ))
+                                    )}
+                                </div>
+                            </DialogContent>
+                        </Dialog>
 
                         <Button
                             onClick={() => setIsCreating(true)}

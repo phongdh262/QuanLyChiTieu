@@ -35,7 +35,12 @@ export async function POST(req: Request) {
 export async function GET() {
     try {
         const workspaces = await prisma.workspace.findMany({
-            include: { sheets: true, members: true }
+            include: {
+                sheets: {
+                    where: { NOT: { status: 'DELETED' } }
+                },
+                members: true
+            }
         });
         return NextResponse.json(workspaces);
     } catch (error) {

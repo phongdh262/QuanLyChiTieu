@@ -100,7 +100,7 @@ export async function PUT(
     }
 }
 
-// DELETE Sheet (Cascading)
+// DELETE Sheet (Soft Delete)
 export async function DELETE(
     request: Request,
     { params }: { params: Promise<{ sheetId: string }> }
@@ -108,31 +108,23 @@ export async function DELETE(
     try {
         const sheetId = parseInt((await params).sheetId);
 
-        // Transaction to delete everything related to sheet
-        await prisma.$transaction(async (tx: any) => {
-            // 1. Delete all splits of expenses in this sheet
-            // We need to find expenses first
-            const expenseIds = await tx.expense.findMany({
-                where: { sheetId },
-                select: { id: true }
-            });
-            const ids = expenseIds.map((e: any) => e.id);
+        // Update status instead of deleting
+        const sheet = await prisma.sheet.update({
+            where: { id: sheetId },
+            data: { status: 'DELETED' }
+        });
 
-            if (ids.length > 0) {
-                await tx.split.deleteMany({
-                    where: { expenseId: { in: ids } }
-                });
+        // Log the deletion
+        await prisma.activityLog.create({
+            data: {
+                action: 'DELETE',
+                entityType: 'SHEET',
+                entityId: sheet.id,
+                description: `Đã xóa bảng chi tiêu: ${sheet.name}`,
+                actorId: 0, // System/Admin
+                actorName: 'Hệ thống',
+                workspaceId: sheet.workspaceId
             }
-
-            // 2. Delete expenses
-            await tx.expense.deleteMany({
-                where: { sheetId }
-            });
-
-            // 3. Delete sheet
-            await tx.sheet.delete({
-                where: { id: sheetId }
-            });
         });
 
         return NextResponse.json({ success: true });
