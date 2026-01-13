@@ -89,8 +89,8 @@ export async function POST(
                 where: { expenseId: expenseId, memberId: member.id }
             });
 
-            if (existingSplit?.isPaid && !isPaid) {
-                return NextResponse.json({ error: 'Trạng thái đã khóa. Không thể chuyển từ "Đã trả" sang "Chưa trả" sau khi đã xác nhận.' }, { status: 403 });
+            if (existingSplit?.isPaid && !isPaid && !isBeneficiary && !isAdmin) {
+                return NextResponse.json({ error: 'Trạng thái đã khóa. Chỉ người nợ hoặc Admin mới có quyền hoàn tác sau khi đã xác nhận.' }, { status: 403 });
             }
 
             let updateData: any = {};

@@ -155,9 +155,21 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, curre
     const split = memberName ? bill.splits?.find(s => s.member.name === memberName) : null;
     const isCurrentlyPaid = memberName ? split?.isPaid : bill.isSettled;
 
-    if (isCurrentlyPaid && !canSettleGlobal) {
-      addToast('Chỉ người chi hoặc Admin mới có quyền hủy xác nhận thanh toán!', 'warning');
+    if (isCurrentlyPaid && !canSettleGlobal && currentUser?.name !== memberName) {
+      addToast('Bạn không có quyền hủy xác nhận thanh toán này!', 'warning');
       return;
+    }
+
+    // CASE: Payer confirms a PENDING split
+    if (split?.isPending && !split?.isPaid && (currentUser?.role === 'ADMIN' || currentUser?.name === bill.payer)) {
+      const ok = await confirm({
+        title: 'Xác nhận thanh toán',
+        message: `Bạn đã nhận tiền thanh toán từ ${memberName} chưa?`,
+        type: 'info',
+        confirmText: 'Đã nhận',
+        cancelText: 'Chưa'
+      });
+      if (!ok) return;
     }
 
     if (isCurrentlyPaid) {
@@ -386,7 +398,7 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, curre
                               // - If Pending: Debtor can cancel, Payer/Admin can confirm
                               // - If Unpaid: Both can mark as Paid (Debtor -> Pending, Payer -> Paid)
                               const canToggle = isPaid
-                                ? false // Lock status once confirmed
+                                ? (currentUser?.name === name) // Debtors can revert their own paid status
                                 : (canSettleGlobal || currentUser?.name === name);
 
                               const formattedPaidAt = paidAt ? new Date(paidAt).toLocaleString('vi-VN', {
@@ -413,7 +425,7 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, curre
                                     !canToggle
                                       ? (isPaid ? 'Chỉ người chi mới được hủy xác nhận' : 'Bạn không có quyền thao tác phần này')
                                       : isPaid
-                                        ? `${name} đã trả (Đã khóa sau khi xác nhận lúc: ${formattedPaidAt}).`
+                                        ? `${name} đã trả (Xác nhận lúc: ${formattedPaidAt}).${currentUser?.name === name ? ' Click để hoàn tác.' : ''}`
                                         : isPending
                                           ? `${name} đang chờ người chi xác nhận. Click để hủy yêu cầu.`
                                           : `Đánh dấu ${name} đã trả`
