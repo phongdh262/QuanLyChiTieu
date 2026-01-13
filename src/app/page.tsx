@@ -234,7 +234,7 @@ export default function Home() {
                 <StatisticsSection members={members} calculations={calculations} />
 
                 {/* 2. REPORTING AREA: Summary & Matrix grouped */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 pt-4 items-start">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 pt-4">
                   <SummaryTable members={members} calculations={calculations} />
                   <PrivateMatrix members={members} matrixData={matrix} />
                 </div>

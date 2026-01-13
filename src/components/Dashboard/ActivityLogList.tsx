@@ -80,7 +80,7 @@ export default function ActivityLogList({ members }: Props) {
 
                 <div className="flex items-center gap-2">
                     <select
-                        className="text-[10px] h-7 bg-slate-100 border-none rounded-md px-2 font-medium text-slate-600 focus:ring-1 focus:ring-purple-200"
+                        className="text-xs h-9 bg-slate-50 border border-slate-200 rounded-lg px-3 font-semibold text-slate-700 outline-none focus:ring-2 focus:ring-purple-100 focus:border-purple-300 transition-all cursor-pointer shadow-sm hover:bg-slate-100"
                         value={selectedUser}
                         onChange={(e) => {
                             e.stopPropagation();
