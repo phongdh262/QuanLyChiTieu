@@ -360,48 +360,44 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, curre
 
                         <TableCell className="py-4">
                           <div className="flex flex-wrap items-center gap-2">
-                            {b.type === 'SHARED' ? (
-                              <span className="text-sm text-slate-400 font-medium italic bg-slate-100 px-3 py-1 rounded-full">Tất cả thành viên</span>
-                            ) : (
-                              (b.beneficiaries || []).map((name, idx) => {
-                                // Find split status
-                                const split = b.splits?.find(s => s.member.name === name);
-                                const isPaid = split?.isPaid;
+                            {(b.beneficiaries || []).map((name, idx) => {
+                              // Find split status
+                              const split = b.splits?.find(s => s.member.name === name);
+                              const isPaid = split?.isPaid;
 
-                                // Permission: Payer, Admin, OR The Beneficiary themselves
-                                const canSettleSplit = canSettleGlobal || currentUser?.name === name;
+                              // Permission: Payer, Admin, OR The Beneficiary themselves
+                              const canSettleSplit = canSettleGlobal || currentUser?.name === name;
 
-                                return (
-                                  <button key={idx}
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleToggleSettle(b, name);
-                                    }}
-                                    disabled={!canSettleSplit}
-                                    className={cn(
-                                      "flex items-center gap-2 border rounded-full pl-1 pr-3 py-1 transition-all duration-200",
-                                      canSettleSplit ? "hover:shadow-md active:scale-95 cursor-pointer" : "cursor-not-allowed opacity-70",
-                                      isPaid
-                                        ? "bg-green-50 border-green-200 hover:bg-green-100"
-                                        : "bg-slate-50 border-slate-200 hover:bg-slate-100"
+                              return (
+                                <button key={idx}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleToggleSettle(b, name);
+                                  }}
+                                  disabled={!canSettleSplit}
+                                  className={cn(
+                                    "flex items-center gap-2 border rounded-full pl-1 pr-3 py-1 transition-all duration-200",
+                                    canSettleSplit ? "hover:shadow-md active:scale-95 cursor-pointer" : "cursor-not-allowed opacity-70",
+                                    isPaid
+                                      ? "bg-green-50 border-green-200 hover:bg-green-100"
+                                      : "bg-slate-50 border-slate-200 hover:bg-slate-100"
+                                  )}
+                                  title={!canSettleSplit ? 'Chỉ người chi hoặc người nợ mới được xác nhận' : (isPaid ? `${name} đã trả (Click để hoàn tác)` : `Đánh dấu ${name} đã trả`)}
+                                >
+                                  <div className={cn("w-5 h-5 rounded-full flex items-center justify-center text-white font-bold text-[9px] relative", getAvatarColor(name))}>
+                                    {name.charAt(0).toUpperCase()}
+                                    {isPaid && (
+                                      <div className="absolute -bottom-1 -right-1 bg-green-500 rounded-full w-3 h-3 border-2 border-white flex items-center justify-center">
+                                        <svg className="w-2 h-2 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={4} d="M5 13l4 4L19 7" />
+                                        </svg>
+                                      </div>
                                     )}
-                                    title={!canSettleSplit ? 'Chỉ người chi hoặc người nợ mới được xác nhận' : (isPaid ? `${name} đã trả (Click để hoàn tác)` : `Đánh dấu ${name} đã trả`)}
-                                  >
-                                    <div className={cn("w-5 h-5 rounded-full flex items-center justify-center text-white font-bold text-[9px] relative", getAvatarColor(name))}>
-                                      {name.charAt(0).toUpperCase()}
-                                      {isPaid && (
-                                        <div className="absolute -bottom-1 -right-1 bg-green-500 rounded-full w-3 h-3 border-2 border-white flex items-center justify-center">
-                                          <svg className="w-2 h-2 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={4} d="M5 13l4 4L19 7" />
-                                          </svg>
-                                        </div>
-                                      )}
-                                    </div>
-                                    <span className={cn("text-xs font-semibold", isPaid ? "text-green-700" : "text-slate-700")}>{name}</span>
-                                  </button>
-                                )
-                              })
-                            )}
+                                  </div>
+                                  <span className={cn("text-xs font-semibold", isPaid ? "text-green-700" : "text-slate-700")}>{name}</span>
+                                </button>
+                              )
+                            })}
                           </div>
                         </TableCell>
 
