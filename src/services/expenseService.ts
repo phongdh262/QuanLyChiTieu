@@ -112,22 +112,26 @@ export function calculatePrivateMatrix(members: string[], bills: Bill[]) {
     });
 
     bills.filter(b => b.type === 'PRIVATE').forEach(bill => {
-        const { amount, payer, beneficiaries } = bill;
+        const { amount, payer, id, splits } = bill; // Expect splits to be populated now
 
-        // Skip settled bills from debt matrix
-        if (bill.isSettled) return;
+        // If no splits populated (legacy support), fallback or skip
+        if (!splits || splits.length === 0) return;
 
         if (!matrix[payer]) return;
 
-        const validBeneficiaries = (beneficiaries || []).filter(b => matrix[payer].hasOwnProperty(b));
-        if (validBeneficiaries.length === 0) return;
+        // Debt is calculated per split
+        const splitAmount = amount / splits.length;
 
-        const splitAmount = amount / validBeneficiaries.length;
+        splits.forEach((split: any) => {
+            const beneficiaryName = split.member?.name;
 
-        totals[payer] += amount;
+            // If paid, skip debt calculation
+            if (split.isPaid) return;
 
-        validBeneficiaries.forEach(person => {
-            matrix[payer][person] += splitAmount;
+            if (beneficiaryName && matrix[payer] && matrix[payer].hasOwnProperty(beneficiaryName)) {
+                matrix[payer][beneficiaryName] += splitAmount;
+                totals[payer] += splitAmount;
+            }
         });
     });
 

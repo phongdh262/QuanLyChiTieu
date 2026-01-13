@@ -45,7 +45,12 @@ export async function GET(
                 beneficiaries: beneficiaries,
                 note: e.description,
                 date: e.date, // Map date
-                isSettled: e.isSettled
+                isSettled: e.isSettled,
+                splits: e.splits.map(s => ({
+                    member: { name: s.member.name },
+                    isPaid: s.isPaid,
+                    amount: s.amount
+                }))
             };
         });
 

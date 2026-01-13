@@ -144,18 +144,30 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate }: Pro
     }
   };
 
-  const handleToggleSettle = async (bill: Bill) => {
+  const handleToggleSettle = async (bill: Bill, memberName?: string) => {
     try {
-      const newStatus = !bill.isSettled;
+      // If memberName is provided, we settle for that specific split
+      // Otherwise fallback to old behavior (or maybe ignore if we only want split settlement)
+
+      const payload: any = { isSettled: !bill.isSettled }; // Defaut legacy
+
+      if (memberName) {
+        const split = bill.splits?.find(s => s.member.name === memberName);
+        if (split) {
+          payload.paymentFor = memberName;
+          payload.isPaid = !split.isPaid;
+        }
+      }
+
       const res = await fetch(`/api/expenses/${bill.id}/settle`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ isSettled: newStatus })
+        body: JSON.stringify(payload)
       });
 
       if (!res.ok) throw new Error('Failed to update status');
 
-      addToast(newStatus ? 'Đã đánh dấu đã thanh toán' : 'Đã đánh dấu chưa thanh toán', 'success');
+      addToast('Đã cập nhật trạng thái thanh toán', 'success');
       if (onDelete) onDelete(); // Reload
       if (onUpdate) onUpdate();
     } catch (e) {
@@ -330,17 +342,39 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate }: Pro
                             {b.type === 'SHARED' ? (
                               <span className="text-xs text-slate-400 font-medium italic">Tất cả</span>
                             ) : (
-                              (b.beneficiaries || []).map((name, idx) => (
-                                <div key={idx}
-                                  className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-full pl-0.5 pr-2 py-0.5"
-                                  title={name}
-                                >
-                                  <div className={cn("w-4 h-4 rounded-full flex items-center justify-center text-white font-bold text-[8px]", getAvatarColor(name))}>
-                                    {name.charAt(0).toUpperCase()}
-                                  </div>
-                                  <span className="text-[10px] font-semibold text-slate-700">{name}</span>
-                                </div>
-                              ))
+                              (b.beneficiaries || []).map((name, idx) => {
+                                // Find split status
+                                const split = b.splits?.find(s => s.member.name === name);
+                                const isPaid = split?.isPaid;
+
+                                return (
+                                  <button key={idx}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleToggleSettle(b, name);
+                                    }}
+                                    className={cn(
+                                      "flex items-center gap-1.5 border rounded-full pl-0.5 pr-2 py-0.5 transition-all hover:shadow-md active:scale-95",
+                                      isPaid
+                                        ? "bg-green-50 border-green-200 hover:bg-green-100"
+                                        : "bg-slate-50 border-slate-200 hover:bg-slate-100"
+                                    )}
+                                    title={isPaid ? `${name} đã trả (Click để hoàn tác)` : `Đánh dấu ${name} đã trả`}
+                                  >
+                                    <div className={cn("w-4 h-4 rounded-full flex items-center justify-center text-white font-bold text-[8px] relative", getAvatarColor(name))}>
+                                      {name.charAt(0).toUpperCase()}
+                                      {isPaid && (
+                                        <div className="absolute -bottom-1 -right-1 bg-green-500 rounded-full w-2.5 h-2.5 border border-white flex items-center justify-center">
+                                          <svg className="w-1.5 h-1.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={4} d="M5 13l4 4L19 7" />
+                                          </svg>
+                                        </div>
+                                      )}
+                                    </div>
+                                    <span className={cn("text-[10px] font-semibold", isPaid ? "text-green-700 decoration-green-500" : "text-slate-700")}>{name}</span>
+                                  </button>
+                                )
+                              })
                             )}
                           </div>
                         </TableCell>

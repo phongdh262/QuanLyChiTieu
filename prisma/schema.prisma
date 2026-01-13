@@ -74,6 +74,8 @@ model Split {
   
   member    Member  @relation(fields: [memberId], references: [id])
   memberId  Int
+  
+  isPaid    Boolean @default(false)
 }
 
 model ActivityLog {

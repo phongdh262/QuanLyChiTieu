@@ -187,7 +187,12 @@ export default function Home() {
     beneficiaries: e.splits.map((s: any) => s.member.name),
     note: e.description,
     date: e.date,
-    isSettled: e.isSettled
+    isSettled: e.isSettled,
+    splits: e.splits ? e.splits.map((s: any) => ({
+      member: { name: s.member?.name || s.member || '' },
+      isPaid: s.isPaid,
+      amount: s.amount
+    })) : []
   }));
 
   const activeSheetName = sheets.find(s => s.id === currentSheetId)?.name || 'QUẢN LÝ CHI TIÊU';

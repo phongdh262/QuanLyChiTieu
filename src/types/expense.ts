@@ -11,7 +11,12 @@ export interface Bill {
     beneficiaries?: string[]; // Names or IDs
     note?: string;
     date?: string | Date;
-    isSettled?: boolean;
+    isSettled?: boolean; // Deprecated but kept for backward compatibility if needed
+    splits?: {
+        member: { name: string };
+        isPaid: boolean;
+        amount?: number;
+    }[];
 }
 
 export interface BalanceStats {
