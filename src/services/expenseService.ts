@@ -111,6 +111,9 @@ export function calculatePrivateMatrix(members: string[], bills: Bill[]) {
     bills.filter(b => b.type === 'PRIVATE').forEach(bill => {
         const { amount, payer, beneficiaries } = bill;
 
+        // Skip settled bills from debt matrix
+        if (bill.isSettled) return;
+
         if (!matrix[payer]) return;
 
         const validBeneficiaries = (beneficiaries || []).filter(b => matrix[payer].hasOwnProperty(b));

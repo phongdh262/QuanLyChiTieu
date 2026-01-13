@@ -60,6 +60,8 @@ model Expense {
   payer       Member   @relation("Payer", fields: [payerId], references: [id])
   payerId     Int
   
+  isSettled   Boolean  @default(false)
+  
   splits      Split[]
 }
 

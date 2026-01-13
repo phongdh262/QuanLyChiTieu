@@ -24,8 +24,6 @@ import {
   Trash2,
   Edit,
   Clock,
-  Calendar,
-  Users,
   Search
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -34,11 +32,12 @@ interface Props {
   bills: Bill[];
   members: Member[];
   onDelete: () => void;
+  onUpdate?: () => void;
 }
 
 const formatMoney = (amount: number) => amount.toLocaleString('vi-VN') + ' ₫';
 
-export default function HistoryTable({ bills, members, onDelete }: Props) {
+export default function HistoryTable({ bills, members, onDelete, onUpdate }: Props) {
   const { confirm } = useConfirm();
   const { addToast } = useToast();
   const [deletingId, setDeletingId] = useState<number | string | null>(null);
@@ -145,6 +144,26 @@ export default function HistoryTable({ bills, members, onDelete }: Props) {
     }
   };
 
+  const handleToggleSettle = async (bill: Bill) => {
+    try {
+      const newStatus = !bill.isSettled;
+      const res = await fetch(`/api/expenses/${bill.id}/settle`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isSettled: newStatus })
+      });
+
+      if (!res.ok) throw new Error('Failed to update status');
+
+      addToast(newStatus ? 'Đã đánh dấu đã thanh toán' : 'Đã đánh dấu chưa thanh toán', 'success');
+      if (onDelete) onDelete(); // Reload
+      if (onUpdate) onUpdate();
+    } catch (e) {
+      addToast('Lỗi cập nhật trạng thái', 'error');
+      console.error(e);
+    }
+  };
+
   // Helper for Payer Avatar
   const getAvatarColor = (name: string) => {
     const colors = ['bg-blue-500', 'bg-red-500', 'bg-green-500', 'bg-amber-500', 'bg-purple-500', 'bg-pink-500'];
@@ -235,6 +254,7 @@ export default function HistoryTable({ bills, members, onDelete }: Props) {
                   </TableHead>
                   <TableHead className="w-[100px] text-left font-bold text-slate-700">Ngày</TableHead>
                   <TableHead className="w-[100px] text-center font-bold text-slate-700">Loại</TableHead>
+                  <TableHead className="w-[120px] text-center font-bold text-slate-700">Trạng thái</TableHead>
                   <TableHead className="min-w-[200px] font-bold text-slate-700">Nội dung</TableHead>
                   <TableHead className="w-[140px] text-right font-bold text-slate-700">Số tiền</TableHead>
                   <TableHead className="w-[160px] font-bold text-slate-700 pl-4">Người chi</TableHead>
@@ -281,6 +301,20 @@ export default function HistoryTable({ bills, members, onDelete }: Props) {
                           )}>
                             {b.type === 'SHARED' ? 'Chung' : 'Riêng'}
                           </Badge>
+                        </TableCell>
+                        <TableCell className="text-center py-3">
+                          <button
+                            onClick={() => handleToggleSettle(b)}
+                            className={cn(
+                              "px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all border",
+                              b.isSettled
+                                ? "bg-green-100 text-green-700 border-green-200 hover:bg-green-200"
+                                : "bg-slate-100 text-slate-500 border-slate-200 hover:bg-slate-200"
+                            )}
+                            title={b.isSettled ? "Click để đánh dấu chưa thanh toán" : "Click để đánh dấu đã thanh toán"}
+                          >
+                            {b.isSettled ? "Đã thanh toán" : "Chưa thanh toán"}
+                          </button>
                         </TableCell>
                         <TableCell className="py-3">
                           <span className="font-bold text-slate-800 text-base line-clamp-2" title={b.note}>

@@ -11,6 +11,7 @@ export interface Bill {
     beneficiaries?: string[]; // Names or IDs
     note?: string;
     date?: string | Date;
+    isSettled?: boolean;
 }
 
 export interface BalanceStats {
