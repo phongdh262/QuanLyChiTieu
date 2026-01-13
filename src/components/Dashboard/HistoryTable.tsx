@@ -426,7 +426,7 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, curre
                         </TableCell>
 
                         <TableCell className="py-4 text-right pr-3">
-                          <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <div className="flex items-center justify-end gap-1 transition-opacity">
                             <Button
                               variant="ghost"
                               size="icon"

@@ -13,7 +13,7 @@ import { History, ChevronDown, ChevronUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export default function ActivityLogList() {
-    const [isOpen, setIsOpen] = useState(false); // Default CLOSED to save space
+    const [isOpen, setIsOpen] = useState(true); // Default OPEN
     const [logs, setLogs] = useState<Log[]>([]);
     const [loading, setLoading] = useState(false);
 
