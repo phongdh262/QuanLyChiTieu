@@ -104,7 +104,7 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
                 body: JSON.stringify({
                     sheetId,
                     payerId: parseInt(payerId),
-                    amount: parseFloat(amount),
+                    amount: parseInt(amount.replace(/\./g, '')), // Remove dots before parsing
                     description,
                     type,
                     date: date ? date.toISOString() : undefined,
@@ -134,6 +134,16 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
         setBeneficiaryIds(prev =>
             prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
         );
+    };
+
+    const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value.replace(/\D/g, '');
+        if (value === '') {
+            setAmount('');
+            return;
+        }
+        const numberValue = parseInt(value);
+        setAmount(numberValue.toLocaleString('vi-VN'));
     };
 
     return (
@@ -205,11 +215,11 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
                         <div className="relative">
                             <Calculator className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                             <Input
-                                type="number"
+                                type="text"
+                                inputMode="numeric"
                                 placeholder="0"
                                 value={amount}
-                                onChange={e => setAmount(e.target.value)}
-                                onKeyDown={(e) => ["e", "E", "+", "-"].includes(e.key) && e.preventDefault()}
+                                onChange={handleAmountChange}
                                 className="pl-9 h-10 font-mono font-bold text-lg text-green-700"
                             />
                         </div>
@@ -314,6 +324,6 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
                     )}
                 </Button>
             </CardContent>
-        </Card>
+        </Card >
     );
 }
