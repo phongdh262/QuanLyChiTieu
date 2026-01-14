@@ -1,9 +1,16 @@
 import React, { useState } from 'react';
 import { Member } from '@/types/expense';
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { History, ChevronDown } from "lucide-react";
+import { History } from "lucide-react";
 import { cn } from "@/lib/utils";
 import useSWR from 'swr';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 
 interface Log {
     id: number;
@@ -70,25 +77,18 @@ export default function ActivityLogList({ members }: Props) {
                     </CardTitle>
                 </div>
 
-                <div className="flex items-center gap-2">
-                    <select
-                        className="text-xs h-9 bg-slate-50 border border-slate-200 rounded-lg px-3 font-semibold text-slate-700 outline-none focus:ring-2 focus:ring-purple-100 focus:border-purple-300 transition-all cursor-pointer shadow-sm hover:bg-slate-100"
-                        value={selectedUser}
-                        onChange={(e) => {
-                            e.stopPropagation();
-                            setSelectedUser(e.target.value);
-                        }}
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        <option value="all">Tất cả user</option>
-                        {members.map(m => (
-                            <option key={m.id} value={m.name}>{m.name}</option>
-                        ))}
-                    </select>
-
-                    <div className={cn("transition-transform duration-300 text-slate-400", isOpen && "rotate-180")}>
-                        <ChevronDown className="w-5 h-5" />
-                    </div>
+                <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                    <Select value={selectedUser} onValueChange={setSelectedUser}>
+                        <SelectTrigger className="w-[140px] h-9 bg-slate-50 border-slate-200 rounded-lg font-semibold text-slate-700 focus:ring-purple-100 shadow-sm hover:bg-slate-100 text-xs">
+                            <SelectValue placeholder="Tất cả user" />
+                        </SelectTrigger>
+                        <SelectContent className="max-h-[300px]" align="end">
+                            <SelectItem value="all" className="text-xs font-medium cursor-pointer py-2">Tất cả user</SelectItem>
+                            {members.map(m => (
+                                <SelectItem key={m.id} value={m.name} className="text-xs font-medium cursor-pointer py-2">{m.name}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
                 </div>
             </CardHeader>
 

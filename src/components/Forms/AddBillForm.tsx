@@ -10,6 +10,13 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 
 // Quick inline Label component to avoid module not found error if not created yet
 function Label({ children, className, ...props }: React.LabelHTMLAttributes<HTMLLabelElement>) {
@@ -248,16 +255,26 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
                     <div className="space-y-2">
                         <Label>Người chi <span className="text-red-500">*</span></Label>
                         <div className="relative">
-                            <Users className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                            <select
-                                className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 pl-9 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                                value={payerId}
-                                onChange={e => setPayerId(e.target.value)}
-                            >
-                                {activeMembers.map(m => (
-                                    <option key={m.id} value={m.id}>{m.name}</option>
-                                ))}
-                            </select>
+                            <Users className="absolute left-3 top-3 h-4 w-4 text-muted-foreground z-10" />
+                            <Select value={payerId} onValueChange={setPayerId}>
+                                <SelectTrigger className="pl-9 h-10 w-full bg-background border-input focus:ring-2 focus:ring-ring focus:ring-offset-2">
+                                    <SelectValue placeholder="Chọn người chi" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {activeMembers.map(m => (
+                                        <SelectItem key={m.id} value={m.id.toString()} className="cursor-pointer py-2.5">
+                                            <div className="flex items-center gap-2">
+                                                <div className={cn("w-5 h-5 rounded-full flex items-center justify-center text-white text-[10px] font-bold",
+                                                    ['bg-blue-500', 'bg-red-500', 'bg-green-500', 'bg-amber-500', 'bg-purple-500', 'bg-pink-500'][Math.abs(m.name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)) % 6]
+                                                )}>
+                                                    {m.name.charAt(0).toUpperCase()}
+                                                </div>
+                                                {m.name}
+                                            </div>
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
                         </div>
                     </div>
                 </div>

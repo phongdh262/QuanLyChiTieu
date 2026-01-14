@@ -3,6 +3,14 @@ import { createPortal } from 'react-dom';
 import React, { useState, useEffect } from 'react';
 import { Bill } from '@/types/expense';
 import { useToast } from '@/components/ui/ToastProvider';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+import { cn } from '@/lib/utils';
 
 interface Props {
     bill: Bill;
@@ -39,7 +47,7 @@ export default function EditBillModal({ bill, members, onClose, onSave }: Props)
         if (!dateString) return '';
         try {
             return new Date(dateString).toISOString().split('T')[0];
-        } catch (e) {
+        } catch {
             return '';
         }
     };
@@ -184,15 +192,25 @@ export default function EditBillModal({ bill, members, onClose, onSave }: Props)
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium text-slate-700">Người chi</label>
-                                    <select
-                                        value={payerId}
-                                        onChange={e => setPayerId(e.target.value)}
-                                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                                    >
-                                        {members.map(m => (
-                                            <option key={m.id} value={m.id}>{m.name}</option>
-                                        ))}
-                                    </select>
+                                    <Select value={payerId} onValueChange={setPayerId}>
+                                        <SelectTrigger className="h-10 w-full bg-background border-input focus:ring-2 focus:ring-ring focus:ring-offset-2">
+                                            <SelectValue placeholder="Chọn người chi" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {members.map(m => (
+                                                <SelectItem key={m.id} value={m.id.toString()} className="cursor-pointer py-2.5">
+                                                    <div className="flex items-center gap-2">
+                                                        <div className={cn("w-5 h-5 rounded-full flex items-center justify-center text-white text-[10px] font-bold",
+                                                            ['bg-blue-500', 'bg-red-500', 'bg-green-500', 'bg-amber-500', 'bg-purple-500', 'bg-pink-500'][Math.abs(m.name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)) % 6]
+                                                        )}>
+                                                            {m.name.charAt(0).toUpperCase()}
+                                                        </div>
+                                                        {m.name}
+                                                    </div>
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
                                 </div>
                             </div>
 
