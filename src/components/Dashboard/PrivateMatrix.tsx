@@ -26,10 +26,10 @@ export default function PrivateMatrix({ members, matrixData }: Props) {
         <Card className="premium-card overflow-hidden border-none soft-shadow mb-6 group/matrix">
             <CardHeader className="cursor-pointer flex flex-row items-center justify-between pb-6 bg-gradient-to-br from-orange-50/50 via-white to-transparent border-b border-orange-100/50" onClick={() => setIsOpen(!isOpen)}>
                 <CardTitle className="text-xl flex items-center gap-3 text-slate-800">
-                    <div className="p-2 bg-gradient-to-br from-orange-500 to-rose-600 rounded-xl shadow-lg shadow-orange-100 group-hover/matrix:scale-110 group-hover/matrix:rotate-3 transition-all duration-500">
-                        <span className="text-sm">💸</span>
+                    <div className="p-2.5 bg-gradient-to-br from-orange-500 to-rose-600 rounded-xl shadow-lg shadow-orange-100/50 group-hover/matrix:scale-110 group-hover/matrix:rotate-3 transition-all duration-500 ring-2 ring-white">
+                        <span className="text-lg drop-shadow-sm">💸</span>
                     </div>
-                    <span className="font-black tracking-tight">Debt Matrix (Private)</span>
+                    <span className="font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-slate-700 to-slate-900">Debt Matrix (Private)</span>
                 </CardTitle>
                 <div className={cn("rounded-full p-2 bg-white shadow-sm text-slate-400 ring-1 ring-slate-100 transition-transform duration-300 hover:bg-orange-50 hover:text-orange-600", isOpen && "rotate-180 bg-orange-100 text-orange-600")}>
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">

@@ -144,10 +144,10 @@ export default function StatisticsSection({ members, calculations }: Props) {
         <Card className="w-full premium-card overflow-hidden border-none soft-shadow group/stats">
             <CardHeader className="bg-gradient-to-br from-indigo-50/50 via-white to-transparent pb-6 border-b border-indigo-50/50">
                 <CardTitle className="text-xl flex items-center gap-3 text-slate-800">
-                    <div className="p-2 bg-gradient-to-br from-indigo-500 to-violet-600 rounded-xl shadow-lg shadow-indigo-100 group-hover/stats:scale-110 group-hover/stats:rotate-3 transition-all duration-500">
-                        <BarChart3 className="w-5 h-5 text-white" />
+                    <div className="p-2.5 bg-gradient-to-br from-indigo-500 to-violet-600 rounded-xl shadow-lg shadow-indigo-100/50 group-hover/stats:scale-110 group-hover/stats:rotate-3 transition-all duration-500 ring-2 ring-white">
+                        <BarChart3 className="w-5 h-5 text-white drop-shadow-sm" />
                     </div>
-                    <span className="font-black tracking-tight">Overview Statistics</span>
+                    <span className="font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-slate-700 to-slate-900">Overview Statistics</span>
                 </CardTitle>
             </CardHeader>
             <CardContent className="p-8">

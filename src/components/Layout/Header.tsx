@@ -50,12 +50,17 @@ export default function Header({ user, title, onUpdated }: Props) {
         <header className="w-full glass-effect sticky top-0 z-50 mb-6">
             <div className="container mx-auto max-w-7xl px-4 h-16 flex items-center justify-between">
                 {/* Brand / Logo */}
+                {/* Brand / Logo */}
                 <div className="flex items-center gap-2 group cursor-pointer" onClick={() => window.location.href = '/'}>
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 via-blue-600 to-violet-700 flex items-center justify-center text-white font-black text-xl shadow-indigo-200 shadow-xl group-hover:scale-110 group-hover:rotate-3 transition-all duration-500">
-                        $
+                    <div className="relative w-10 h-10">
+                        <div className="absolute inset-0 bg-indigo-500 rounded-xl blur-lg opacity-20 group-hover:opacity-40 transition-opacity duration-500 animate-pulse"></div>
+                        <div className="relative w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 via-blue-600 to-violet-700 flex items-center justify-center text-white font-black text-xl shadow-indigo-200 shadow-xl group-hover:scale-110 group-hover:rotate-3 transition-all duration-500 z-10 border border-white/20">
+                            <span className="drop-shadow-md">$</span>
+                        </div>
                     </div>
-                    <span className="font-black text-2xl text-slate-800 tracking-tighter hidden sm:block">
-                        ChiTieu<span className="text-indigo-600">App</span>
+                    <span className="font-black text-2xl text-slate-800 tracking-tighter hidden sm:block relative">
+                        ChiTieu<span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-violet-600">App</span>
+                        <span className="absolute -top-1 -right-2 w-2 h-2 bg-rose-500 rounded-full animate-bounce delay-700"></span>
                     </span>
                 </div>
 
@@ -72,25 +77,25 @@ export default function Header({ user, title, onUpdated }: Props) {
                                 variant="ghost"
                                 size="icon"
                                 className={cn(
-                                    "relative h-14 w-14 rounded-2xl transition-all duration-500 overflow-visible group/bell",
+                                    "relative h-12 w-12 rounded-xl transition-all duration-300 overflow-visible group/bell",
                                     pendingCount > 0
-                                        ? "bg-white text-indigo-600 shadow-xl shadow-indigo-100 ring-2 ring-indigo-50"
-                                        : "bg-white/60 text-slate-500 hover:bg-white hover:text-indigo-600 hover:shadow-lg border border-white/50"
+                                        ? "bg-white text-indigo-600 shadow-lg shadow-indigo-100 ring-1 ring-indigo-50 hover:shadow-indigo-200 hover:ring-indigo-100"
+                                        : "bg-white/40 text-slate-500 hover:bg-white hover:text-indigo-600 hover:shadow-md border border-transparent hover:border-slate-100"
                                 )}
                                 onClick={() => setIsConfirmModalOpen(true)}
                             >
                                 <div className={cn(
-                                    "absolute inset-0 bg-indigo-50/50 rounded-2xl opacity-0 group-hover/bell:opacity-100 transition-opacity duration-500",
-                                    pendingCount > 0 && "animate-pulse"
+                                    "absolute inset-0 bg-indigo-400/10 rounded-xl opacity-0 scale-90 group-hover/bell:opacity-100 group-hover/bell:scale-100 transition-all duration-300",
+                                    pendingCount > 0 && "animate-pulse opacity-100"
                                 )} />
                                 <Bell className={cn(
-                                    "w-7 h-7 transition-all duration-500 relative z-10",
+                                    "w-6 h-6 transition-all duration-500 relative z-10",
                                     pendingCount > 0
-                                        ? "animate-[swing_2s_ease-in-out_infinite] fill-indigo-200 text-indigo-600 drop-shadow-sm"
+                                        ? "animate-[swing_3s_ease-in-out_infinite] fill-indigo-100 text-indigo-600"
                                         : "group-hover/bell:scale-110 group-hover/bell:rotate-12"
                                 )} />
                                 {pendingCount > 0 && (
-                                    <span className="absolute -top-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-tr from-rose-500 via-red-500 to-orange-500 text-[11px] font-black text-white ring-4 ring-white shadow-lg animate-in zoom-in duration-300 z-20">
+                                    <span className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-gradient-to-br from-rose-500 to-red-600 text-[10px] font-black text-white ring-2 ring-white shadow-lg animate-in zoom-in duration-300 z-20">
                                         {pendingCount}
                                     </span>
                                 )}
@@ -102,14 +107,14 @@ export default function Header({ user, title, onUpdated }: Props) {
                         <>
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" className="relative h-12 px-2 md:pl-2 md:pr-4 rounded-2xl hover:bg-white gap-3 border border-slate-100/50 bg-white/50 backdrop-blur-sm soft-shadow hover:deep-shadow hover:border-indigo-200 transition-all duration-500 group overflow-hidden">
-                                        <div className="absolute inset-0 bg-gradient-to-br from-indigo-50/0 to-indigo-50/0 group-hover:from-indigo-50/50 group-hover:to-transparent transition-all duration-500" />
-                                        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 text-white flex items-center justify-center font-black text-sm shadow-indigo-200 shadow-xl group-hover:scale-105 group-hover:rotate-3 transition-all duration-500 z-10">
+                                    <Button variant="ghost" className="relative h-11 px-2 md:pl-1.5 md:pr-4 rounded-xl hover:bg-white gap-2 border border-transparent bg-white/40 backdrop-blur-sm shadow-sm hover:shadow-md hover:border-slate-100 transition-all duration-300 group overflow-hidden">
+                                        <div className="absolute inset-0 bg-gradient-to-r from-indigo-50/0 via-indigo-50/30 to-indigo-50/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+                                        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 text-white flex items-center justify-center font-black text-xs shadow-indigo-200 shadow-md group-hover:scale-105 group-hover:rotate-3 transition-all duration-300 z-10 ring-2 ring-white">
                                             {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
                                         </div>
-                                        <div className="flex flex-col items-start sr-only md:not-sr-only z-10">
-                                            <span className="text-sm font-black text-slate-800 leading-tight tracking-tight">{user.name || user.username}</span>
-                                            <span className="text-[10px] font-black text-indigo-500/60 leading-none mt-0.5 tracking-widest uppercase">@{user.username}</span>
+                                        <div className="flex flex-col items-start sr-only md:not-sr-only z-10 pl-1">
+                                            <span className="text-xs font-bold text-slate-700 leading-tight tracking-tight group-hover:text-indigo-700 transition-colors">{user.name || user.username}</span>
+                                            <span className="text-[9px] font-bold text-slate-400 leading-none mt-0.5 tracking-wider uppercase group-hover:text-indigo-400/80 transition-colors">@{user.username}</span>
                                         </div>
                                     </Button>
                                 </DropdownMenuTrigger>

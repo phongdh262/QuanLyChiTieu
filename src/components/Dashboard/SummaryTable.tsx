@@ -19,10 +19,10 @@ export default function SummaryTable({ members, calculations }: Props) {
         <Card className="premium-card overflow-hidden border-none soft-shadow mb-6 group/summary">
             <CardHeader className="cursor-pointer flex flex-row items-center justify-between pb-6 bg-gradient-to-br from-indigo-50/50 via-white to-transparent border-b border-indigo-50/50" onClick={() => setIsOpen(!isOpen)}>
                 <CardTitle className="text-xl flex items-center gap-3 text-slate-800">
-                    <div className="p-2 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl shadow-lg shadow-blue-100 group-hover/summary:scale-110 group-hover/summary:rotate-3 transition-all duration-500">
-                        <span className="text-sm">📊</span>
+                    <div className="p-2.5 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl shadow-lg shadow-blue-100/50 group-hover/summary:scale-110 group-hover/summary:rotate-3 transition-all duration-500 ring-2 ring-white">
+                        <span className="text-lg drop-shadow-sm">📊</span>
                     </div>
-                    <span className="font-black tracking-tight">Expenses Summary</span>
+                    <span className="font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-slate-700 to-slate-900">Expenses Summary</span>
                 </CardTitle>
                 <div className={cn("rounded-full p-2 bg-white shadow-sm text-slate-400 ring-1 ring-slate-100 transition-transform duration-300 hover:bg-indigo-50 hover:text-indigo-600", isOpen && "rotate-180 bg-indigo-100 text-indigo-600")}>
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">

@@ -155,12 +155,12 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
 
     return (
         <Card className="w-full premium-card overflow-hidden border-none soft-shadow" id="add-bill-form">
-            <CardHeader className="bg-gradient-to-br from-indigo-50/80 via-white to-green-50/50 pb-6 border-b border-indigo-50/50">
+            <CardHeader className="bg-gradient-to-br from-indigo-50/80 via-white to-emerald-50/50 pb-6 border-b border-indigo-50/50">
                 <CardTitle className="text-xl flex items-center gap-3 text-slate-800">
-                    <div className="p-2 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl shadow-lg shadow-green-200">
-                        <PlusCircle className="w-5 h-5 text-white" />
+                    <div className="p-2.5 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl shadow-lg shadow-green-200/50 ring-2 ring-white">
+                        <PlusCircle className="w-5 h-5 text-white drop-shadow-sm" />
                     </div>
-                    <span className="font-black tracking-tight">Add New Expense</span>
+                    <span className="font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-slate-700 to-slate-900">Add New Expense</span>
                 </CardTitle>
             </CardHeader>
 
@@ -286,32 +286,34 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
                             type="button"
                             onClick={() => setType('SHARED')}
                             className={cn(
-                                "flex flex-col items-center justify-center p-3 rounded-lg border-2 transition-all duration-200",
+                                "relative flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all duration-300 group overflow-hidden",
                                 type === 'SHARED'
-                                    ? "border-blue-500 bg-blue-50 text-blue-700 shadow-sm"
-                                    : "border-muted bg-transparent text-muted-foreground hover:bg-muted/20"
+                                    ? "border-blue-500 bg-blue-50/50 text-blue-700 shadow-lg shadow-blue-100/50 scale-[1.02]"
+                                    : "border-slate-100 bg-white text-slate-500 hover:border-blue-200 hover:bg-blue-50/30 hover:shadow-md"
                             )}
                         >
-                            <span className="text-base font-bold flex items-center gap-2">
-                                {type === 'SHARED' && <CheckCircle2 className="w-4 h-4" />} Shared
+                            <div className={cn("absolute inset-0 bg-gradient-to-br from-blue-50/0 to-blue-100/0 transition-all duration-500", type === 'SHARED' && "from-blue-50/50 to-indigo-50/50")} />
+                            <span className="text-base font-bold flex items-center gap-2 relative z-10">
+                                {type === 'SHARED' && <CheckCircle2 className="w-4 h-4 animate-in zoom-in spin-in-90 duration-300" />} Shared
                             </span>
-                            <span className="text-xs opacity-80 mt-1">Split equally among all</span>
+                            <span className="text-xs font-medium opacity-70 mt-1 relative z-10">Split equally among all</span>
                         </button>
 
                         <button
                             type="button"
                             onClick={() => setType('PRIVATE')}
                             className={cn(
-                                "flex flex-col items-center justify-center p-3 rounded-lg border-2 transition-all duration-200",
+                                "relative flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all duration-300 group overflow-hidden",
                                 type === 'PRIVATE'
-                                    ? "border-orange-500 bg-orange-50 text-orange-700 shadow-sm"
-                                    : "border-muted bg-transparent text-muted-foreground hover:bg-muted/20"
+                                    ? "border-orange-500 bg-orange-50/50 text-orange-700 shadow-lg shadow-orange-100/50 scale-[1.02]"
+                                    : "border-slate-100 bg-white text-slate-500 hover:border-orange-200 hover:bg-orange-50/30 hover:shadow-md"
                             )}
                         >
-                            <span className="text-base font-bold flex items-center gap-2">
-                                {type === 'PRIVATE' && <CheckCircle2 className="w-4 h-4" />} Private
+                            <div className={cn("absolute inset-0 bg-gradient-to-br from-orange-50/0 to-amber-100/0 transition-all duration-500", type === 'PRIVATE' && "from-orange-50/50 to-amber-50/50")} />
+                            <span className="text-base font-bold flex items-center gap-2 relative z-10">
+                                {type === 'PRIVATE' && <CheckCircle2 className="w-4 h-4 animate-in zoom-in spin-in-90 duration-300" />} Private
                             </span>
-                            <span className="text-xs opacity-80 mt-1">Split among specific people</span>
+                            <span className="text-xs font-medium opacity-70 mt-1 relative z-10">Split among specific people</span>
                         </button>
                     </div>
                 </div>
@@ -349,8 +351,9 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
                 <Button
                     onClick={handleSubmit as any}
                     disabled={isSubmitting}
-                    className="w-full h-11 text-base font-semibold bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 shadow-md transition-all hover:scale-[1.01]"
+                    className="relative w-full h-12 text-base font-bold bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white shadow-lg shadow-green-200 hover:shadow-green-300 transition-all hover:scale-[1.01] overflow-hidden group/submit rounded-xl"
                 >
+                    <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover/submit:translate-x-[100%] transition-transform duration-700 pointer-events-none" />
                     {isSubmitting ? (
                         <>
                             <span className="animate-spin mr-2">⏳</span> Saving...

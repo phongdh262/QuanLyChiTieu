@@ -272,10 +272,10 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, curre
         <CardHeader className="pb-6 bg-gradient-to-br from-indigo-50/50 via-white to-transparent border-b border-indigo-50/50">
           <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6">
             <CardTitle className="text-xl flex items-center gap-3 text-slate-800">
-              <div className="p-2 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl shadow-lg shadow-blue-100 group-hover/history:scale-110 group-hover/history:rotate-3 transition-all duration-500">
-                <Clock className="w-5 h-5 text-white" />
+              <div className="p-2.5 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl shadow-lg shadow-blue-100/50 group-hover/history:scale-110 group-hover/history:rotate-3 transition-all duration-500 ring-2 ring-white">
+                <Clock className="w-5 h-5 text-white drop-shadow-sm" />
               </div>
-              <span className="font-bold tracking-tight text-slate-800">Expense History</span>
+              <span className="font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-slate-700 to-slate-900">Expense History</span>
             </CardTitle>
 
             <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
@@ -299,7 +299,7 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, curre
                   placeholder="Search description..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-8 h-9 bg-white shadow-sm"
+                  className="pl-8 h-9 bg-white shadow-sm border-slate-200 focus:border-indigo-300 focus:ring-indigo-100 transition-all rounded-xl"
                 />
               </div>
 
@@ -416,7 +416,7 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, curre
                               "text-[9px] uppercase font-bold mt-1.5 w-fit px-2 py-0.5 rounded-md tracking-wider border",
                               b.type === 'SHARED' ? "text-indigo-600 bg-indigo-50 border-indigo-100" : "text-amber-600 bg-amber-50 border-amber-100"
                             )}>
-                              {b.type === 'SHARED' ? 'CHUNG' : 'RIÊNG'}
+                              {b.type === 'SHARED' ? 'SHARED' : 'PRIVATE'}
                             </span>
                           </div>
                         </TableCell>
@@ -477,9 +477,9 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, curre
                                     "flex items-center gap-2 border rounded-full pl-1 pr-3 py-1 transition-all duration-200",
                                     canToggle ? "hover:shadow-md active:scale-95 cursor-pointer" : "cursor-not-allowed opacity-70",
                                     isPaid
-                                      ? "bg-green-50 border-green-200 hover:bg-green-100"
+                                      ? "bg-emerald-50 border-emerald-200 hover:bg-emerald-100 shadow-sm"
                                       : isPending
-                                        ? "bg-amber-50 border-amber-200 hover:bg-amber-100"
+                                        ? "bg-amber-50 border-amber-200 hover:bg-amber-100 shadow-sm"
                                         : "bg-slate-50 border-slate-200 hover:bg-slate-100"
                                   )}
                                   title={
@@ -495,7 +495,7 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, curre
                                   <div className={cn("w-5 h-5 rounded-full flex items-center justify-center text-white font-bold text-[9px] relative", getAvatarColor(name))}>
                                     {name.charAt(0).toUpperCase()}
                                     {isPaid && (
-                                      <div className="absolute -bottom-1 -right-1 bg-green-500 rounded-full w-3 h-3 border-2 border-white flex items-center justify-center">
+                                      <div className="absolute -bottom-1 -right-1 bg-emerald-500 rounded-full w-3 h-3 border-2 border-white flex items-center justify-center shadow-sm">
                                         <svg className="w-2 h-2 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={4} d="M5 13l4 4L19 7" />
                                         </svg>
@@ -508,8 +508,8 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, curre
                                     )}
                                   </div>
                                   <span className={cn(
-                                    "text-xs font-semibold",
-                                    isPaid ? "text-green-700" : isPending ? "text-amber-700" : "text-slate-700"
+                                    "text-xs font-bold tracking-tight",
+                                    isPaid ? "text-emerald-700" : isPending ? "text-amber-700" : "text-slate-600"
                                   )}>
                                     {name}
                                     {isPending && !isPaid && <span className="ml-1 text-[9px] opacity-70">(Waiting...)</span>}
@@ -529,8 +529,8 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, curre
                               "relative inline-flex items-center justify-center w-8 h-8 rounded-full transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-100",
                               isPayer ? "cursor-pointer" : "cursor-not-allowed opacity-40 grayscale",
                               b.isSettled
-                                ? "bg-green-100 text-green-600 hover:bg-green-200 ring-1 ring-green-200 shadow-sm"
-                                : "bg-white text-slate-300 border-2 border-slate-200 hover:border-blue-400 hover:text-blue-500"
+                                ? "bg-emerald-100 text-emerald-600 hover:bg-emerald-200 ring-1 ring-emerald-200 shadow-md scale-105"
+                                : "bg-white text-slate-300 border-2 border-slate-200 hover:border-blue-400 hover:text-blue-500 hover:shadow-md hover:scale-110"
                             )}
                             title={!isPayer ? "Only Payer can settle all" : (b.isSettled ? "Expense is fully settled (Locked)" : "Mark all as Paid")}
                           >
