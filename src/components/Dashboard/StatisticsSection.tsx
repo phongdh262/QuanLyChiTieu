@@ -47,7 +47,7 @@ export default function StatisticsSection({ members, calculations }: Props) {
         labels: members.map(m => m.name),
         datasets: [
             {
-                label: 'Đã chi (Paid)',
+                label: 'Paid',
                 data: members.map(m => stats[m.name]?.totalPaid || 0),
                 backgroundColor: 'rgba(99, 102, 241, 0.7)', // Indigo
                 borderColor: 'rgba(99, 102, 241, 1)',
@@ -55,7 +55,7 @@ export default function StatisticsSection({ members, calculations }: Props) {
                 borderRadius: 4,
             },
             {
-                label: 'Sử dụng (Consumed)',
+                label: 'Consumed',
                 data: members.map(m => stats[m.name]?.totalConsumed || 0),
                 backgroundColor: 'rgba(239, 68, 68, 0.7)', // Red
                 borderColor: 'rgba(239, 68, 68, 1)',
@@ -102,7 +102,7 @@ export default function StatisticsSection({ members, calculations }: Props) {
 
     // 2. Data for Pie Chart: Spending Type Breakdown
     const pieData = {
-        labels: ['Chi Chung (Shared)', 'Chi Riêng (Private)'],
+        labels: ['Shared', 'Private'],
         datasets: [
             {
                 data: [totalShared, totalPrivate],
@@ -147,7 +147,7 @@ export default function StatisticsSection({ members, calculations }: Props) {
                     <div className="p-2 bg-gradient-to-br from-indigo-500 to-violet-600 rounded-xl shadow-lg shadow-indigo-100 group-hover/stats:scale-110 group-hover/stats:rotate-3 transition-all duration-500">
                         <BarChart3 className="w-5 h-5 text-white" />
                     </div>
-                    <span className="font-black tracking-tight">Thống Kê Tổng Quan</span>
+                    <span className="font-black tracking-tight">Overview Statistics</span>
                 </CardTitle>
             </CardHeader>
             <CardContent className="p-8">

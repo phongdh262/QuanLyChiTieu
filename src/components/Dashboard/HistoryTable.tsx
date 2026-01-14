@@ -484,12 +484,12 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, curre
                                   )}
                                   title={
                                     !canToggle
-                                      ? (isPaid ? 'Đã xác nhận thanh toán (Không thể hoàn tác)' : 'Bạn không có quyền thao tác phần này')
+                                      ? (isPaid ? 'Payment Confirmed (Cannot undo)' : 'You do not have permission')
                                       : isPending
-                                        ? `${name} đã trả (Xác nhận lúc: ${formattedPaidAt}).${currentUser?.name === name ? ' Click để hoàn tác.' : ''}`
+                                        ? `${name} paid (Confirmed at: ${formattedPaidAt}).${currentUser?.name === name ? ' Click to undo.' : ''}`
                                         : isPending
-                                          ? `${name} đang chờ người chi xác nhận. Click để hủy yêu cầu.`
-                                          : `Đánh dấu ${name} đã trả`
+                                          ? `${name} is waiting for payer confirmation. Click to cancel.`
+                                          : `Mark ${name} as Paid`
                                   }
                                 >
                                   <div className={cn("w-5 h-5 rounded-full flex items-center justify-center text-white font-bold text-[9px] relative", getAvatarColor(name))}>
@@ -512,7 +512,7 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, curre
                                     isPaid ? "text-green-700" : isPending ? "text-amber-700" : "text-slate-700"
                                   )}>
                                     {name}
-                                    {isPending && !isPaid && <span className="ml-1 text-[9px] opacity-70">(Chờ...)</span>}
+                                    {isPending && !isPaid && <span className="ml-1 text-[9px] opacity-70">(Waiting...)</span>}
                                   </span>
                                 </button>
                               )
@@ -532,7 +532,7 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, curre
                                 ? "bg-green-100 text-green-600 hover:bg-green-200 ring-1 ring-green-200 shadow-sm"
                                 : "bg-white text-slate-300 border-2 border-slate-200 hover:border-blue-400 hover:text-blue-500"
                             )}
-                            title={!isPayer ? "Chỉ người chi mới có quyền xác nhận toàn bộ" : (b.isSettled ? "Hóa đơn đã quyết toán xong (Trạng thái đã khóa)" : "Đánh dấu tất cả đã trả")}
+                            title={!isPayer ? "Only Payer can settle all" : (b.isSettled ? "Expense is fully settled (Locked)" : "Mark all as Paid")}
                           >
                             {b.isSettled ? (
                               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
@@ -546,7 +546,7 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, curre
 
                         <TableCell className="py-4 text-right pr-4">
                           <div className="flex items-center justify-end gap-1.5 transition-opacity duration-300">
-                            <div title={isPayer ? "Sửa hóa đơn" : `Chỉ người chi (${b.payer}) mới có quyền sửa`}>
+                            <div title={isPayer ? "Edit Bill" : `Only Payer (${b.payer}) can edit`}>
                               <Button
                                 variant="ghost"
                                 size="icon"
@@ -562,7 +562,7 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, curre
                                 <Edit className="w-4 h-4" />
                               </Button>
                             </div>
-                            <div title={canDelete ? "Xóa hóa đơn" : `Chỉ người chi (${b.payer}) mới có quyền xóa`}>
+                            <div title={canDelete ? "Delete Bill" : `Only Payer (${b.payer}) can delete`}>
                               <Button
                                 variant="ghost"
                                 size="icon"
