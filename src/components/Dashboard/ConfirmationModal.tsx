@@ -206,12 +206,16 @@ export default function ConfirmationModal({ open, onOpenChange, onUpdated }: Pro
                                                     activeTab === 'pendingDebtor' ? "bg-gradient-to-br from-blue-400 to-indigo-500 text-white shadow-blue-200" :
                                                         "bg-gradient-to-br from-slate-100 to-slate-200 text-slate-500"
                                             )}>
-                                                {p.member.name.charAt(0).toUpperCase()}
+                                                {(activeTab === 'history' && !p.isPayer)
+                                                    ? p.expense.payer.name.charAt(0).toUpperCase()
+                                                    : p.member.name.charAt(0).toUpperCase()}
                                             </div>
                                             <div>
                                                 <div className="flex items-center gap-2 mb-1">
                                                     <span className="font-bold text-slate-900 text-base">
-                                                        {activeTab === 'pendingDebtor' ? `Gửi tới: ${p.expense.payer.name}` : p.member.name}
+                                                        {(activeTab === 'pendingDebtor' || (activeTab === 'history' && !p.isPayer))
+                                                            ? `Gửi tới: ${p.expense.payer.name}`
+                                                            : p.member.name}
                                                     </span>
                                                     {activeTab === 'pendingPayer' && (
                                                         <span className="px-2 py-0.5 bg-amber-100 text-amber-700 text-[10px] font-bold rounded-full uppercase tracking-wide border border-amber-200/50">Mới</span>
