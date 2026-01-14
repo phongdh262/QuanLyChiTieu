@@ -10,22 +10,24 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Missing credentials' }, { status: 400 });
         }
 
-        // Verify Turnstile
-        if (captchaToken) {
-            const secretKey = process.env.TURNSTILE_SECRET_KEY;
-            if (secretKey) {
-                const formData = new FormData();
-                formData.append('secret', secretKey);
-                formData.append('response', captchaToken);
+        if (!captchaToken) {
+            return NextResponse.json({ error: 'Please complete the Captcha check' }, { status: 400 });
+        }
 
-                const verifyRes = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
-                    method: 'POST',
-                    body: formData,
-                });
-                const verifyData = await verifyRes.json();
-                if (!verifyData.success) {
-                    return NextResponse.json({ error: 'Turnstile check failed' }, { status: 400 });
-                }
+        // Verify Turnstile
+        const secretKey = process.env.TURNSTILE_SECRET_KEY;
+        if (secretKey) {
+            const formData = new FormData();
+            formData.append('secret', secretKey);
+            formData.append('response', captchaToken);
+
+            const verifyRes = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+                method: 'POST',
+                body: formData,
+            });
+            const verifyData = await verifyRes.json();
+            if (!verifyData.success) {
+                return NextResponse.json({ error: 'Turnstile check failed' }, { status: 400 });
             }
         }
 

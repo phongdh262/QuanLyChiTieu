@@ -89,12 +89,18 @@ export default function LoginPage() {
                         />
                     </div>
 
-                    <div style={{ display: 'flex', justifyContent: 'center' }}>
-                        <Turnstile
-                            siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || ""}
-                            onSuccess={(token) => setCaptchaToken(token)}
-                            options={{ theme: 'light', size: 'flexible' }}
-                        />
+                    <div style={{ display: 'flex', justifyContent: 'center', minHeight: '65px' }}>
+                        {process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ? (
+                            <Turnstile
+                                siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY}
+                                onSuccess={(token) => setCaptchaToken(token)}
+                                options={{ theme: 'light', size: 'flexible' }}
+                            />
+                        ) : (
+                            <div style={{ color: '#ef4444', fontSize: '0.8rem', padding: '10px', background: '#fee2e2', borderRadius: '8px' }}>
+                                Missing TURNSTILE_SITE_KEY
+                            </div>
+                        )}
                     </div>
 
                     <button
