@@ -434,9 +434,8 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, curre
                               // - If Unpaid: Both can mark as Paid (Debtor -> Pending, Payer -> Paid)
                               const isBeneficiary = currentUser?.name === name;
 
-                              const canToggle = isPaid
-                                ? false // LOCKED: Once paid, it cannot be undone via this table
-                                : (isPayer || isBeneficiary);
+                              // UNLOCKED: Allow both Payer and Beneficiary to toggle status (Undo if needed)
+                              const canToggle = isPayer || isBeneficiary;
 
                               const formattedPaidAt = paidAt ? new Date(paidAt).toLocaleString('vi-VN', {
                                 day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit'

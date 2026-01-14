@@ -209,6 +209,7 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
                                 placeholder="0"
                                 value={amount}
                                 onChange={e => setAmount(e.target.value)}
+                                onKeyDown={(e) => ["e", "E", "+", "-"].includes(e.key) && e.preventDefault()}
                                 className="pl-9 h-10 font-mono font-bold text-lg text-green-700"
                             />
                         </div>
