@@ -44,21 +44,16 @@ export async function POST(
         let isBeneficiary = false;
 
         if (paymentFor) {
-            // Strategy 1: Check by Name from Session (Fastest)
-            if (sessionPayload.name && sessionPayload.name === paymentFor) {
-                isBeneficiary = true;
-            } else {
-                // Strategy 2: Check by DB Lookup (Most Reliable)
-                const member = await prisma.member.findFirst({
-                    where: {
-                        name: paymentFor,
-                        workspaceId: workspaceId
-                    }
-                });
-
-                if (member && String(member.id) === userId) {
-                    isBeneficiary = true;
+            // Strategy: Check by DB Lookup (Most Reliable)
+            const member = await prisma.member.findFirst({
+                where: {
+                    name: paymentFor,
+                    workspaceId: workspaceId
                 }
+            });
+
+            if (member && String(member.id) === userId) {
+                isBeneficiary = true;
             }
         }
 

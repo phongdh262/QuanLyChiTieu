@@ -10,8 +10,11 @@ export async function PUT(
 ) {
     try {
         const session = await getSession();
-        const actorId = session ? (session.id as number) : 0;
-        const actorName = session ? (session.name as string) : 'Unknown';
+        if (!session) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+        const actorId = session.id as number;
+        const actorName = session.name as string;
 
         const id = parseInt((await params).id);
         const body = await request.json();
@@ -28,6 +31,15 @@ export async function PUT(
             });
             if (!expense) throw new Error('Expense not found');
             workspaceId = expense.sheet.workspaceId;
+
+            // CHECK PERMISSION
+            const isMember = await tx.member.findFirst({
+                where: {
+                    workspaceId: workspaceId,
+                    id: actorId
+                }
+            });
+            if (!isMember) throw new Error('Forbidden: Not a member of this workspace');
 
             // 2. Update Expense Details
             await tx.expense.update({
@@ -95,8 +107,11 @@ export async function DELETE(
 ) {
     try {
         const session = await getSession();
-        const actorId = session ? (session.id as number) : 0;
-        const actorName = session ? (session.name as string) : 'Unknown';
+        if (!session) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+        const actorId = session.id as number;
+        const actorName = session.name as string;
 
         const id = parseInt((await params).id);
 
@@ -107,6 +122,17 @@ export async function DELETE(
         });
 
         if (!expense) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+
+        // VERIFY MEMBERSHIP
+        const isMember = await prisma.member.findFirst({
+            where: {
+                workspaceId: expense.sheet.workspaceId,
+                id: actorId
+            }
+        });
+        if (!isMember) {
+            return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+        }
 
         // Transaction to delete splits then expense
         await prisma.$transaction(async (tx: any) => {

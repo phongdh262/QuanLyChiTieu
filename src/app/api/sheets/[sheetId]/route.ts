@@ -29,6 +29,23 @@ export async function GET(
             return NextResponse.json({ error: 'Sheet not found' }, { status: 404 });
         }
 
+        const session = await getSession();
+        if (!session) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
+        // Check if user is member of the workspace
+        const isMember = await prisma.member.findFirst({
+            where: {
+                workspaceId: sheet.workspaceId,
+                id: Number(session.id)
+            }
+        });
+
+        if (!isMember) {
+            return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+        }
+
         // 2. Fetch Workspace Members
         const members = await prisma.member.findMany({
             where: { workspaceId: sheet.workspaceId }
@@ -89,12 +106,34 @@ export async function PUT(
 ) {
     try {
         const session = await getSession();
-        const actorId = session ? (session.id as number) : 0;
-        const actorName = session ? (session.name as string) : 'Hệ thống';
+        if (!session) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+        const actorId = session.id as number;
+        const actorName = session.name as string;
 
         const sheetId = parseInt((await params).sheetId);
         const body = await request.json();
         const { name } = body;
+
+        // Check membership/permissions
+        const existingSheet = await prisma.sheet.findUnique({
+            where: { id: sheetId },
+            include: { workspace: true }
+        });
+
+        if (!existingSheet) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+
+        const isMember = await prisma.member.findFirst({
+            where: {
+                workspaceId: existingSheet.workspaceId,
+                id: actorId
+            }
+        });
+
+        if (!isMember) {
+            return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+        }
 
         const sheet = await prisma.sheet.update({
             where: { id: sheetId },
@@ -125,10 +164,32 @@ export async function DELETE(
 ) {
     try {
         const session = await getSession();
-        const actorId = session ? (session.id as number) : 0;
-        const actorName = session ? (session.name as string) : 'Hệ thống';
+        if (!session) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+        const actorId = session.id as number;
+        const actorName = session.name as string;
 
         const sheetId = parseInt((await params).sheetId);
+
+        // Check membership/permissions for DELETE
+        const existingSheet = await prisma.sheet.findUnique({
+            where: { id: sheetId },
+            include: { workspace: true }
+        });
+
+        if (!existingSheet) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+
+        const isMember = await prisma.member.findFirst({
+            where: {
+                workspaceId: existingSheet.workspaceId,
+                id: actorId
+            }
+        });
+
+        if (!isMember) {
+            return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+        }
 
         // Update status instead of deleting
         const sheet = await prisma.sheet.update({
