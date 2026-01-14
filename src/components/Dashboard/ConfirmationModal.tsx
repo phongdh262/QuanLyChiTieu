@@ -101,8 +101,8 @@ export default function ConfirmationModal({ open, onOpenChange, onUpdated }: Pro
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-xl p-0 overflow-hidden rounded-3xl border-none shadow-2xl bg-[#fafafa]">
-                <DialogHeader className="p-6 pb-4 bg-white border-b border-indigo-50/50 sticky top-0 z-10">
+            <DialogContent className="max-w-xl max-h-[85vh] flex flex-col p-0 overflow-hidden rounded-3xl border-none shadow-2xl bg-[#fafafa]">
+                <DialogHeader className="p-6 pb-4 bg-white border-b border-indigo-50/50 sticky top-0 z-10 shrink-0">
                     <DialogTitle className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                             <div className="p-2.5 bg-indigo-50 rounded-xl text-indigo-600">
@@ -156,7 +156,7 @@ export default function ConfirmationModal({ open, onOpenChange, onUpdated }: Pro
                     </div>
                 </DialogHeader>
 
-                <div className="bg-slate-50/50 min-h-[500px] flex flex-col">
+                <div className="bg-slate-50/50 flex flex-col flex-1 overflow-hidden min-h-0">
                     {/* Search & Filter Bar */}
                     <div className="px-6 py-4 flex gap-3">
                         <div className="relative flex-1 group">
