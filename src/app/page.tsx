@@ -100,17 +100,7 @@ export default function Home() {
     }
   };
 
-  // Auto-Refresh (Polling)
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (document.visibilityState === 'visible') {
-        reload();
-      }
-    }, 3000); // Poll every 3 seconds
 
-    return () => clearInterval(interval);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentSheetId]); // Re-bind if sheet changes
 
   const reload = () => {
     if (currentSheetId) fetchSheetData(currentSheetId);
@@ -247,6 +237,8 @@ export default function Home() {
                     bills={bills}
                     members={members}
                     onDelete={reload}
+                    onRefresh={reload}
+                    isRefreshing={loading}
                     currentUser={currentUser}
                   />
                 </div>

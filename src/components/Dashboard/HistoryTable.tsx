@@ -33,7 +33,8 @@ import {
   Search,
   Clock,
   Trash2,
-  Edit
+  Edit,
+  RefreshCw
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -42,12 +43,14 @@ interface Props {
   members: Member[];
   onDelete: () => void;
   onUpdate?: () => void;
+  onRefresh?: () => void;
+  isRefreshing?: boolean;
   currentUser: CurrentUser | null;
 }
 
 const formatMoney = (amount: number) => amount.toLocaleString('vi-VN') + ' ₫';
 
-export default function HistoryTable({ bills, members, onDelete, onUpdate, currentUser }: Props) {
+export default function HistoryTable({ bills, members, onDelete, onUpdate, onRefresh, isRefreshing, currentUser }: Props) {
   const { confirm } = useConfirm();
   const { addToast } = useToast();
   const [deletingId, setDeletingId] = useState<number | string | null>(null);
@@ -290,6 +293,20 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, curre
                 >
                   {isBulkDeleting ? <span className="animate-spin mr-2">⏳</span> : <Trash2 className="w-4 h-4 mr-1" />}
                   Delete ({selectedIds.size})
+                </Button>
+              )}
+
+              {/* Refresh Button */}
+              {onRefresh && (
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={onRefresh}
+                  disabled={isRefreshing}
+                  className="bg-white/80 backdrop-blur-sm border-slate-200 hover:bg-white hover:border-indigo-300 hover:text-indigo-600 transition-all shadow-sm rounded-xl"
+                  title="Refresh Data"
+                >
+                  <RefreshCw className={cn("w-4 h-4", isRefreshing ? "animate-spin text-indigo-600" : "text-slate-500")} />
                 </Button>
               )}
 
