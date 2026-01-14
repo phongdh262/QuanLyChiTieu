@@ -25,7 +25,7 @@ export async function POST(request: Request) {
         const actorName = session.name as string;
 
         const requestor = await prisma.member.findFirst({
-            where: { id: actorId, workspaceId: parseInt(workspaceId) }
+            where: { id: actorId, workspaceId: workspaceId }
         });
         if (!requestor) {
             return NextResponse.json({ error: 'Forbidden: You must be a member of this workspace' }, { status: 403 });
@@ -42,7 +42,7 @@ export async function POST(request: Request) {
         });
 
         await logActivity(
-            parseInt(workspaceId),
+            workspaceId,
             actorId,
             actorName,
             'CREATE',
