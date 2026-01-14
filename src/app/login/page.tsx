@@ -2,10 +2,12 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import ReCAPTCHA from "react-google-recaptcha";
 
 export default function LoginPage() {
     const router = useRouter();
     const [formData, setFormData] = useState({ username: '', password: '' });
+    const [captchaToken, setCaptchaToken] = useState<string | null>(null);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
 
@@ -20,7 +22,8 @@ export default function LoginPage() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     username: formData.username,
-                    password: formData.password
+                    password: formData.password,
+                    captchaToken
                 }),
             });
 
@@ -83,6 +86,13 @@ export default function LoginPage() {
                             onFocus={(e) => e.target.style.borderColor = '#818cf8'}
                             onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
                             placeholder="••••••••"
+                        />
+                    </div>
+
+                    <div style={{ display: 'flex', justifyContent: 'center' }}>
+                        <ReCAPTCHA
+                            sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || ""}
+                            onChange={(token) => setCaptchaToken(token)}
                         />
                     </div>
 
