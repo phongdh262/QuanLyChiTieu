@@ -220,6 +220,14 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
                                 placeholder="0"
                                 value={amount}
                                 onChange={handleAmountChange}
+                                onPaste={(e) => {
+                                    const text = e.clipboardData.getData('text');
+                                    // Block if contains letters or special chars (allowed: digits, dots, commas, spaces)
+                                    if (!/^[\d.,\s]+$/.test(text)) {
+                                        e.preventDefault();
+                                        addToast('Vui lòng chỉ copy số tiền hợp lệ (không chứa chữ)', 'warning');
+                                    }
+                                }}
                                 className="pl-9 h-10 font-mono font-bold text-lg text-green-700"
                             />
                         </div>
