@@ -57,20 +57,20 @@ export default function MemberManager({ members, workspaceId, onUpdate }: Props)
             setNewName('');
             setIsAdding(false);
             onUpdate(); // Reload members list
-            addToast('Đã thêm thành viên', 'success');
+            addToast('Member added', 'success');
         } catch (e) {
             console.error(e);
-            addToast('Lỗi thêm thành viên', 'error');
+            addToast('Error adding member', 'error');
         }
     };
 
     const handleDelete = async (id: number) => {
         const ok = await confirm({
-            title: 'Xóa thành viên',
-            message: '⚠️ Bạn có chắc chắn muốn xóa thành viên này? Thông tin sẽ được chuyển vào Thùng rác và có thể khôi phục lại để bảo toàn dữ liệu chi tiêu.',
+            title: 'Delete Member',
+            message: '⚠️ Are you sure you want to delete this member? They will be moved to the Recycle Bin and can be restored.',
             type: 'danger',
-            confirmText: 'Chuyển vào thùng rác',
-            cancelText: 'Hủy'
+            confirmText: 'Move to Trash',
+            cancelText: 'Cancel'
         });
         if (!ok) return;
 
@@ -80,10 +80,10 @@ export default function MemberManager({ members, workspaceId, onUpdate }: Props)
                 const json = await res.json();
                 throw new Error(json.error || 'Failed');
             }
-            addToast('Đã chuyển vào thùng rác', 'success');
+            addToast('Moved to Trash', 'success');
             onUpdate();
         } catch (e: any) {
-            addToast(e.message || 'Lỗi xóa thành viên', 'error');
+            addToast(e.message || 'Error deleting member', 'error');
         }
     };
 
@@ -93,10 +93,10 @@ export default function MemberManager({ members, workspaceId, onUpdate }: Props)
             if (!res.ok) throw new Error('Failed');
             onUpdate();
             fetchDeletedMembers();
-            addToast('Đã khôi phục thành viên', 'success');
+            addToast('Member restored', 'success');
         } catch (e) {
             console.error(e);
-            addToast('Lỗi khi khôi phục', 'error');
+            addToast('Error restoring member', 'error');
         }
     };
 
@@ -114,10 +114,10 @@ export default function MemberManager({ members, workspaceId, onUpdate }: Props)
             });
             setEditingId(null);
             onUpdate();
-            addToast('Đã cập nhật tên', 'success');
+            addToast('Name updated', 'success');
         } catch (e) {
             console.error(e);
-            addToast('Lỗi cập nhật', 'error');
+            addToast('Error updating', 'error');
         }
     };
 
@@ -129,7 +129,7 @@ export default function MemberManager({ members, workspaceId, onUpdate }: Props)
                         <div className="p-2 bg-gradient-to-br from-indigo-500 to-violet-600 rounded-xl shadow-lg shadow-indigo-100 group-hover/manager:scale-110 group-hover/manager:rotate-3 transition-all duration-500">
                             <Users className="w-4 h-4 text-white" />
                         </div>
-                        <span className="font-black tracking-tight">Thành Viên</span>
+                        <span className="font-black tracking-tight">Members</span>
                     </CardTitle>
                     <div className="flex items-center gap-1.5">
                         {/* USER RECYCLE BIN */}
@@ -142,7 +142,7 @@ export default function MemberManager({ members, workspaceId, onUpdate }: Props)
                                     size="sm"
                                     variant="outline"
                                     className="h-8 w-8 p-0 text-slate-400 hover:text-purple-600 hover:bg-purple-50 border-transparent hover:border-purple-100"
-                                    title="Thùng rác User"
+                                    title="Recycle Bin"
                                 >
                                     <RotateCcw className="w-4 h-4" />
                                 </Button>
@@ -151,7 +151,7 @@ export default function MemberManager({ members, workspaceId, onUpdate }: Props)
                                 <DialogHeader>
                                     <DialogTitle className="flex items-center gap-2 text-purple-700">
                                         <History className="w-5 h-5 text-purple-500" />
-                                        Thành viên đã xóa (Thùng rác)
+                                        Deleted Members (Trash)
                                     </DialogTitle>
                                 </DialogHeader>
                                 <div className="space-y-3 py-4 max-h-[400px] overflow-y-auto custom-scrollbar pr-1">
@@ -162,7 +162,7 @@ export default function MemberManager({ members, workspaceId, onUpdate }: Props)
                                         </div>
                                     ) : deletedMembers.length === 0 ? (
                                         <div className="text-center py-10 text-slate-400 italic">
-                                            Không có thành viên nào trong thùng rác.
+                                            No members in trash.
                                         </div>
                                     ) : (
                                         deletedMembers.map(m => (
@@ -180,7 +180,7 @@ export default function MemberManager({ members, workspaceId, onUpdate }: Props)
                                                     className="h-8 px-3 gap-1.5 bg-white border border-slate-200 hover:bg-green-50 hover:text-green-600 hover:border-green-200 shadow-sm transition-all active:scale-95"
                                                 >
                                                     <RotateCcw className="w-3.5 h-3.5" />
-                                                    Khôi phục
+                                                    Restore
                                                 </Button>
                                             </div>
                                         ))
@@ -200,7 +200,7 @@ export default function MemberManager({ members, workspaceId, onUpdate }: Props)
                                 isAdding ? "bg-slate-200 text-slate-700 hover:bg-slate-300" : "bg-indigo-600 hover:bg-indigo-700 text-white"
                             )}
                         >
-                            {isAdding ? <><X className="w-3 h-3 mr-1" /> Huỷ</> : <><UserPlus className="w-3 h-3 mr-1.5" /> Thêm</>}
+                            {isAdding ? <><X className="w-3 h-3 mr-1" /> Cancel</> : <><UserPlus className="w-3 h-3 mr-1.5" /> Add</>}
                         </Button>
                     </div>
                 </div>
@@ -213,7 +213,7 @@ export default function MemberManager({ members, workspaceId, onUpdate }: Props)
                             <Input
                                 value={newName}
                                 onChange={e => setNewName(e.target.value)}
-                                placeholder="Nhập tên thành viên..."
+                                placeholder="Enter member name..."
                                 autoFocus
                                 className="h-9 text-sm pl-9 border-indigo-100 focus:border-indigo-300 focus:ring-indigo-100"
                                 onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
@@ -223,7 +223,7 @@ export default function MemberManager({ members, workspaceId, onUpdate }: Props)
                             className="h-9 px-4 bg-green-600 hover:bg-green-700 text-white font-bold shadow-md hover:shadow-lg transition-all active:scale-95"
                             onClick={handleAdd}
                         >
-                            Lưu <Save className="w-3.5 h-3.5 ml-1.5" />
+                            Save <Save className="w-3.5 h-3.5 ml-1.5" />
                         </Button>
                     </div>
                 )}
@@ -232,7 +232,7 @@ export default function MemberManager({ members, workspaceId, onUpdate }: Props)
                     {members.length === 0 ? (
                         <div className="h-full flex flex-col items-center justify-center text-slate-400 italic gap-2 opacity-60">
                             <Search className="w-8 h-8 opacity-20" />
-                            <p className="text-xs font-semibold uppercase tracking-widest">Danh sách trống</p>
+                            <p className="text-xs font-semibold uppercase tracking-widest">No members found</p>
                         </div>
                     ) : (
                         members.map(m => (
@@ -273,7 +273,7 @@ export default function MemberManager({ members, workspaceId, onUpdate }: Props)
                                                 variant="ghost"
                                                 className="h-8 w-8 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg"
                                                 onClick={() => startEdit(m)}
-                                                title="Sửa"
+                                                title="Edit"
                                             >
                                                 <Edit className="w-4 h-4" />
                                             </Button>
@@ -282,7 +282,7 @@ export default function MemberManager({ members, workspaceId, onUpdate }: Props)
                                                 variant="ghost"
                                                 className="h-8 w-8 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg"
                                                 onClick={() => handleDelete(m.id)}
-                                                title="Xóa"
+                                                title="Delete"
                                             >
                                                 <Trash2 className="w-4 h-4" />
                                             </Button>
