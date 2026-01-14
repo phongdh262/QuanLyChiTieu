@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import ReCAPTCHA from "react-google-recaptcha";
+import { Turnstile } from '@marsidev/react-turnstile';
 
 export default function LoginPage() {
     const router = useRouter();
@@ -90,9 +90,10 @@ export default function LoginPage() {
                     </div>
 
                     <div style={{ display: 'flex', justifyContent: 'center' }}>
-                        <ReCAPTCHA
-                            sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || ""}
-                            onChange={(token) => setCaptchaToken(token)}
+                        <Turnstile
+                            siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || ""}
+                            onSuccess={(token) => setCaptchaToken(token)}
+                            options={{ theme: 'light', size: 'flexible' }}
                         />
                     </div>
 

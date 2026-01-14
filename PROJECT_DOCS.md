@@ -100,3 +100,20 @@ Toàn bộ việc tính toán nợ được thực hiện tại Backend khi lấ
 | **Nhật ký** | `Dashboard/ActivityLogList.tsx` | `api/activities/route.ts` |
 | **Số dư** | `Dashboard/PrivateMatrix.tsx` | `api/sheets/[id]/route.ts` |
 | **Database** | `prisma/schema.prisma` | - |
+
+---
+
+## 6. Hướng Dẫn Kỹ Thuật (How-to)
+
+### 6.1. Lấy Site Key & Secret Key cho Cloudflare Turnstile
+Để tính năng chặn spam hoạt động, bạn cần đăng ký 2 key này từ Cloudflare:
+
+1. **Truy cập**: [Cloudflare Dashboard](https://dash.cloudflare.com/) > chọn **Turnstile** (ở menu bên trái).
+2. **Add Site**:
+    - **Site Name**: Điền tên nhận diện (VD: *ChiTieu App*).
+    - **Domain**: Điền domain của bạn (VD: `s1006.phongdinh.info.vn`) và thêm cả `localhost` để test.
+    - **Widget Mode**: Chọn **Managed** (Khuyên dùng - Tự động check, ít khi bắt user click).
+3. **Hoàn tất**: Nhấn **Create**.
+4. **Lấy Key**:
+    - Copy **Site Key** → Dán vào `.env`: `NEXT_PUBLIC_TURNSTILE_SITE_KEY=...`
+    - Copy **Secret Key** → Dán vào `.env`: `TURNSTILE_SECRET_KEY=...`

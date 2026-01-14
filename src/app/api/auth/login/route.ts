@@ -10,16 +10,21 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Missing credentials' }, { status: 400 });
         }
 
-        // Verify Recaptcha
+        // Verify Turnstile
         if (captchaToken) {
-            const secretKey = process.env.RECAPTCHA_SECRET_KEY;
+            const secretKey = process.env.TURNSTILE_SECRET_KEY;
             if (secretKey) {
-                const verifyRes = await fetch(`https://www.google.com/recaptcha/api/siteverify?secret=${secretKey}&response=${captchaToken}`, {
+                const formData = new FormData();
+                formData.append('secret', secretKey);
+                formData.append('response', captchaToken);
+
+                const verifyRes = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
                     method: 'POST',
+                    body: formData,
                 });
                 const verifyData = await verifyRes.json();
                 if (!verifyData.success) {
-                    return NextResponse.json({ error: 'Recaptcha verification failed' }, { status: 400 });
+                    return NextResponse.json({ error: 'Turnstile check failed' }, { status: 400 });
                 }
             }
         }
