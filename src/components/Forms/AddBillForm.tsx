@@ -228,6 +228,19 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
                                         addToast('Vui lòng chỉ copy số tiền hợp lệ (không chứa chữ)', 'warning');
                                     }
                                 }}
+                                onKeyDown={(e) => {
+                                    // Allow controls
+                                    if (
+                                        ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab', 'Home', 'End'].includes(e.key) ||
+                                        (e.ctrlKey || e.metaKey) // Allow copy/paste shortcuts
+                                    ) {
+                                        return;
+                                    }
+                                    // Block invalid chars
+                                    if (['e', 'E', '+', '-', '.'].includes(e.key) || isNaN(Number(e.key))) {
+                                        e.preventDefault();
+                                    }
+                                }}
                                 className="pl-9 h-10 font-mono font-bold text-lg text-green-700"
                             />
                         </div>
