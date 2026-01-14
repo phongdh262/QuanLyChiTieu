@@ -19,12 +19,18 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Search,
-  ChevronDown,
   Clock,
   Trash2,
   Edit
@@ -298,32 +304,51 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, curre
               </div>
 
               <div className="flex items-center gap-3">
-                <div className="relative group/sel">
-                  <select
-                    className="h-9 w-[160px] appearance-none rounded-xl border border-slate-100 bg-white/50 pl-4 pr-10 text-xs font-bold uppercase tracking-wide text-slate-500 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-400 transition-all cursor-pointer hover:bg-white"
-                    value={filterType}
-                    onChange={e => setFilterType(e.target.value)}
-                  >
-                    <option value="ALL">Tất cả loại</option>
-                    <option value="SHARED">Chung</option>
-                    <option value="PRIVATE">Riêng</option>
-                  </select>
-                  <ChevronDown className="absolute right-3 top-2.5 h-4 w-4 text-slate-400 pointer-events-none group-hover/sel:text-indigo-500 transition-colors" />
-                </div>
+                {/* Type Filter */}
+                <Select value={filterType} onValueChange={setFilterType}>
+                  <SelectTrigger className="w-[160px] h-9 rounded-xl border-slate-200 bg-white/80 backdrop-blur-sm shadow-sm hover:bg-white hover:border-indigo-300 transition-all font-bold text-slate-600 text-xs uppercase tracking-wide focus:ring-indigo-100">
+                    <div className="flex items-center gap-2 truncate">
+                      <span className="text-slate-400 font-normal">Loại:</span>
+                      <SelectValue placeholder="Tất cả" />
+                    </div>
+                  </SelectTrigger>
+                  <SelectContent className="rounded-xl shadow-xl border-slate-100 bg-white/95 backdrop-blur-md">
+                    <SelectItem value="ALL" className="font-medium text-slate-700 cursor-pointer focus:bg-indigo-50 focus:text-indigo-700 py-2.5">Tất cả</SelectItem>
+                    <SelectItem value="SHARED" className="font-medium text-indigo-600 cursor-pointer focus:bg-indigo-50 focus:text-indigo-700 py-2.5">
+                      <span className="flex items-center gap-2">🔹 Chung</span>
+                    </SelectItem>
+                    <SelectItem value="PRIVATE" className="font-medium text-amber-600 cursor-pointer focus:bg-amber-50 focus:text-amber-700 py-2.5">
+                      <span className="flex items-center gap-2">🔸 Riêng</span>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
 
-                <div className="relative group/sel">
-                  <select
-                    className="h-9 w-[240px] appearance-none rounded-xl border border-slate-100 bg-white/50 pl-4 pr-10 text-xs font-bold uppercase tracking-wide text-slate-500 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-400 transition-all cursor-pointer hover:bg-white"
-                    value={filterPayer}
-                    onChange={e => setFilterPayer(e.target.value)}
-                  >
-                    <option value="ALL">Người chi: Tất cả</option>
+                {/* Payer Filter */}
+                <Select value={filterPayer} onValueChange={setFilterPayer}>
+                  <SelectTrigger className="w-[180px] md:w-[200px] h-9 rounded-xl border-slate-200 bg-white/80 backdrop-blur-sm shadow-sm hover:bg-white hover:border-indigo-300 transition-all font-bold text-slate-600 text-xs uppercase tracking-wide focus:ring-indigo-100">
+                    <div className="flex items-center gap-1.5 truncate">
+                      <span className="text-slate-400 font-normal">Chi:</span>
+                      <SelectValue placeholder="Tất cả" />
+                    </div>
+                  </SelectTrigger>
+                  <SelectContent className="rounded-xl shadow-xl border-slate-100 bg-white/95 backdrop-blur-md max-h-[300px]">
+                    <SelectItem value="ALL" className="font-medium text-slate-700 cursor-pointer focus:bg-indigo-50 focus:text-indigo-700 py-2.5">
+                      Tất cả thành viên
+                    </SelectItem>
                     {members.map(m => (
-                      <option key={m.id} value={m.name}>{m.name}</option>
+                      <SelectItem key={m.id} value={m.name} className="font-medium text-slate-700 cursor-pointer focus:bg-indigo-50 focus:text-indigo-700 py-2.5">
+                        <div className="flex items-center gap-2">
+                          <div className={cn("w-5 h-5 rounded-full flex items-center justify-center text-white text-[9px] font-bold",
+                            ['bg-blue-500', 'bg-red-500', 'bg-green-500', 'bg-amber-500', 'bg-purple-500', 'bg-pink-500'][Math.abs(m.name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)) % 6]
+                          )}>
+                            {m.name.charAt(0).toUpperCase()}
+                          </div>
+                          {m.name}
+                        </div>
+                      </SelectItem>
                     ))}
-                  </select>
-                  <ChevronDown className="absolute right-3 top-2.5 h-4 w-4 text-slate-400 pointer-events-none group-hover/sel:text-indigo-500 transition-colors" />
-                </div>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
           </div>
