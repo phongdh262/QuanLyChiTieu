@@ -17,7 +17,7 @@ export default function EditBillModal({ bill, members, onClose, onSave }: Props)
 
     // ... (existing hooks) which were deleted, now restoring full logic
     const [description, setDescription] = useState(bill.note || '');
-    const [amount, setAmount] = useState(bill.amount.toString());
+    const [amount, setAmount] = useState(bill.amount.toLocaleString('vi-VN'));
 
     // Find payer ID by name
     const initialPayer = members.find(m => m.name === bill.payer);
@@ -73,7 +73,7 @@ export default function EditBillModal({ bill, members, onClose, onSave }: Props)
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     payerId: parseInt(payerId),
-                    amount: parseFloat(amount),
+                    amount: parseInt(amount.replace(/\./g, '')), // Clean formatted string
                     description,
                     type,
                     date: date || undefined,
@@ -95,6 +95,16 @@ export default function EditBillModal({ bill, members, onClose, onSave }: Props)
         setBeneficiaryIds(prev =>
             prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
         );
+    };
+
+    const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value.replace(/\D/g, '');
+        if (value === '') {
+            setAmount('');
+            return;
+        }
+        const numberValue = parseInt(value);
+        setAmount(numberValue.toLocaleString('vi-VN'));
     };
 
     // Wait for client fields to mount
@@ -145,9 +155,17 @@ export default function EditBillModal({ bill, members, onClose, onSave }: Props)
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium text-slate-700">Số tiền (VNĐ)</label>
                                     <input
-                                        type="number"
+                                        type="text"
+                                        inputMode="numeric"
                                         value={amount}
-                                        onChange={e => setAmount(e.target.value)}
+                                        onChange={handleAmountChange}
+                                        onPaste={(e) => {
+                                            const text = e.clipboardData.getData('text');
+                                            if (!/^[\d.,\s]+$/.test(text)) {
+                                                e.preventDefault();
+                                                addToast('Vui lòng chỉ copy số tiền hợp lệ (không chứa chữ)', 'warning');
+                                            }
+                                        }}
                                         className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm font-bold text-blue-700 ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                                     />
                                 </div>
@@ -172,8 +190,8 @@ export default function EditBillModal({ bill, members, onClose, onSave }: Props)
                                         type="button"
                                         onClick={() => setType('SHARED')}
                                         className={`flex flex-col items-center justify-center p-3 rounded-lg border transition-all duration-200 ${type === 'SHARED'
-                                                ? 'bg-blue-500 text-white border-blue-600 shadow-md'
-                                                : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
+                                            ? 'bg-blue-500 text-white border-blue-600 shadow-md'
+                                            : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
                                             }`}
                                     >
                                         <span className="font-bold">Chung</span>
@@ -183,8 +201,8 @@ export default function EditBillModal({ bill, members, onClose, onSave }: Props)
                                         type="button"
                                         onClick={() => setType('PRIVATE')}
                                         className={`flex flex-col items-center justify-center p-3 rounded-lg border transition-all duration-200 ${type === 'PRIVATE'
-                                                ? 'bg-orange-500 text-white border-orange-600 shadow-md'
-                                                : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
+                                            ? 'bg-orange-500 text-white border-orange-600 shadow-md'
+                                            : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
                                             }`}
                                     >
                                         <span className="font-bold">Riêng</span>
