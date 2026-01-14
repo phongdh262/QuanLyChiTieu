@@ -167,15 +167,15 @@ export default function EditBillModal({ bill, members, onClose, onSave }: Props)
                                             }
                                         }}
                                         onKeyDown={(e) => {
-                                            // Allow controls
+                                            // Allow controls (Backspace, Delete, Arrows, Tab, Copy/Paste)
                                             if (
-                                                ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab', 'Home', 'End'].includes(e.key) ||
-                                                (e.ctrlKey || e.metaKey) // Allow copy/paste shortcuts
+                                                ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab', 'Home', 'End', 'Enter'].includes(e.key) ||
+                                                (e.ctrlKey || e.metaKey)
                                             ) {
                                                 return;
                                             }
-                                            // Block invalid chars
-                                            if (['e', 'E', '+', '-', '.'].includes(e.key) || isNaN(Number(e.key))) {
+                                            // Strictly allow ONLY digits 0-9
+                                            if (!/^\d$/.test(e.key)) {
                                                 e.preventDefault();
                                             }
                                         }}

@@ -231,13 +231,13 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
                                 onKeyDown={(e) => {
                                     // Allow controls
                                     if (
-                                        ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab', 'Home', 'End'].includes(e.key) ||
-                                        (e.ctrlKey || e.metaKey) // Allow copy/paste shortcuts
+                                        ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab', 'Home', 'End', 'Enter'].includes(e.key) ||
+                                        (e.ctrlKey || e.metaKey)
                                     ) {
                                         return;
                                     }
-                                    // Block invalid chars
-                                    if (['e', 'E', '+', '-', '.'].includes(e.key) || isNaN(Number(e.key))) {
+                                    // Strictly allow ONLY digits 0-9
+                                    if (!/^\d$/.test(e.key)) {
                                         e.preventDefault();
                                     }
                                 }}

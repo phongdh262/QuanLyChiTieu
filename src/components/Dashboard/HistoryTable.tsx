@@ -546,14 +546,22 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, curre
 
                         <TableCell className="py-4 text-right pr-4">
                           <div className="flex items-center justify-end gap-1.5 transition-opacity duration-300">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-9 w-9 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all active:scale-90"
-                              onClick={() => setEditingBill(b)}
-                            >
-                              <Edit className="w-4 h-4" />
-                            </Button>
+                            <div title={isPayer ? "Sửa hóa đơn" : `Chỉ người chi (${b.payer}) mới có quyền sửa`}>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className={cn(
+                                  "h-9 w-9 rounded-xl transition-all active:scale-90",
+                                  isPayer
+                                    ? "text-slate-400 hover:text-indigo-600 hover:bg-indigo-50"
+                                    : "text-slate-200 cursor-not-allowed hover:bg-transparent opacity-50"
+                                )}
+                                onClick={() => isPayer && setEditingBill(b)}
+                                disabled={!isPayer}
+                              >
+                                <Edit className="w-4 h-4" />
+                              </Button>
+                            </div>
                             <div title={canDelete ? "Xóa hóa đơn" : `Chỉ người chi (${b.payer}) mới có quyền xóa`}>
                               <Button
                                 variant="ghost"
