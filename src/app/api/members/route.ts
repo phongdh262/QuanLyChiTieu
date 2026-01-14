@@ -6,11 +6,29 @@ import { logActivity } from '@/lib/logger';
 export async function POST(request: Request) {
     try {
         const session = await getSession();
-        const actorId = session ? (session.id as number) : 0;
-        const actorName = session ? (session.name as string) : 'Hệ thống';
+        if (!session) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+        const actorId = session.id as number;
+        const actorName = session.name as string;
 
         const body = await request.json();
         const { workspaceId, name } = body;
+
+        // AUTHZ CHECK: Ensure actor is capable of adding members (e.g. is existing member of workspace)
+        // Ideally should be ADMIN, but for now let's minimal check membership.
+        // Actually, let's enforce ADMIN role if possible, or at least membership.
+        const requestor = await prisma.member.findFirst({
+            where: {
+                id: actorId,
+                workspaceId: parseInt(workspaceId),
+                // role: 'ADMIN' // Uncomment this if we want strict ADMIN only
+            }
+        });
+
+        if (!requestor) {
+            return NextResponse.json({ error: 'Forbidden: You must be a member of this workspace to add others' }, { status: 403 });
+        }
 
         const member = await prisma.member.create({
             data: {

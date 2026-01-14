@@ -2,7 +2,10 @@ import { SignJWT, jwtVerify } from 'jose';
 import bcrypt from 'bcryptjs';
 import { cookies } from 'next/headers';
 
-const SECRET_KEY = process.env.JWT_SECRET || 'super-secret-key-change-me';
+const SECRET_KEY = process.env.JWT_SECRET;
+if (!SECRET_KEY) {
+    throw new Error('FATAL: JWT_SECRET is not defined in environment variables.');
+}
 const key = new TextEncoder().encode(SECRET_KEY);
 
 export async function hashPassword(password: string) {

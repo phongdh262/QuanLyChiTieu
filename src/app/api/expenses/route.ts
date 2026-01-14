@@ -6,8 +6,11 @@ import { logActivity } from '@/lib/logger';
 export async function POST(req: Request) {
     try {
         const session = await getSession();
-        const actorId = session ? (session.id as number) : 0;
-        const actorName = session ? (session.name as string) : 'Unknown';
+        if (!session) {
+            return NextResponse.json({ error: 'Unauthorized: Session required' }, { status: 401 });
+        }
+        const actorId = session.id as number;
+        const actorName = session.name as string;
 
         const body = await req.json();
         const { sheetId, payerId, amount, description, type, beneficiaryIds } = body;
@@ -17,7 +20,7 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
         }
 
-        // 2. Determine Splits
+        // 2. Determine Splits and Verify Access
         let splitMembers = [];
         let workspaceId = 0;
 
@@ -27,6 +30,19 @@ export async function POST(req: Request) {
                 include: { workspace: { include: { members: true } } }
             });
             if (!sheet) return NextResponse.json({ error: 'Sheet not found' }, { status: 404 });
+
+            // SECURITY CHECK: Ensure actor belongs to workspace
+            const isMember = sheet.workspace.members.some((m: any) => m.id === actorId);
+            // Note: Since member.id is distinct from User ID in this schema (Member table has auth fields), 
+            // we must assume session.id refers to Member.id as per login route logic.
+            // However, looking at schema, Member has ownerId (string) but session stores Member ID (int).
+            // Let's verify login route. Login creates session with member.id. 
+            // So session.id == Member.id.
+
+            if (!isMember) {
+                return NextResponse.json({ error: 'Forbidden: You are not a member of this workspace' }, { status: 403 });
+            }
+
             splitMembers = sheet.workspace.members;
             workspaceId = sheet.workspaceId;
         } else {
