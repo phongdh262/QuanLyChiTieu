@@ -7,18 +7,16 @@ services:
       context: .
       dockerfile: Dockerfile
       args:
-        # Bạn điền trực tiếp Site Key vào đây nếu không dùng .env
-        DATABASE_URL: "mysql://root:%2B_4nw%3Dc7vAHh%5EgDjf5x%3F@global-mariadb:3306/chitieu_db"
-        NEXT_PUBLIC_TURNSTILE_SITE_KEY: "Dien_Site_Key_Vao_Day"
+        DATABASE_URL: ${DATABASE_URL}
+        NEXT_PUBLIC_TURNSTILE_SITE_KEY: ${NEXT_PUBLIC_TURNSTILE_SITE_KEY}
     restart: always
     environment:
       # Database Connection
-      DATABASE_URL: "mysql://root:%2B_4nw%3Dc7vAHh%5EgDjf5x%3F@global-mariadb:3306/chitieu_db"
+      DATABASE_URL: ${DATABASE_URL}
 
       # App Secrets
-      JWT_SECRET: "kydieu-secret-key-change-me-in-production-123"
-      # Điền Secret Key vào đây
-      TURNSTILE_SECRET_KEY: "Dien_Secret_Key_Vao_Day"
+      JWT_SECRET: ${JWT_SECRET}
+      TURNSTILE_SECRET_KEY: ${TURNSTILE_SECRET_KEY}
 
       # Next.js Config
       NODE_ENV: "production"
