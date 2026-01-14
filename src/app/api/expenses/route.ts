@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
 import { logActivity } from '@/lib/logger';
+import { createExpenseSchema } from '@/lib/schemas';
 
 export async function POST(req: Request) {
     try {
@@ -13,12 +14,13 @@ export async function POST(req: Request) {
         const actorName = session.name as string;
 
         const body = await req.json();
-        const { sheetId, payerId, amount, description, type, beneficiaryIds } = body;
 
-        // 1. Validation
-        if (!sheetId || !payerId || !amount || !type) {
-            return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+        // Zod Validation
+        const validation = createExpenseSchema.safeParse(body);
+        if (!validation.success) {
+            return NextResponse.json({ error: validation.error.issues[0].message }, { status: 400 });
         }
+        const { sheetId, payerId, amount, description, type, beneficiaryIds, date } = validation.data;
 
         // 2. Determine Splits and Verify Access
         let splitMembers = [];
@@ -76,7 +78,7 @@ export async function POST(req: Request) {
                     amount,
                     description,
                     type,
-                    date: body.date ? new Date(body.date) : new Date(),
+                    date: date ? new Date(date) : new Date(),
                 }
             });
 

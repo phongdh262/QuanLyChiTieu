@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
 import { logActivity } from '@/lib/logger';
+import { updateMemberSchema } from '@/lib/schemas';
 
 // UPDATE Member
 export async function PUT(
@@ -18,7 +19,13 @@ export async function PUT(
 
         const id = parseInt((await params).id);
         const body = await request.json();
-        const { name } = body;
+
+        // Zod Validation
+        const validation = updateMemberSchema.safeParse(body);
+        if (!validation.success) {
+            return NextResponse.json({ error: validation.error.issues[0].message }, { status: 400 });
+        }
+        const { name } = validation.data;
 
         // 1. Fetch target member to check workspace ownership
         const targetMember = await prisma.member.findUnique({ where: { id } });

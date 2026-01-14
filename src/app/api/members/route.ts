@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
 import { logActivity } from '@/lib/logger';
+import { createMemberSchema } from '@/lib/schemas';
 
 export async function POST(request: Request) {
     try {
@@ -13,7 +14,13 @@ export async function POST(request: Request) {
         const actorName = session.name as string;
 
         const body = await request.json();
-        const { workspaceId, name } = body;
+
+        // Zod Validation
+        const validation = createMemberSchema.safeParse(body);
+        if (!validation.success) {
+            return NextResponse.json({ error: validation.error.issues[0].message }, { status: 400 });
+        }
+        const { workspaceId, name } = validation.data;
 
         // AUTHZ CHECK: Ensure actor is capable of adding members (e.g. is existing member of workspace)
         // Ideally should be ADMIN, but for now let's minimal check membership.
@@ -21,7 +28,7 @@ export async function POST(request: Request) {
         const requestor = await prisma.member.findFirst({
             where: {
                 id: actorId,
-                workspaceId: parseInt(workspaceId),
+                workspaceId: workspaceId,
                 // role: 'ADMIN' // Uncomment this if we want strict ADMIN only
             }
         });
@@ -33,12 +40,12 @@ export async function POST(request: Request) {
         const member = await prisma.member.create({
             data: {
                 name,
-                workspaceId: parseInt(workspaceId)
+                workspaceId: workspaceId
             }
         });
 
         await logActivity(
-            parseInt(workspaceId),
+            workspaceId,
             actorId,
             actorName,
             'CREATE',

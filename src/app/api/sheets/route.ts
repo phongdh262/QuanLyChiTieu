@@ -2,11 +2,18 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
 import { logActivity } from '@/lib/logger';
+import { createSheetSchema } from '@/lib/schemas';
 
 export async function POST(request: Request) {
     try {
         const body = await request.json();
-        const { workspaceId, month, year } = body;
+
+        // Zod Validation
+        const validation = createSheetSchema.safeParse(body);
+        if (!validation.success) {
+            return NextResponse.json({ error: validation.error.issues[0].message }, { status: 400 });
+        }
+        const { workspaceId, month, year } = validation.data;
 
         const name = `Tháng ${month}/${year}`;
 
@@ -27,9 +34,9 @@ export async function POST(request: Request) {
         const sheet = await prisma.sheet.create({
             data: {
                 name,
-                month: parseInt(month),
-                year: parseInt(year),
-                workspaceId: parseInt(workspaceId),
+                month,
+                year,
+                workspaceId,
                 status: 'OPEN'
             }
         });

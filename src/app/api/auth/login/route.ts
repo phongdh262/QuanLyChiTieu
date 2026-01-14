@@ -1,14 +1,31 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { verifyPassword, createSession } from '@/lib/auth';
+import { loginRateLimit } from '@/lib/rateLimit';
+import { loginSchema } from '@/lib/schemas';
 
 export async function POST(req: Request) {
     try {
-        const { username, password, captchaToken } = await req.json();
+        // 1. Rate Limiting
+        const ip = req.headers.get('x-forwarded-for') || '127.0.0.1';
+        const { isRateLimited, remaining } = loginRateLimit.check(5, ip); // 5 attempts per min
 
-        if (!username || !password) {
-            return NextResponse.json({ error: 'Missing credentials' }, { status: 400 });
+        if (isRateLimited) {
+            return NextResponse.json(
+                { error: 'Too many login attempts. Please try again later.' },
+                { status: 429, headers: { 'Retry-After': '60' } }
+            );
         }
+
+        const body = await req.json();
+
+        // 2. Input Validation
+        const validation = loginSchema.safeParse(body);
+        if (!validation.success) {
+            return NextResponse.json({ error: validation.error.issues[0].message }, { status: 400 });
+        }
+
+        const { username, password, captchaToken } = validation.data;
 
         if (!captchaToken) {
             return NextResponse.json({ error: 'Please complete the Captcha check' }, { status: 400 });
