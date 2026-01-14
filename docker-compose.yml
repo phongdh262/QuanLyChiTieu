@@ -8,6 +8,7 @@ services:
       dockerfile: Dockerfile
       args:
         DATABASE_URL: ${DATABASE_URL}
+        NEXT_PUBLIC_TURNSTILE_SITE_KEY: ${NEXT_PUBLIC_TURNSTILE_SITE_KEY}
     restart: always
     environment:
       # Database Connection
@@ -16,6 +17,7 @@ services:
 
       # App Secrets
       JWT_SECRET: "kydieu-secret-key-change-me-in-production-123"
+      TURNSTILE_SECRET_KEY: ${TURNSTILE_SECRET_KEY}
 
       # Next.js Config
       NODE_ENV: "production"
