@@ -66,14 +66,17 @@ export async function GET() {
             orderBy: {
                 paidAt: 'desc'
             },
-            take: 200 // Safety cap
+            take: 50 // Limit to 50 recent items for performance
         });
 
         return NextResponse.json({
             pendingPayer,
             pendingDebtor,
-            history,
-            totalPending: pendingPayer.length // For the bell badge
+            totalPending: pendingPayer.length, // For the bell badge
+            history: history.map((item: any) => ({
+                ...item,
+                isPayer: item.expense.payerId === userId
+            }))
         });
     } catch (error) {
         console.error('Fetch Notifications Error:', error);

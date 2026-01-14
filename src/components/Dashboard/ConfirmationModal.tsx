@@ -35,6 +35,7 @@ interface PendingPayment {
     member: {
         name: string;
     };
+    isPayer?: boolean;
 }
 
 interface NotificationData {
@@ -263,6 +264,27 @@ export default function ConfirmationModal({ open, onOpenChange, onUpdated }: Pro
                                         <div className="flex items-center justify-center py-2 bg-blue-50/50 rounded-xl border border-blue-100/50 text-blue-600 text-xs font-bold gap-2">
                                             <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
                                             Đang chờ người chi xác nhận...
+                                        </div>
+                                    )}
+
+                                    {activeTab === 'history' && (
+                                        <div className={cn(
+                                            "flex items-center justify-center py-2 rounded-xl border text-xs font-bold gap-2",
+                                            p.isPayer
+                                                ? "bg-green-50/50 border-green-100/50 text-green-600"
+                                                : "bg-slate-50/50 border-slate-100/50 text-slate-600"
+                                        )}>
+                                            {p.isPayer ? (
+                                                <>
+                                                    <Check className="w-3.5 h-3.5" />
+                                                    Đã nhận từ {p.member.name}
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <Check className="w-3.5 h-3.5" />
+                                                    Đã trả cho {p.expense.payer.name}
+                                                </>
+                                            )}
                                         </div>
                                     )}
                                 </div>
