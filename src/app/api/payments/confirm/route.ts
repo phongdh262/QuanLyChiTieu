@@ -74,8 +74,8 @@ export async function POST(request: Request) {
 
         // Log activity
         const logMsg = isReject
-            ? `Đã TỪ CHỐI xác nhận thanh toán cho ${split.member.name} trong khoản chi: ${split.expense.description}`
-            : `Đã xác nhận thanh toán cho ${split.member.name} trong khoản chi: ${split.expense.description}`;
+            ? `REJECTED payment confirmation for ${split.member.name} in expense: ${split.expense.description}`
+            : `Confirmed payment for ${split.member.name} in expense: ${split.expense.description}`;
 
         await logActivity(
             workspaceId,

@@ -28,7 +28,7 @@ export default function LoginPage() {
             });
 
             const data = await res.json();
-            if (!res.ok) throw new Error(data.error || 'Failed');
+            if (!res.ok) throw new Error(data.error || 'Failed to login');
 
             // Success
             router.push('/');
@@ -41,83 +41,77 @@ export default function LoginPage() {
     };
 
     return (
-        <div style={{
-            minHeight: '100vh',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            background: 'linear-gradient(135deg, #e0e7ff 0%, #f3e8ff 100%)' // Soft Indigo-Purple
-        }}>
-            <div className="card" style={{ width: '100%', maxWidth: '420px', padding: '3rem 2.5rem', boxShadow: '0 25px 50px -12px rgb(0 0 0 / 0.15)', borderRadius: '1.5rem' }}>
-                <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
-                    <h1 style={{ fontSize: '2.25rem', fontWeight: 800, marginBottom: '0.5rem', background: 'linear-gradient(to right, #6366f1, #a855f7)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-                        Welcome Back
-                    </h1>
-                    <p style={{ color: '#94a3b8', fontSize: '0.95rem', fontWeight: 500 }}>
-                        Đăng nhập để quản lý chi tiêu
-                    </p>
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 to-purple-100 p-4 font-sans text-slate-800">
+            <div className="w-full max-w-md bg-white/80 backdrop-blur-xl rounded-2xl shadow-xl overflow-hidden border border-white/50">
+                <div className="p-8 sm:p-10">
+                    <div className="text-center mb-10">
+                        <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 mb-2">
+                            Welcome Back
+                        </h1>
+                        <p className="text-slate-500 font-medium">
+                            Sign in to manage your expenses
+                        </p>
+                    </div>
+
+                    {error && (
+                        <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm text-center mb-6 border border-red-100 font-medium animate-pulse">
+                            {error}
+                        </div>
+                    )}
+
+                    <form onSubmit={handleSubmit} className="space-y-6">
+                        <div className="space-y-2">
+                            <label className="block text-sm font-semibold text-slate-700 ml-1">Username</label>
+                            <input
+                                required
+                                type="text"
+                                value={formData.username}
+                                onChange={e => setFormData({ ...formData, username: e.target.value })}
+                                className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all outline-none text-slate-800"
+                                placeholder="Enter your username"
+                            />
+                        </div>
+
+                        <div className="space-y-2">
+                            <label className="block text-sm font-semibold text-slate-700 ml-1">Password</label>
+                            <input
+                                required
+                                type="password"
+                                value={formData.password}
+                                onChange={e => setFormData({ ...formData, password: e.target.value })}
+                                className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all outline-none text-slate-800"
+                                placeholder="••••••••"
+                            />
+                        </div>
+
+                        <div className="flex justify-center min-h-[65px] pt-2">
+                            {process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ? (
+                                <Turnstile
+                                    siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY}
+                                    onSuccess={(token) => setCaptchaToken(token)}
+                                    options={{ theme: 'light', size: 'flexible' }}
+                                />
+                            ) : (
+                                <div className="text-red-500 text-xs p-2 bg-red-50 rounded-lg border border-red-100">
+                                    Missing Turnstile Site Key
+                                </div>
+                            )}
+                        </div>
+
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className="w-full py-3.5 px-6 text-white font-bold rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 focus:ring-4 focus:ring-indigo-500/30 transform active:scale-[0.98] transition-all shadow-lg shadow-indigo-500/20 disabled:opacity-70 disabled:cursor-not-allowed"
+                        >
+                            {loading ? 'Signing In...' : 'Sign In'}
+                        </button>
+                    </form>
                 </div>
 
-                {error && <div style={{ background: '#fef2f2', color: '#ef4444', padding: '0.75rem', borderRadius: '0.75rem', marginBottom: '1.5rem', textAlign: 'center', fontSize: '0.9rem', border: '1px solid #fee2e2' }}>{error}</div>}
-
-                <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-                    <div>
-                        <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', fontWeight: 600, color: '#475569', marginLeft: '4px' }}>Tên đăng nhập</label>
-                        <input
-                            required
-                            type="text"
-                            value={formData.username}
-                            onChange={e => setFormData({ ...formData, username: e.target.value })}
-                            style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '0.75rem', border: '2px solid #e2e8f0', outline: 'none', transition: 'all 0.2s', fontSize: '1rem' }}
-                            onFocus={(e) => e.target.style.borderColor = '#818cf8'}
-                            onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
-                            placeholder="username"
-                        />
-                    </div>
-
-                    <div>
-                        <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', fontWeight: 600, color: '#475569', marginLeft: '4px' }}>Mật khẩu</label>
-                        <input
-                            required
-                            type="password"
-                            value={formData.password}
-                            onChange={e => setFormData({ ...formData, password: e.target.value })}
-                            style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '0.75rem', border: '2px solid #e2e8f0', outline: 'none', transition: 'all 0.2s', fontSize: '1rem' }}
-                            onFocus={(e) => e.target.style.borderColor = '#818cf8'}
-                            onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
-                            placeholder="••••••••"
-                        />
-                    </div>
-
-                    <div style={{ display: 'flex', justifyContent: 'center', minHeight: '65px' }}>
-                        {process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ? (
-                            <Turnstile
-                                siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY}
-                                onSuccess={(token) => setCaptchaToken(token)}
-                                options={{ theme: 'light', size: 'flexible' }}
-                            />
-                        ) : (
-                            <div style={{ color: '#ef4444', fontSize: '0.8rem', padding: '10px', background: '#fee2e2', borderRadius: '8px' }}>
-                                Missing TURNSTILE_SITE_KEY
-                            </div>
-                        )}
-                    </div>
-
-                    <button
-                        type="submit"
-                        disabled={loading}
-                        className="primary"
-                        style={{
-                            width: '100%', justifyContent: 'center', marginTop: '0.5rem', padding: '0.85rem', fontSize: '1rem', fontWeight: 700, borderRadius: '0.75rem',
-                            background: 'linear-gradient(to right, #4f46e5, #7c3aed)', border: 'none', boxShadow: '0 4px 6px -1px rgb(79 70 229 / 0.2)'
-                        }}
-                    >
-                        {loading ? 'Đang xử lý...' : 'Đăng Nhập'}
-                    </button>
-                </form>
-
-                <div style={{ marginTop: '2rem', textAlign: 'center', fontSize: '0.9rem' }}>
-                    <p style={{ color: '#94a3b8', fontStyle: 'italic' }}>ChiTieuApp - Quản lý tài chính cá nhân</p>
+                <div className="px-8 py-4 bg-slate-50 border-t border-slate-100 text-center">
+                    <p className="text-xs text-slate-400 font-medium">
+                        ChiTieuApp &copy; {new Date().getFullYear()} &bull; Personal Finance Manager
+                    </p>
                 </div>
             </div>
         </div>

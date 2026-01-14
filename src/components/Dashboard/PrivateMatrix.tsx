@@ -29,7 +29,7 @@ export default function PrivateMatrix({ members, matrixData }: Props) {
                     <div className="p-2 bg-gradient-to-br from-orange-500 to-rose-600 rounded-xl shadow-lg shadow-orange-100 group-hover/matrix:scale-110 group-hover/matrix:rotate-3 transition-all duration-500">
                         <span className="text-sm">💸</span>
                     </div>
-                    <span className="font-black tracking-tight">Bảng Ghi Nợ (Chi Riêng)</span>
+                    <span className="font-black tracking-tight">Debt Matrix (Private)</span>
                 </CardTitle>
                 <div className={cn("rounded-full p-2 bg-white shadow-sm text-slate-400 ring-1 ring-slate-100 transition-transform duration-300 hover:bg-orange-50 hover:text-orange-600", isOpen && "rotate-180 bg-orange-100 text-orange-600")}>
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
@@ -45,11 +45,11 @@ export default function PrivateMatrix({ members, matrixData }: Props) {
                             <Table>
                                 <TableHeader>
                                     <TableRow>
-                                        <TableHead>Người Nợ</TableHead>
+                                        <TableHead>Debtor</TableHead>
                                         {members.map(m => (
-                                            <TableHead key={m.name} className="text-right whitespace-nowrap">Trả cho {m.name}</TableHead>
+                                            <TableHead key={m.name} className="text-right whitespace-nowrap">Pays {m.name}</TableHead>
                                         ))}
-                                        <TableHead className="text-right font-bold text-destructive">Tổng Nợ</TableHead>
+                                        <TableHead className="text-right font-bold text-destructive">Total Debt</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>

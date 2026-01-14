@@ -97,11 +97,11 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, curre
     if (selectedIds.size === 0) return;
 
     const ok = await confirm({
-      title: 'Xóa nhiều hóa đơn',
-      message: `Bạn có chắc chắn muốn xóa ${selectedIds.size} hóa đơn đã chọn không? hành động này không thể hoàn tác.`,
+      title: 'Delete Multiple Bills',
+      message: `Are you sure you want to delete ${selectedIds.size} selected bills? This action cannot be undone.`,
       type: 'danger',
-      confirmText: `Xóa ${selectedIds.size} hóa đơn`,
-      cancelText: 'Hủy'
+      confirmText: `Delete ${selectedIds.size} bills`,
+      cancelText: 'Cancel'
     });
 
     if (!ok) return;
@@ -116,7 +116,7 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, curre
         })
       );
 
-      addToast(`Đã xóa ${successCount}/${selectedIds.size} hóa đơn`, 'success');
+      addToast(`Deleted ${successCount}/${selectedIds.size} bills`, 'success');
       setSelectedIds(new Set());
       onDelete();
     } catch (e) {
@@ -131,11 +131,11 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, curre
     if (deletingId) return;
 
     const ok = await confirm({
-      title: 'Xác nhận xóa',
-      message: 'Bạn có chắc chắn muốn xóa hóa đơn này không? Hành động này không thể hoàn tác.',
+      title: 'Confirm Deletion',
+      message: 'Are you sure you want to delete this bill? This action cannot be undone.',
       type: 'danger',
-      confirmText: 'Xóa',
-      cancelText: 'Hủy'
+      confirmText: 'Delete',
+      cancelText: 'Cancel'
     });
 
     if (!ok) return;
@@ -144,7 +144,7 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, curre
     try {
       const res = await fetch(`/api/expenses/${id}`, { method: 'DELETE' });
       if (!res.ok) throw new Error('Failed');
-      addToast('Đã xóa hóa đơn', 'success');
+      addToast('Bill deleted', 'success');
       onDelete();
     } catch (e) {
       addToast('Xóa thất bại', 'error');
@@ -164,19 +164,19 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, curre
     const isCurrentlyPaid = memberName ? split?.isPaid : bill.isSettled;
 
     if (isCurrentlyPaid && !canSettleGlobal && currentUser?.name !== memberName) {
-      addToast('Bạn không có quyền hủy xác nhận thanh toán này!', 'warning');
+      addToast('You do not have permission to cancel this payment confirmation!', 'warning');
       return;
     }
 
     // CASE: Payer marks an UNPAID split as PAID
     if (memberName && !isCurrentlyPaid && currentUser?.name === bill.payer) {
       const result = await confirm({
-        title: 'Xác nhận khoản thu',
-        message: `Bạn muốn xác nhận ${memberName} đã trả tiền hay từ chối yêu cầu này?`,
+        title: 'Confirm Payment',
+        message: `Confirm that ${memberName} has paid or reject this request?`,
         type: 'info',
-        confirmText: 'Xác nhận đã nhận',
-        cancelText: 'Hủy',
-        rejectText: 'Không xác nhận' // New 3rd option
+        confirmText: 'Confirm Received',
+        cancelText: 'Cancel',
+        rejectText: 'Reject' // New 3rd option
       });
 
       if (result === false) return; // Cancel
@@ -196,11 +196,11 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, curre
 
     if (isCurrentlyPaid) {
       const ok = await confirm({
-        title: 'Hủy xác nhận thanh toán?',
-        message: `Bạn có chắc chắn muốn chuyển trạng thái khoản của ${memberName || 'tất cả'} sang 'Chưa trả' không?`,
+        title: 'Cancel Payment Confirmation?',
+        message: `Are you sure you want to change status of ${memberName || 'all'} to 'Unpaid'?`,
         type: 'danger',
-        confirmText: 'Đồng ý',
-        cancelText: 'Hủy'
+        confirmText: 'Yes',
+        cancelText: 'Cancel'
       });
       if (!ok) return;
     }
@@ -235,16 +235,16 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, curre
       });
 
       if (!res.ok) {
-        if (res.status === 403) throw new Error('Không có quyền thực hiện');
+        if (res.status === 403) throw new Error('Permission denied');
         throw new Error('Failed to update status');
       }
 
       const data = await res.json();
 
       if (data.isPending) {
-        addToast('Đã gửi yêu cầu xác nhận tới người chi tiền. Chờ xác nhận để cập nhật số dư.', 'warning');
+        addToast('Confirmation request sent to Payer. Waiting for approval.', 'warning');
       } else {
-        addToast('Đã cập nhật trạng thái thanh toán', 'success');
+        addToast('Payment status updated', 'success');
       }
 
       if (onDelete) onDelete(); // Reload
@@ -275,7 +275,7 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, curre
               <div className="p-2 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl shadow-lg shadow-blue-100 group-hover/history:scale-110 group-hover/history:rotate-3 transition-all duration-500">
                 <Clock className="w-5 h-5 text-white" />
               </div>
-              <span className="font-bold tracking-tight text-slate-800">Lịch Sử Chi Tiêu</span>
+              <span className="font-bold tracking-tight text-slate-800">Expense History</span>
             </CardTitle>
 
             <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
@@ -289,14 +289,14 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, curre
                   className="animate-in fade-in zoom-in duration-200 shadow-md"
                 >
                   {isBulkDeleting ? <span className="animate-spin mr-2">⏳</span> : <Trash2 className="w-4 h-4 mr-1" />}
-                  Xóa ({selectedIds.size})
+                  Delete ({selectedIds.size})
                 </Button>
               )}
 
               <div className="relative flex-1 md:w-48 lg:w-64">
                 <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Tìm nội dung..."
+                  placeholder="Search description..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-8 h-9 bg-white shadow-sm"
@@ -308,17 +308,17 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, curre
                 <Select value={filterType} onValueChange={setFilterType}>
                   <SelectTrigger className="w-[160px] h-9 rounded-xl border-slate-200 bg-white/80 backdrop-blur-sm shadow-sm hover:bg-white hover:border-indigo-300 transition-all font-bold text-slate-600 text-xs uppercase tracking-wide focus:ring-indigo-100">
                     <div className="flex items-center gap-2 truncate">
-                      <span className="text-slate-400 font-normal">Loại:</span>
-                      <SelectValue placeholder="Tất cả" />
+                      <span className="text-slate-400 font-normal">Type:</span>
+                      <SelectValue placeholder="All" />
                     </div>
                   </SelectTrigger>
                   <SelectContent className="rounded-xl shadow-xl border-slate-100 bg-white/95 backdrop-blur-md">
-                    <SelectItem value="ALL" className="font-medium text-slate-700 cursor-pointer focus:bg-indigo-50 focus:text-indigo-700 py-2.5">Tất cả</SelectItem>
+                    <SelectItem value="ALL" className="font-medium text-slate-700 cursor-pointer focus:bg-indigo-50 focus:text-indigo-700 py-2.5">All</SelectItem>
                     <SelectItem value="SHARED" className="font-medium text-indigo-600 cursor-pointer focus:bg-indigo-50 focus:text-indigo-700 py-2.5">
-                      <span className="flex items-center gap-2">🔹 Chung</span>
+                      <span className="flex items-center gap-2">🔹 Shared</span>
                     </SelectItem>
                     <SelectItem value="PRIVATE" className="font-medium text-amber-600 cursor-pointer focus:bg-amber-50 focus:text-amber-700 py-2.5">
-                      <span className="flex items-center gap-2">🔸 Riêng</span>
+                      <span className="flex items-center gap-2">🔸 Private</span>
                     </SelectItem>
                   </SelectContent>
                 </Select>
@@ -327,13 +327,13 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, curre
                 <Select value={filterPayer} onValueChange={setFilterPayer}>
                   <SelectTrigger className="w-[180px] md:w-[200px] h-9 rounded-xl border-slate-200 bg-white/80 backdrop-blur-sm shadow-sm hover:bg-white hover:border-indigo-300 transition-all font-bold text-slate-600 text-xs uppercase tracking-wide focus:ring-indigo-100">
                     <div className="flex items-center gap-1.5 truncate">
-                      <span className="text-slate-400 font-normal">Chi:</span>
-                      <SelectValue placeholder="Tất cả" />
+                      <span className="text-slate-400 font-normal">Payer:</span>
+                      <SelectValue placeholder="All" />
                     </div>
                   </SelectTrigger>
                   <SelectContent className="rounded-xl shadow-xl border-slate-100 bg-white/95 backdrop-blur-md max-h-[300px]">
                     <SelectItem value="ALL" className="font-medium text-slate-700 cursor-pointer focus:bg-indigo-50 focus:text-indigo-700 py-2.5">
-                      Tất cả thành viên
+                      All Members
                     </SelectItem>
                     {members.map(m => (
                       <SelectItem key={m.id} value={m.name} className="font-medium text-slate-700 cursor-pointer focus:bg-indigo-50 focus:text-indigo-700 py-2.5">
@@ -367,12 +367,12 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, curre
                       className="h-4 w-4 rounded-lg border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer accent-indigo-600"
                     />
                   </TableHead>
-                  <TableHead className="w-[110px] text-[10px] font-bold uppercase tracking-wider text-slate-500 whitespace-nowrap px-4">Ngày</TableHead>
-                  <TableHead className="w-auto min-w-[250px] text-[10px] font-bold uppercase tracking-wider text-slate-500 px-4">Nội dung</TableHead>
-                  <TableHead className="w-[150px] text-right text-[10px] font-bold uppercase tracking-wider text-slate-500 px-4">Số tiền</TableHead>
-                  <TableHead className="w-[180px] text-left text-[10px] font-bold uppercase tracking-wider text-slate-500 pl-6">Người chi</TableHead>
-                  <TableHead className="w-[30%] min-w-[300px] text-left text-[10px] font-bold uppercase tracking-wider text-slate-500 px-4">Chia cho</TableHead>
-                  <TableHead className="w-[120px] text-center text-[10px] font-bold uppercase tracking-wider text-slate-500">Trạng thái</TableHead>
+                  <TableHead className="w-[110px] text-[10px] font-bold uppercase tracking-wider text-slate-500 whitespace-nowrap px-4">Date</TableHead>
+                  <TableHead className="w-auto min-w-[250px] text-[10px] font-bold uppercase tracking-wider text-slate-500 px-4">Description</TableHead>
+                  <TableHead className="w-[150px] text-right text-[10px] font-bold uppercase tracking-wider text-slate-500 px-4">Amount</TableHead>
+                  <TableHead className="w-[180px] text-left text-[10px] font-bold uppercase tracking-wider text-slate-500 pl-6">Payer</TableHead>
+                  <TableHead className="w-[30%] min-w-[300px] text-left text-[10px] font-bold uppercase tracking-wider text-slate-500 px-4">Split For</TableHead>
+                  <TableHead className="w-[120px] text-center text-[10px] font-bold uppercase tracking-wider text-slate-500">Status</TableHead>
                   <TableHead className="w-[70px]"></TableHead>
                 </TableRow>
               </TableHeader>
@@ -380,7 +380,7 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, curre
                 {filteredBills.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={8} className="h-32 text-center text-muted-foreground italic text-sm">
-                      Không có dữ liệu hóa đơn nào.
+                      No expense records found.
                     </TableCell>
                   </TableRow>
                 ) : (

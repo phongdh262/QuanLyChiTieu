@@ -51,10 +51,10 @@ export default function ActivityLogList({ members }: Props) {
 
     const getActionLabel = (action: string) => {
         switch (action) {
-            case 'CREATE': return 'Tạo mới';
-            case 'UPDATE': return 'Cập nhật';
-            case 'DELETE': return 'Xóa';
-            default: return 'Hoạt động';
+            case 'CREATE': return 'Create';
+            case 'UPDATE': return 'Update';
+            case 'DELETE': return 'Delete';
+            default: return 'Action';
         }
     };
 
@@ -73,17 +73,17 @@ export default function ActivityLogList({ members }: Props) {
                         <History className="w-4 h-4 text-white" />
                     </div>
                     <CardTitle className="text-base font-black text-slate-800 tracking-tight truncate">
-                        Nhật Ký <span className="text-[10px] text-indigo-400 font-bold ml-1">LIVE</span>
+                        Activity Log <span className="text-[10px] text-indigo-400 font-bold ml-1">LIVE</span>
                     </CardTitle>
                 </div>
 
                 <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                     <Select value={selectedUser} onValueChange={setSelectedUser}>
                         <SelectTrigger className="w-[140px] h-9 bg-slate-50 border-slate-200 rounded-lg font-semibold text-slate-700 focus:ring-purple-100 shadow-sm hover:bg-slate-100 text-xs">
-                            <SelectValue placeholder="Tất cả user" />
+                            <SelectValue placeholder="All Users" />
                         </SelectTrigger>
                         <SelectContent className="max-h-[300px]" align="end">
-                            <SelectItem value="all" className="text-xs font-medium cursor-pointer py-2">Tất cả user</SelectItem>
+                            <SelectItem value="all" className="text-xs font-medium cursor-pointer py-2">All Users</SelectItem>
                             {members.map(m => (
                                 <SelectItem key={m.id} value={m.name} className="text-xs font-medium cursor-pointer py-2">{m.name}</SelectItem>
                             ))}
@@ -96,10 +96,10 @@ export default function ActivityLogList({ members }: Props) {
                 <CardContent className="p-0 border-t border-slate-100 animate-in slide-in-from-top-2 duration-200">
                     <div className="h-[350px] overflow-y-auto p-4 space-y-3 custom-scrollbar">
                         {isLoading && logs.length === 0 ? (
-                            <div className="flex justify-center p-4 text-slate-400 font-medium italic">Đang tải dữ liệu...</div>
+                            <div className="flex justify-center p-4 text-slate-400 font-medium italic">Loading data...</div>
                         ) : filteredLogs.length === 0 ? (
                             <div className="text-center p-4 text-slate-400 italic">
-                                {selectedUser === 'all' ? 'Chưa có hoạt động nào.' : `Không có hoạt động nào từ ${selectedUser}.`}
+                                {selectedUser === 'all' ? 'No activities yet.' : `No activities from ${selectedUser}.`}
                             </div>
                         ) : (
                             filteredLogs.map(log => (

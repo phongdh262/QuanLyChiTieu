@@ -22,7 +22,7 @@ export default function SummaryTable({ members, calculations }: Props) {
                     <div className="p-2 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl shadow-lg shadow-blue-100 group-hover/summary:scale-110 group-hover/summary:rotate-3 transition-all duration-500">
                         <span className="text-sm">📊</span>
                     </div>
-                    <span className="font-black tracking-tight">Bảng Tổng Kết</span>
+                    <span className="font-black tracking-tight">Expenses Summary</span>
                 </CardTitle>
                 <div className={cn("rounded-full p-2 bg-white shadow-sm text-slate-400 ring-1 ring-slate-100 transition-transform duration-300 hover:bg-indigo-50 hover:text-indigo-600", isOpen && "rotate-180 bg-indigo-100 text-indigo-600")}>
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
@@ -37,9 +37,9 @@ export default function SummaryTable({ members, calculations }: Props) {
                         <Table>
                             <TableHeader className="bg-slate-50/50">
                                 <TableRow>
-                                    <TableHead className="font-bold text-slate-700">Thành viên</TableHead>
-                                    <TableHead className="text-right font-bold text-slate-700">Tổng Tiền</TableHead>
-                                    <TableHead className="text-right font-bold text-slate-700">Dư / Nợ Tiền Ăn Chung</TableHead>
+                                    <TableHead className="font-bold text-slate-700">Member</TableHead>
+                                    <TableHead className="text-right font-bold text-slate-700">Total Paid</TableHead>
+                                    <TableHead className="text-right font-bold text-slate-700">Net Balance (Shared)</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>

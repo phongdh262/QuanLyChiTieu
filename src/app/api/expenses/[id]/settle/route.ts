@@ -90,7 +90,7 @@ export async function POST(
             });
 
             if (existingSplit?.isPaid && !isPaid && !isBeneficiary && !isAdmin) {
-                return NextResponse.json({ error: 'Trạng thái đã khóa. Chỉ người nợ hoặc Admin mới có quyền hoàn tác sau khi đã xác nhận.' }, { status: 403 });
+                return NextResponse.json({ error: 'Status locked. Only the Debtor or Admin can undo after confirmation.' }, { status: 403 });
             }
 
             let updateData: any = {};
@@ -100,17 +100,17 @@ export async function POST(
                 // If we reach here, it means existingSplit wasn't isPaid. 
                 // However, it could be isPending. Cancelling a pending request is allowed for the debtor.
                 updateData = { isPaid: false, isPending: false, paidAt: null };
-                logMsg = `Đã đánh dấu CHƯA TRẢ cho ${paymentFor} trong khoản chi: ${expense.description}`;
+                logMsg = `Marked UNPAID for ${paymentFor} in expense: ${expense.description}`;
             } else {
                 // Marking as PAID
                 if (isPayer || isAdmin) {
                     // Payer or Admin confirms directly
                     updateData = { isPaid: true, isPending: false, paidAt: new Date() };
-                    logMsg = `Đã xác nhận thanh toán cho ${paymentFor} trong khoản chi: ${expense.description}`;
+                    logMsg = `Confirmed payment for ${paymentFor} in expense: ${expense.description}`;
                 } else {
                     // Beneficiary requests confirmation
                     updateData = { isPaid: false, isPending: true, paidAt: new Date() };
-                    logMsg = `Đã gửi yêu cầu xác nhận thanh toán cho ${paymentFor} trong khoản chi: ${expense.description}`;
+                    logMsg = `Sent payment confirmation request for ${paymentFor} in expense: ${expense.description}`;
                 }
             }
 
@@ -157,7 +157,7 @@ export async function POST(
 
         // CASE 2: Global Settle (Toggle whole bill) - Only for Payer/Admin
         if (expense.isSettled && !isSettled) {
-            return NextResponse.json({ error: 'Khoản chi đã được quyết toán toàn bộ và đã khóa.' }, { status: 403 });
+            return NextResponse.json({ error: 'Expense is fully settled and locked.' }, { status: 403 });
         }
 
         await prisma.$transaction([
@@ -183,7 +183,7 @@ export async function POST(
             'UPDATE',
             'EXPENSE',
             expenseId,
-            `Đã đánh dấu ${isSettled ? 'ĐÃ QUYẾT TOÁN' : 'CHƯA QUYẾT TOÁN'} toàn bộ khoản chi: ${expense.description}`
+            `Marked ${isSettled ? 'SETTLED' : 'UNSETTLED'} for expense: ${expense.description}`
         );
 
         return NextResponse.json({ success: true });

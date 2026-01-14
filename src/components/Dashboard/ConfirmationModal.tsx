@@ -74,7 +74,7 @@ export default function ConfirmationModal({ open, onOpenChange, onUpdated }: Pro
             });
 
             if (res.ok) {
-                addToast(isReject ? 'Đã từ chối yêu cầu' : 'Xác nhận thanh toán thành công', 'success');
+                addToast(isReject ? 'Request rejected' : 'Payment confirmed successfully', 'success');
                 mutate();
                 onUpdated();
             } else {
@@ -82,7 +82,7 @@ export default function ConfirmationModal({ open, onOpenChange, onUpdated }: Pro
             }
         } catch (error) {
             console.error(error);
-            addToast('Có lỗi xảy ra', 'error');
+            addToast('An error occurred', 'error');
         }
     };
 
@@ -109,8 +109,8 @@ export default function ConfirmationModal({ open, onOpenChange, onUpdated }: Pro
                                 <BellRing className="w-6 h-6" />
                             </div>
                             <div>
-                                <h2 className="text-xl font-black text-slate-800 tracking-tight">Trung tâm hoạt động</h2>
-                                <p className="text-xs font-medium text-slate-400 uppercase tracking-widest mt-0.5">Thông báo & Sự kiện</p>
+                                <h2 className="text-xl font-black text-slate-800 tracking-tight">Activity Center</h2>
+                                <p className="text-xs font-medium text-slate-400 uppercase tracking-widest mt-0.5">Notifications & Events</p>
                             </div>
                         </div>
                     </DialogTitle>
@@ -125,7 +125,7 @@ export default function ConfirmationModal({ open, onOpenChange, onUpdated }: Pro
                                 )}
                             >
                                 <BellRing className={cn("w-5 h-5", activeTab === 'pendingPayer' && "fill-indigo-100")} />
-                                <span>Cần duyệt</span>
+                                <span>To Approve</span>
                                 {data && data.pendingPayer.length > 0 && (
                                     <span className="flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-amber-500 text-white text-[10px] shadow-sm">
                                         {data.pendingPayer.length}
@@ -140,7 +140,7 @@ export default function ConfirmationModal({ open, onOpenChange, onUpdated }: Pro
                                 )}
                             >
                                 <Send className="w-5 h-5" />
-                                <span>Đã gửi</span>
+                                <span>Sent</span>
                             </button>
                             <button
                                 onClick={() => setActiveTab('history')}
@@ -150,7 +150,7 @@ export default function ConfirmationModal({ open, onOpenChange, onUpdated }: Pro
                                 )}
                             >
                                 <HistoryIcon className="w-5 h-5" />
-                                <span>Lịch sử</span>
+                                <span>History</span>
                             </button>
                         </div>
                     </div>
@@ -162,7 +162,7 @@ export default function ConfirmationModal({ open, onOpenChange, onUpdated }: Pro
                         <div className="relative flex-1 group">
                             <Search className="absolute left-3 top-2.5 w-4 h-4 text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
                             <Input
-                                placeholder="Tìm kiếm giao dịch..."
+                                placeholder="Search transactions..."
                                 className="pl-10 h-10 bg-white border-slate-100 rounded-xl text-sm focus-visible:ring-2 focus-visible:ring-indigo-100 shadow-sm transition-all"
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -182,9 +182,9 @@ export default function ConfirmationModal({ open, onOpenChange, onUpdated }: Pro
                                     {activeTab === 'pendingDebtor' && <Send className="w-10 h-10 text-indigo-200" />}
                                     {activeTab === 'history' && <HistoryIcon className="w-10 h-10 text-indigo-200" />}
                                 </div>
-                                <h3 className="text-slate-900 font-bold mb-1">Không có dữ liệu</h3>
+                                <h3 className="text-slate-900 font-bold mb-1">No data</h3>
                                 <p className="text-slate-400 text-sm max-w-[200px]">
-                                    {searchTerm ? 'Không tìm thấy kết quả phù hợp.' : 'Hiện tại chưa có hoạt động nào trong mục này.'}
+                                    {searchTerm ? 'No results found.' : 'No activity in this section yet.'}
                                 </p>
                             </div>
                         ) : (
@@ -214,11 +214,11 @@ export default function ConfirmationModal({ open, onOpenChange, onUpdated }: Pro
                                                 <div className="flex items-center gap-2 mb-1">
                                                     <span className="font-bold text-slate-900 text-base">
                                                         {(activeTab === 'pendingDebtor' || (activeTab === 'history' && !p.isPayer))
-                                                            ? `Gửi tới: ${p.expense.payer.name}`
+                                                            ? `Sent to: ${p.expense.payer.name}`
                                                             : p.member.name}
                                                     </span>
                                                     {activeTab === 'pendingPayer' && (
-                                                        <span className="px-2 py-0.5 bg-amber-100 text-amber-700 text-[10px] font-bold rounded-full uppercase tracking-wide border border-amber-200/50">Mới</span>
+                                                        <span className="px-2 py-0.5 bg-amber-100 text-amber-700 text-[10px] font-bold rounded-full uppercase tracking-wide border border-amber-200/50">New</span>
                                                     )}
                                                 </div>
                                                 <div className="flex items-center gap-1.5 text-sm text-slate-500 font-medium bg-white/50 px-2 py-0.5 rounded-lg w-fit">
@@ -252,14 +252,14 @@ export default function ConfirmationModal({ open, onOpenChange, onUpdated }: Pro
                                                 className="flex-1 h-10 rounded-xl border-red-100 text-red-600 hover:bg-red-50 hover:border-red-200 font-bold transition-all active:scale-95"
                                                 onClick={() => handleAction(p.id, 'reject')}
                                             >
-                                                Không xác nhận
+                                                Reject
                                             </Button>
                                             <Button
                                                 className="flex-[2] h-10 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white shadow-lg shadow-green-200 font-bold transition-all active:scale-95"
                                                 onClick={() => handleAction(p.id, 'confirm')}
                                             >
                                                 <Check className="w-4 h-4 mr-2" />
-                                                Xác nhận đã nhận tiền
+                                                Confirm Payment Received
                                             </Button>
                                         </div>
                                     )}
@@ -267,7 +267,7 @@ export default function ConfirmationModal({ open, onOpenChange, onUpdated }: Pro
                                     {activeTab === 'pendingDebtor' && (
                                         <div className="flex items-center justify-center py-2 bg-blue-50/50 rounded-xl border border-blue-100/50 text-blue-600 text-xs font-bold gap-2">
                                             <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
-                                            Đang chờ người chi xác nhận...
+                                            Waiting for Payer confirmation...
                                         </div>
                                     )}
 
@@ -281,12 +281,12 @@ export default function ConfirmationModal({ open, onOpenChange, onUpdated }: Pro
                                             {p.isPayer ? (
                                                 <>
                                                     <Check className="w-3.5 h-3.5" />
-                                                    Đã nhận từ {p.member.name}
+                                                    Received from {p.member.name}
                                                 </>
                                             ) : (
                                                 <>
                                                     <Check className="w-3.5 h-3.5" />
-                                                    Đã trả cho {p.expense.payer.name}
+                                                    Paid to {p.expense.payer.name}
                                                 </>
                                             )}
                                         </div>

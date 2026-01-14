@@ -116,7 +116,7 @@ export default function Header({ user, title, onUpdated }: Props) {
                                 <DropdownMenuContent className="w-56" align="end" forceMount>
                                     <DropdownMenuLabel className="font-normal">
                                         <div className="flex flex-col space-y-1">
-                                            <p className="text-sm font-medium leading-none">{user.name || 'Người dùng'}</p>
+                                            <p className="text-sm font-medium leading-none">{user.name || 'User'}</p>
                                             <p className="text-xs leading-none text-muted-foreground">
                                                 @{user.username}
                                             </p>
@@ -125,18 +125,18 @@ export default function Header({ user, title, onUpdated }: Props) {
                                     <DropdownMenuSeparator />
                                     <DropdownMenuItem className="cursor-pointer" onClick={() => setIsChangePasswordOpen(true)}>
                                         <UserIcon className="mr-2 h-4 w-4" />
-                                        <span>Đổi mật khẩu</span>
+                                        <span>Change Password</span>
                                     </DropdownMenuItem>
                                     {user.role === 'ADMIN' && (
                                         <DropdownMenuItem className="cursor-pointer">
                                             <Shield className="mr-2 h-4 w-4" />
-                                            <span>Quản trị viên</span>
+                                            <span>Admin Panel</span>
                                         </DropdownMenuItem>
                                     )}
                                     <DropdownMenuSeparator />
                                     <DropdownMenuItem className="cursor-pointer text-red-600 focus:text-red-600 focus:bg-red-50" onClick={handleLogout}>
                                         <LogOut className="mr-2 h-4 w-4" />
-                                        <span>Đăng xuất</span>
+                                        <span>Sign Out</span>
                                     </DropdownMenuItem>
                                 </DropdownMenuContent>
                             </DropdownMenu>
@@ -157,7 +157,7 @@ export default function Header({ user, title, onUpdated }: Props) {
                         </>
                     ) : (
                         <Button variant="outline" size="sm" onClick={() => window.location.href = '/login'}>
-                            Đăng nhập
+                            Sign In
                         </Button>
                     )}
                 </div>

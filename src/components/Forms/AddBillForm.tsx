@@ -68,7 +68,7 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
             const formElement = document.getElementById('add-bill-form');
             if (formElement) formElement.scrollIntoView({ behavior: 'smooth' });
 
-            addToast('Đã sao chép thông tin hóa đơn!', 'info');
+            addToast('Bill info copied!', 'info');
         }
     }, [initialData, addToast]);
 
@@ -77,12 +77,12 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
         if (isSubmitting) return;
 
         if (!description || !amount || !payerId) {
-            addToast('Vui lòng điền đầy đủ thông tin', 'warning');
+            addToast('Please fill in all fields', 'warning');
             return;
         }
 
         if (type === 'PRIVATE' && beneficiaryIds.length === 0) {
-            addToast('Vui lòng chọn người thụ hưởng cho chi tiêu riêng', 'warning');
+            addToast('Please select beneficiaries for private expense', 'warning');
             return;
         }
         setIsSubmitting(true);
@@ -127,11 +127,11 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
             setDate(undefined);
             setType('SHARED');
             setBeneficiaryIds([]);
-            addToast('Đã thêm hóa đơn thành công!', 'success');
+            addToast('Bill added successfully!', 'success');
             onAdd();
         } catch (error) {
             console.error(error);
-            addToast('Có lỗi xảy ra khi thêm hóa đơn', 'error');
+            addToast('Error adding bill', 'error');
         } finally {
             setIsSubmitting(false);
         }
@@ -160,18 +160,18 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
                     <div className="p-2 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl shadow-lg shadow-green-200">
                         <PlusCircle className="w-5 h-5 text-white" />
                     </div>
-                    <span className="font-black tracking-tight">Thêm Hóa Đơn Mới</span>
+                    <span className="font-black tracking-tight">Add New Expense</span>
                 </CardTitle>
             </CardHeader>
 
             <CardContent className="p-6 pt-2 space-y-5">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                        <Label>Nội dung chi tiêu <span className="text-red-500">*</span></Label>
+                        <Label>Description <span className="text-red-500">*</span></Label>
                         <div className="relative">
                             <Wallet className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                             <Input
-                                placeholder="Ví dụ: Ăn tối, Tiền điện..."
+                                placeholder="Ex: Dinner, Electricity..."
                                 value={description}
                                 onChange={e => setDescription(e.target.value)}
                                 className="pl-9 h-10"
@@ -180,7 +180,7 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
                         </div>
                     </div>
                     <div className="space-y-2">
-                        <Label>Ngày</Label>
+                        <Label>Date</Label>
                         <Popover>
                             <PopoverTrigger asChild>
                                 <div className="relative cursor-pointer">
@@ -195,7 +195,7 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
                                         {date ? (
                                             format(date, "dd/MM/yyyy")
                                         ) : (
-                                            "Chọn ngày"
+                                            "Pick a date"
                                         )}
                                     </Button>
                                 </div>
@@ -218,7 +218,7 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                        <Label>Số tiền (VNĐ) <span className="text-red-500">*</span></Label>
+                        <Label>Amount (VND) <span className="text-red-500">*</span></Label>
                         <div className="relative">
                             <Calculator className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                             <Input
@@ -232,7 +232,7 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
                                     // Block if contains letters or special chars (allowed: digits, dots, commas, spaces)
                                     if (!/^[\d.,\s]+$/.test(text)) {
                                         e.preventDefault();
-                                        addToast('Vui lòng chỉ copy số tiền hợp lệ (không chứa chữ)', 'warning');
+                                        addToast('Please paste valid numbers only', 'warning');
                                     }
                                 }}
                                 onKeyDown={(e) => {
@@ -253,12 +253,12 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
                         </div>
                     </div>
                     <div className="space-y-2">
-                        <Label>Người chi <span className="text-red-500">*</span></Label>
+                        <Label>Payer <span className="text-red-500">*</span></Label>
                         <div className="relative">
                             <Users className="absolute left-3 top-3 h-4 w-4 text-muted-foreground z-10" />
                             <Select value={payerId} onValueChange={setPayerId}>
                                 <SelectTrigger className="pl-9 h-10 w-full bg-background border-input focus:ring-2 focus:ring-ring focus:ring-offset-2">
-                                    <SelectValue placeholder="Chọn người chi" />
+                                    <SelectValue placeholder="Select Payer" />
                                 </SelectTrigger>
                                 <SelectContent>
                                     {activeMembers.map(m => (
@@ -280,7 +280,7 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
                 </div>
 
                 <div className="space-y-3">
-                    <Label className="block">Loại chi tiêu</Label>
+                    <Label className="block">Expense Type</Label>
                     <div className="grid grid-cols-2 gap-4">
                         <button
                             type="button"
@@ -293,9 +293,9 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
                             )}
                         >
                             <span className="text-base font-bold flex items-center gap-2">
-                                {type === 'SHARED' && <CheckCircle2 className="w-4 h-4" />} Chung
+                                {type === 'SHARED' && <CheckCircle2 className="w-4 h-4" />} Shared
                             </span>
-                            <span className="text-xs opacity-80 mt-1">Chia đều cho tất cả</span>
+                            <span className="text-xs opacity-80 mt-1">Split equally among all</span>
                         </button>
 
                         <button
@@ -309,9 +309,9 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
                             )}
                         >
                             <span className="text-base font-bold flex items-center gap-2">
-                                {type === 'PRIVATE' && <CheckCircle2 className="w-4 h-4" />} Riêng
+                                {type === 'PRIVATE' && <CheckCircle2 className="w-4 h-4" />} Private
                             </span>
-                            <span className="text-xs opacity-80 mt-1">Chỉ tính cho một số người</span>
+                            <span className="text-xs opacity-80 mt-1">Split among specific people</span>
                         </button>
                     </div>
                 </div>
@@ -320,7 +320,7 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
                     <div className="animate-in fade-in slide-in-from-top-2 duration-300 p-4 bg-orange-50/50 border border-orange-100 rounded-lg space-y-3">
                         <Label className="text-orange-800 flex items-center gap-2">
                             <span className="bg-orange-100 p-1 rounded-full"><Users className="w-3 h-3 text-orange-700" /></span>
-                            Chọn người thụ hưởng:
+                            Select Beneficiaries:
                         </Label>
                         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                             {activeMembers.map(m => {
@@ -353,11 +353,11 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
                 >
                     {isSubmitting ? (
                         <>
-                            <span className="animate-spin mr-2">⏳</span> Đang lưu...
+                            <span className="animate-spin mr-2">⏳</span> Saving...
                         </>
                     ) : (
                         <>
-                            <PlusCircle className="mr-2 h-5 w-5" /> Lưu Hóa Đơn
+                            <PlusCircle className="mr-2 h-5 w-5" /> Save Expense
                         </>
                     )}
                 </Button>
