@@ -14,7 +14,8 @@ export async function GET() {
                 workspaceId: parseInt(session.workspaceId as string),
                 status: 'DELETED'
             },
-            orderBy: { name: 'asc' }
+            orderBy: { name: 'asc' },
+            select: { id: true, name: true, email: true, username: true, role: true, status: true, workspaceId: true }
         });
 
         return NextResponse.json(deletedMembers);

@@ -16,7 +16,8 @@ export async function POST(
 
         const member = await prisma.member.update({
             where: { id },
-            data: { status: 'ACTIVE' }
+            data: { status: 'ACTIVE' },
+            select: { id: true, name: true, email: true, username: true, role: true, status: true, workspaceId: true }
         });
 
         await logActivity(

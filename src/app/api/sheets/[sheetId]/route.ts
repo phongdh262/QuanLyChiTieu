@@ -18,8 +18,16 @@ export async function GET(
             include: {
                 expenses: {
                     include: {
-                        payer: true,
-                        splits: { include: { member: true } }
+                        payer: {
+                            select: { id: true, name: true, email: true, username: true, role: true, status: true, workspaceId: true }
+                        },
+                        splits: {
+                            include: {
+                                member: {
+                                    select: { id: true, name: true, email: true, username: true, role: true, status: true, workspaceId: true }
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -48,7 +56,8 @@ export async function GET(
 
         // 2. Fetch Workspace Members
         const members = await prisma.member.findMany({
-            where: { workspaceId: sheet.workspaceId }
+            where: { workspaceId: sheet.workspaceId },
+            select: { id: true, name: true, email: true, username: true, role: true, status: true, workspaceId: true }
         });
 
         // 3. Transform DB Data to Service Types

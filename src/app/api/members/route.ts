@@ -41,7 +41,8 @@ export async function POST(request: Request) {
             data: {
                 name,
                 workspaceId: workspaceId
-            }
+            },
+            select: { id: true, name: true, email: true, username: true, role: true, status: true, workspaceId: true }
         });
 
         await logActivity(

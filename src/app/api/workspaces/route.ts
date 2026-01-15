@@ -63,7 +63,8 @@ export async function GET() {
                     where: { NOT: { status: 'DELETED' } }
                 },
                 members: {
-                    where: { NOT: { status: 'DELETED' } }
+                    where: { NOT: { status: 'DELETED' } },
+                    select: { id: true, name: true, email: true, username: true, role: true, status: true, workspaceId: true }
                 }
             }
         });
