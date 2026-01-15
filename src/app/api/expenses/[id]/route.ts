@@ -3,6 +3,8 @@ import prisma from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
 import { logActivity } from '@/lib/logger';
 
+import { updateExpenseSchema } from '@/lib/schemas';
+
 // UPDATE Expense
 export async function PUT(
     request: Request,
@@ -18,7 +20,13 @@ export async function PUT(
 
         const id = parseInt((await params).id);
         const body = await request.json();
-        const { amount, description, payerId, type, beneficiaryIds } = body;
+
+        // VALDIATION:
+        const validation = updateExpenseSchema.safeParse(body);
+        if (!validation.success) {
+            return NextResponse.json({ error: validation.error.issues[0].message }, { status: 400 });
+        }
+        const { amount, description, payerId, type, beneficiaryIds } = validation.data;
 
         let workspaceId = 0;
 
@@ -67,7 +75,7 @@ export async function PUT(
                 });
                 splitMembers = allMembers.map((m: any) => m.id);
             } else {
-                splitMembers = beneficiaryIds;
+                splitMembers = beneficiaryIds || [];
             }
 
             if (splitMembers.length > 0) {

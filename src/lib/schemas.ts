@@ -21,6 +21,14 @@ export const createExpenseSchema = z.object({
     beneficiaryIds: z.array(z.number()).optional(),
 });
 
+export const updateExpenseSchema = z.object({
+    amount: z.number().positive('Amount must be positive'),
+    description: z.string().min(1, 'Description is required').max(200),
+    type: z.enum(['SHARED', 'PRIVATE']),
+    payerId: z.number().int(),
+    beneficiaryIds: z.array(z.number()).optional(),
+});
+
 export const updateMemberSchema = z.object({
     name: z.string().min(1).max(100),
 });
