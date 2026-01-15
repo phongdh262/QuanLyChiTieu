@@ -3,6 +3,7 @@ import { Member } from '@/types/expense';
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
+import { Banknote } from "lucide-react";
 
 interface Props {
     members: Member[];
@@ -27,7 +28,7 @@ export default function PrivateMatrix({ members, matrixData }: Props) {
             <CardHeader className="cursor-pointer flex flex-row items-center justify-between pb-6 bg-gradient-to-br from-orange-50/50 via-white to-transparent border-b border-orange-100/50" onClick={() => setIsOpen(!isOpen)}>
                 <CardTitle className="text-xl flex items-center gap-3 text-slate-800">
                     <div className="p-2.5 bg-gradient-to-br from-orange-500 to-rose-600 rounded-xl shadow-lg shadow-orange-100/50 group-hover/matrix:scale-110 group-hover/matrix:rotate-3 transition-all duration-500 ring-2 ring-white">
-                        <span className="text-lg drop-shadow-sm">💸</span>
+                        <Banknote className="w-5 h-5 text-white drop-shadow-sm" />
                     </div>
                     <span className="font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-slate-700 to-slate-900">Debt Matrix (Private)</span>
                 </CardTitle>

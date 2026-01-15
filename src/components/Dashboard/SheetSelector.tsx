@@ -208,28 +208,30 @@ export default function SheetSelector({ sheets, currentSheetId, workspaceId, onC
                         </SelectContent>
                     </Select>
 
-                    <div className="flex items-center gap-1 shrink-0">
+                    <div className="flex items-center gap-2 shrink-0">
+                        {/* Edit Button */}
                         <Button
                             onClick={startEdit}
                             variant="outline"
                             size="icon"
-                            className="h-9 w-9 text-slate-400 hover:text-blue-600 border-slate-200 hover:bg-blue-50"
+                            className="h-10 w-10 text-blue-600 bg-blue-50 hover:bg-blue-100 border-blue-100 hover:border-blue-200 shadow-sm transition-all rounded-xl"
                             title="Đổi tên"
                         >
-                            <Edit className="w-4 h-4" />
+                            <Edit className="w-5 h-5 stroke-[2.5]" />
                         </Button>
 
+                        {/* Delete Button */}
                         <Button
                             onClick={handleDelete}
                             variant="outline"
                             size="icon"
-                            className="h-9 w-9 text-slate-400 hover:text-red-600 border-slate-200 hover:bg-red-50 hover:border-red-200"
+                            className="h-10 w-10 text-red-600 bg-red-50 hover:bg-red-100 border-red-100 hover:border-red-200 shadow-sm transition-all rounded-xl"
                             title="Xóa tháng này"
                         >
-                            <Trash2 className="w-4 h-4" />
+                            <Trash2 className="w-5 h-5 stroke-[2.5]" />
                         </Button>
 
-                        <div className="w-px h-5 bg-slate-200 mx-1"></div>
+                        <div className="w-px h-6 bg-slate-200 mx-2"></div>
 
                         {/* RECYCLE BIN */}
                         <Dialog open={isBinOpen} onOpenChange={setIsBinOpen}>
@@ -237,10 +239,10 @@ export default function SheetSelector({ sheets, currentSheetId, workspaceId, onC
                                 <Button
                                     variant="outline"
                                     size="icon"
-                                    className="h-9 w-9 text-slate-400 hover:text-purple-600 border-slate-200 hover:bg-purple-50"
+                                    className="h-10 w-10 text-purple-600 bg-purple-50 hover:bg-purple-100 border-purple-100 hover:border-purple-200 shadow-sm transition-all rounded-xl"
                                     title="Thùng rác"
                                 >
-                                    <RotateCcw className="w-4 h-4" />
+                                    <RotateCcw className="w-5 h-5 stroke-[2.5]" />
                                 </Button>
                             </DialogTrigger>
                             <DialogContent className="max-w-md">
@@ -279,10 +281,10 @@ export default function SheetSelector({ sheets, currentSheetId, workspaceId, onC
                             onClick={() => setIsCreating(true)}
                             variant="default"
                             size="icon"
-                            className="h-9 w-9 bg-blue-600 hover:bg-blue-700 text-white shadow-sm"
+                            className="h-10 w-10 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl hover:scale-105 transition-all border-none rounded-xl"
                             title="Thêm tháng mới"
                         >
-                            <Plus className="w-5 h-5" />
+                            <Plus className="w-6 h-6 stroke-[3]" />
                         </Button>
                     </div>
                 </>

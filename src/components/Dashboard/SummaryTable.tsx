@@ -3,6 +3,7 @@ import { Member, CalculationResult } from '@/types/expense';
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
+import { Wallet } from "lucide-react";
 
 interface Props {
     members: Member[];
@@ -20,7 +21,7 @@ export default function SummaryTable({ members, calculations }: Props) {
             <CardHeader className="cursor-pointer flex flex-row items-center justify-between pb-6 bg-gradient-to-br from-indigo-50/50 via-white to-transparent border-b border-indigo-50/50" onClick={() => setIsOpen(!isOpen)}>
                 <CardTitle className="text-xl flex items-center gap-3 text-slate-800">
                     <div className="p-2.5 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl shadow-lg shadow-blue-100/50 group-hover/summary:scale-110 group-hover/summary:rotate-3 transition-all duration-500 ring-2 ring-white">
-                        <span className="text-lg drop-shadow-sm">📊</span>
+                        <Wallet className="w-5 h-5 text-white drop-shadow-sm" />
                     </div>
                     <span className="font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-slate-700 to-slate-900">Expenses Summary</span>
                 </CardTitle>

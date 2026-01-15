@@ -562,21 +562,21 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
                         </TableCell>
 
                         <TableCell className="py-4 text-right pr-4">
-                          <div className="flex items-center justify-end gap-1.5 transition-opacity duration-300">
+                          <div className="flex items-center justify-end gap-2 transition-opacity duration-300">
                             <div title={isPayer ? "Edit Bill" : `Only Payer (${b.payer}) can edit`}>
                               <Button
                                 variant="ghost"
                                 size="icon"
                                 className={cn(
-                                  "h-9 w-9 rounded-xl transition-all active:scale-90",
+                                  "h-9 w-9 rounded-xl transition-all active:scale-95 shadow-sm border border-transparent",
                                   isPayer
-                                    ? "text-slate-400 hover:text-indigo-600 hover:bg-indigo-50"
-                                    : "text-slate-200 cursor-not-allowed hover:bg-transparent opacity-50"
+                                    ? "text-blue-600 bg-blue-50 hover:bg-blue-100 hover:border-blue-200"
+                                    : "text-slate-300 bg-slate-50 cursor-not-allowed opacity-50"
                                 )}
                                 onClick={() => isPayer && setEditingBill(b)}
                                 disabled={!isPayer}
                               >
-                                <Edit className="w-4 h-4" />
+                                <Edit className="w-4 h-4 stroke-[2.5]" />
                               </Button>
                             </div>
                             <div title={canDelete ? "Delete Bill" : `Only Payer (${b.payer}) can delete`}>
@@ -584,10 +584,10 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
                                 variant="ghost"
                                 size="icon"
                                 className={cn(
-                                  "h-8 w-8 rounded-lg transition-all",
+                                  "h-9 w-9 rounded-xl transition-all active:scale-95 shadow-sm border border-transparent",
                                   canDelete
-                                    ? "text-slate-400 hover:text-red-600 hover:bg-red-50"
-                                    : "text-slate-200 cursor-not-allowed hover:bg-transparent opacity-50"
+                                    ? "text-red-600 bg-red-50 hover:bg-red-100 hover:border-red-200"
+                                    : "text-slate-300 bg-slate-50 cursor-not-allowed opacity-50"
                                 )}
                                 onClick={() => canDelete && handleDeleteClick(b.id)}
                                 disabled={!canDelete}
@@ -595,7 +595,7 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
                                 {deletingId === b.id ? (
                                   <div className="w-4 h-4 border-2 border-red-500 border-t-transparent rounded-full animate-spin" />
                                 ) : (
-                                  <Trash2 className="w-4 h-4" />
+                                  <Trash2 className="w-4 h-4 stroke-[2.5]" />
                                 )}
                               </Button>
                             </div>
