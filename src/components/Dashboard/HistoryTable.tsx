@@ -372,9 +372,9 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
         </CardHeader>
 
         <CardContent className="p-0">
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto max-h-[600px] overflow-y-auto relative custom-scrollbar">
             <Table>
-              <TableHeader className="bg-slate-50/50 border-b border-indigo-100/50">
+              <TableHeader className="bg-slate-50 border-b border-indigo-100/50 sticky top-0 z-10 shadow-sm">
                 <TableRow className="hover:bg-transparent border-none">
                   <TableHead className="w-[50px] text-center p-2">
                     <input
