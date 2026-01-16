@@ -46,18 +46,18 @@ export default function ConfirmProvider({ children }: { children: React.ReactNod
 
     const handleConfirm = () => {
         setIsOpen(false);
-        // Use timeout to allow UI to update (close modal) before resolving logic runs
-        setTimeout(() => resolveRef.current(true), 0);
+        // Delay resolution to ensure modal unmounts first
+        setTimeout(() => resolveRef.current(true), 100);
     };
 
     const handleCancel = () => {
         setIsOpen(false);
-        setTimeout(() => resolveRef.current(false), 0);
+        setTimeout(() => resolveRef.current(false), 100);
     };
 
     const handleReject = () => {
         setIsOpen(false);
-        setTimeout(() => resolveRef.current('reject'), 0);
+        setTimeout(() => resolveRef.current('reject'), 100);
     };
 
     return (
