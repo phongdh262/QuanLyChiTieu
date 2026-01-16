@@ -53,8 +53,12 @@ export async function DELETE(
                 where: { sheetId: sheetId }
             });
 
-            // 3. Unlink ActivityLogs (Skipped due to TS type mismatch - likely stale client. Orphaned logs are acceptable)
-            // await tx.activityLog.updateMany({ where: { sheetId: sheetId }, data: { sheetId: null } });
+            // 3. Unlink ActivityLogs (Using Raw SQL to bypass Stale Client Types)
+            try {
+                await tx.$executeRawUnsafe(`UPDATE ActivityLog SET sheetId = NULL WHERE sheetId = ${sheetId}`);
+            } catch (ignored) {
+                console.log("ActivityLog raw update failed (ignoring):", ignored);
+            }
 
             // 4. Delete the Sheet
             await tx.sheet.delete({
