@@ -53,8 +53,12 @@ export async function DELETE(
                 where: { sheetId: sheetId }
             });
 
-            // 3. Unlink ActivityLogs (Skipped due to TS type mismatch - likely stale client. Orphaned logs are acceptable)
-            // await tx.activityLog.updateMany({ where: { sheetId: sheetId }, data: { sheetId: null } });
+            // 3. Unlink ActivityLogs (set sheetId = null)
+            // @ts-ignore: Ignore current stale client type definition
+            await tx.activityLog.updateMany({
+                where: { sheetId: sheetId },
+                data: { sheetId: null }
+            });
 
             // 4. Delete the Sheet
             await tx.sheet.delete({

@@ -132,13 +132,17 @@ export default function SheetSelector({ sheets, currentSheetId, workspaceId, onC
         if (!ok) return;
 
         try {
+            console.log("Requesting delete for", id);
             const res = await fetch(`/api/sheets/${id}/permanent`, { method: 'DELETE' });
-            if (!res.ok) throw new Error('Failed');
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}));
+                throw new Error(err.error || 'Failed to delete');
+            }
             fetchDeletedSheets();
             addToast('Đã xóa vĩnh viễn', 'success');
-        } catch (e) {
+        } catch (e: any) {
             console.error(e);
-            addToast('Lỗi khi xóa vĩnh viễn', 'error');
+            addToast(e.message || 'Lỗi khi xóa vĩnh viễn', 'error');
         }
     };
 
