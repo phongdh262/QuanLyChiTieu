@@ -138,13 +138,18 @@ export default function SheetSelector({ sheets, currentSheetId, workspaceId, onC
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ name: editName })
             });
-            if (!res.ok) throw new Error('Failed');
+
+            if (!res.ok) {
+                const errorData = await res.json();
+                throw new Error(errorData.error || 'Failed');
+            }
+
             setIsEditing(false);
             onCreated();
             addToast('Đã cập nhật tên', 'success');
-        } catch (e) {
+        } catch (e: any) {
             console.error(e);
-            addToast('Lỗi khi cập nhật tên', 'error');
+            addToast(e.message || 'Lỗi khi cập nhật tên', 'error');
         }
     };
 

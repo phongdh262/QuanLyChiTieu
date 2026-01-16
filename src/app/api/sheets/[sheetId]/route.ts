@@ -144,6 +144,20 @@ export async function PUT(
             return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
         }
 
+        // CHECK DUPLICATE NAME
+        const duplicateSheet = await prisma.sheet.findFirst({
+            where: {
+                workspaceId: existingSheet.workspaceId,
+                name: name,
+                status: { not: 'DELETED' },
+                id: { not: sheetId }
+            }
+        });
+
+        if (duplicateSheet) {
+            return NextResponse.json({ error: `Tên bảng "${name}" đã tồn tại!` }, { status: 409 });
+        }
+
         const sheet = await prisma.sheet.update({
             where: { id: sheetId },
             data: { name }
