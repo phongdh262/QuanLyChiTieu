@@ -9,7 +9,7 @@ fi
 # Auto-migrate database
 echo "Running database migrations..."
 # Use global prisma binary
-prisma db push --accept-data-loss
+prisma db push --accept-data-loss --skip-generate
 
 # Start the application
 echo "Starting application..."
