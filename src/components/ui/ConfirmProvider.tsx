@@ -46,17 +46,18 @@ export default function ConfirmProvider({ children }: { children: React.ReactNod
 
     const handleConfirm = () => {
         setIsOpen(false);
-        resolveRef.current(true);
+        // Use timeout to allow UI to update (close modal) before resolving logic runs
+        setTimeout(() => resolveRef.current(true), 0);
     };
 
     const handleCancel = () => {
         setIsOpen(false);
-        resolveRef.current(false);
+        setTimeout(() => resolveRef.current(false), 0);
     };
 
     const handleReject = () => {
         setIsOpen(false);
-        resolveRef.current('reject');
+        setTimeout(() => resolveRef.current('reject'), 0);
     };
 
     return (
