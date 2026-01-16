@@ -47,7 +47,7 @@ WORKDIR /app
 RUN apt-get update -y && apt-get install -y openssl
 
 # Install Prisma globally for migrations
-RUN npm install -g prisma
+RUN npm install -g prisma@5.22.0
 
 ENV NODE_ENV production
 # Uncomment the following line in case you want to disable telemetry during runtime.
