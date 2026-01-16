@@ -54,10 +54,14 @@ export async function DELETE(
             });
 
             // 3. Unlink ActivityLogs (Using Raw SQL to bypass Stale Client Types)
-            try {
-                await tx.$executeRawUnsafe(`UPDATE ActivityLog SET sheetId = NULL WHERE sheetId = ${sheetId}`);
-            } catch (ignored) {
-                console.log("ActivityLog raw update failed (ignoring):", ignored);
+            // 3. Unlink ActivityLogs (Brute Force Table Names to bypass Stale Client & Naming miscues)
+            const tableNames = ['ActivityLog', 'activity_log', 'ActivityLogs', 'activity_logs', 'activitylog'];
+            for (const tableName of tableNames) {
+                try {
+                    await tx.$executeRawUnsafe(`UPDATE ${tableName} SET sheetId = NULL WHERE sheetId = ${sheetId}`);
+                } catch (ignored) {
+                    // Continue to next table name if this one fails
+                }
             }
 
             // 4. Delete the Sheet
