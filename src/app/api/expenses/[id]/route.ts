@@ -29,6 +29,7 @@ export async function PUT(
         const { amount, description, payerId, type, beneficiaryIds } = validation.data;
 
         let workspaceId = 0;
+        let sheetId = 0;
 
         // Transaction: Update expense + Re-do splits
         await prisma.$transaction(async (tx: any) => {
@@ -39,6 +40,7 @@ export async function PUT(
             });
             if (!expense) throw new Error('Expense not found');
             workspaceId = expense.sheet.workspaceId;
+            sheetId = expense.sheetId;
 
             // CHECK PERMISSION
             const isMember = await tx.member.findFirst({
@@ -98,7 +100,8 @@ export async function PUT(
             'UPDATE',
             'EXPENSE',
             id,
-            `Đã cập nhật khoản chi: ${description} (${amount.toLocaleString('vi-VN')}đ)`
+            `Đã cập nhật khoản chi: ${description} (${amount.toLocaleString('vi-VN')}đ)`,
+            sheetId
         );
 
         return NextResponse.json({ success: true });
@@ -159,8 +162,9 @@ export async function DELETE(
             actorName,
             'DELETE',
             'EXPENSE',
-            id,
-            `Đã xóa khoản chi: ${expense.description} (${expense.amount.toLocaleString('vi-VN')}đ)`
+            expense.id,
+            `Đã xóa khoản chi: ${expense.description} (${expense.amount.toLocaleString('vi-VN')}đ)`,
+            expense.sheetId
         );
 
         return NextResponse.json({ success: true });

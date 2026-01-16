@@ -156,7 +156,8 @@ export async function PUT(
             'UPDATE',
             'SHEET',
             sheet.id,
-            `Đã đổi tên bảng chi tiêu thành: ${name}`
+            `Đã đổi tên bảng chi tiêu thành: ${name}`,
+            sheet.id
         );
 
         return NextResponse.json(sheet);
@@ -214,7 +215,8 @@ export async function DELETE(
             'DELETE',
             'SHEET',
             sheet.id,
-            `Đã xóa bảng chi tiêu: ${sheet.name}`
+            `Đã xóa bảng chi tiêu: ${sheet.name}`,
+            sheet.id
         );
 
         return NextResponse.json({ success: true });
