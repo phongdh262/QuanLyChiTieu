@@ -211,7 +211,11 @@ export default function Home() {
               onOptimisticAdd={handleOptimisticAdd}
             />
 
-            <ActivityLogList members={members} />
+            <ActivityLogList
+              members={members}
+              month={sheetData?.month}
+              year={sheetData?.year}
+            />
 
             {currentUser?.role === 'ADMIN' && (
               <MemberManager members={members} workspaceId={workspace!.id} onUpdate={reload} />

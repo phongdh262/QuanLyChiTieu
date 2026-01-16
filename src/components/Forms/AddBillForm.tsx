@@ -46,15 +46,38 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
     const [type, setType] = useState<'SHARED' | 'PRIVATE'>('SHARED');
     const [beneficiaryIds, setBeneficiaryIds] = useState<string[]>([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [currentUser, setCurrentUser] = useState<{ id: number; name: string } | null>(null);
 
     const activeMembers = members.filter(m => m.status !== 'DELETED');
+
+
+    // Fetch current user
+    React.useEffect(() => {
+        fetch('/api/auth/me')
+            .then(res => res.json())
+            .then(data => {
+                if (data.user) setCurrentUser(data.user);
+            })
+            .catch(console.error);
+    }, []);
 
     // Initial load & Duplication Effect
     React.useEffect(() => {
         if (activeMembers.length > 0 && !payerId) {
-            setPayerId(activeMembers[0].id.toString());
+            if (currentUser) {
+                // Determine if current user is in the list
+                const me = activeMembers.find(m => m.id === currentUser.id);
+                if (me) {
+                    setPayerId(me.id.toString());
+                } else {
+                    setPayerId(activeMembers[0].id.toString());
+                }
+            } else {
+                // Fallback while loading user or if failed
+                setPayerId(activeMembers[0].id.toString());
+            }
         }
-    }, [activeMembers, payerId]);
+    }, [activeMembers, payerId, currentUser]);
 
     // Lifted initialData Effect
     React.useEffect(() => {
@@ -249,6 +272,7 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
                                     }
                                 }}
                                 className="pl-9 h-10 font-mono font-bold text-lg text-green-700"
+                                maxLength={15} // Limit input length to prevent overflow
                             />
                         </div>
                     </div>

@@ -123,6 +123,10 @@ export default function SheetSelector({ sheets, currentSheetId, workspaceId, onC
 
     const saveEdit = async () => {
         if (!currentSheetId) return;
+        if (!editName.trim()) {
+            addToast('Tên không được để trống!', 'warning');
+            return;
+        }
         try {
             const res = await fetch(`/api/sheets/${currentSheetId}`, {
                 method: 'PUT',
@@ -212,9 +216,10 @@ export default function SheetSelector({ sheets, currentSheetId, workspaceId, onC
                         {/* Edit Button */}
                         <Button
                             onClick={startEdit}
+                            disabled={!currentSheetId}
                             variant="outline"
                             size="icon"
-                            className="h-10 w-10 text-blue-600 bg-blue-50 hover:bg-blue-100 border-blue-100 hover:border-blue-200 shadow-sm transition-all rounded-xl"
+                            className="h-10 w-10 text-blue-600 bg-blue-50 hover:bg-blue-100 border-blue-100 hover:border-blue-200 shadow-sm transition-all rounded-xl disabled:opacity-50 disabled:cursor-not-allowed"
                             title="Đổi tên"
                         >
                             <Edit className="w-5 h-5 stroke-[2.5]" />
@@ -223,9 +228,10 @@ export default function SheetSelector({ sheets, currentSheetId, workspaceId, onC
                         {/* Delete Button */}
                         <Button
                             onClick={handleDelete}
+                            disabled={!currentSheetId}
                             variant="outline"
                             size="icon"
-                            className="h-10 w-10 text-red-600 bg-red-50 hover:bg-red-100 border-red-100 hover:border-red-200 shadow-sm transition-all rounded-xl"
+                            className="h-10 w-10 text-red-600 bg-red-50 hover:bg-red-100 border-red-100 hover:border-red-200 shadow-sm transition-all rounded-xl disabled:opacity-50 disabled:cursor-not-allowed"
                             title="Xóa tháng này"
                         >
                             <Trash2 className="w-5 h-5 stroke-[2.5]" />

@@ -475,13 +475,25 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
                               // - If Pending: Debtor can cancel, Payer/Admin can confirm
                               // - If Unpaid: Both can mark as Paid (Debtor -> Pending, Payer -> Paid)
                               const isBeneficiary = currentUser?.name === name;
+                              const isSelf = name === b.payer;
 
                               // UNLOCKED: Allow both Payer and Beneficiary to toggle status (Undo if needed)
-                              const canToggle = isPayer || isBeneficiary;
+                              const canToggle = (isPayer || isBeneficiary) && !isSelf;
 
                               const formattedPaidAt = paidAt ? new Date(paidAt).toLocaleString('vi-VN', {
                                 day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit'
                               }) : '';
+
+                              if (isSelf) {
+                                return (
+                                  <div key={idx} className="flex items-center gap-2 border rounded-full pl-1 pr-3 py-1 bg-slate-50 border-slate-100 opacity-70 cursor-default" title="Payer (Paid)">
+                                    <div className={cn("w-5 h-5 rounded-full flex items-center justify-center text-white font-bold text-[9px] relative", getAvatarColor(name))}>
+                                      {name.charAt(0).toUpperCase()}
+                                    </div>
+                                    <span className="text-xs font-bold text-slate-500">{name}</span>
+                                  </div>
+                                );
+                              }
 
                               return (
                                 <button key={idx}

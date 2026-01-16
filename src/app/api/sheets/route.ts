@@ -31,6 +31,21 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Forbidden: You must be a member of this workspace' }, { status: 403 });
         }
 
+        // Check for duplicate sheet (excluding deleted ones if applicable, but typically "status" field might be used)
+        // Adjusting query to check for existing active sheet
+        const existingSheet = await prisma.sheet.findFirst({
+            where: {
+                workspaceId,
+                month,
+                year,
+                status: { not: 'DELETED' } // Ensure we don't block if previous one was deleted (assuming DELETED status usage)
+            }
+        });
+
+        if (existingSheet) {
+            return NextResponse.json({ error: `Bảng chi tiêu cho tháng ${month}/${year} đã tồn tại!` }, { status: 409 });
+        }
+
         const sheet = await prisma.sheet.create({
             data: {
                 name,

@@ -22,16 +22,20 @@ interface Log {
 
 interface Props {
     members: Member[];
+    month?: number;
+    year?: number;
 }
 
 const fetcher = (url: string) => fetch(url).then(r => r.json());
 
-export default function ActivityLogList({ members }: Props) {
+export default function ActivityLogList({ members, month, year }: Props) {
     const [isOpen, setIsOpen] = useState(true); // Default OPEN
     const [selectedUser, setSelectedUser] = useState<string>('all');
 
+    const queryString = month && year ? `?month=${month}&year=${year}` : '';
+
     const { data: logs = [], isLoading } = useSWR<Log[]>(
-        isOpen ? '/api/activity-logs' : null,
+        isOpen ? `/api/activity-logs${queryString}` : null,
         fetcher,
         {
             refreshInterval: 10000, // Poll every 10 seconds
