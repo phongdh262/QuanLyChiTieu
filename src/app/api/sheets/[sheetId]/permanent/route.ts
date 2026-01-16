@@ -52,7 +52,7 @@ export async function DELETE(
             'SHEET',
             null, // Entity is gone
             `Đã xóa VĨNH VIỄN bảng chi tiêu: ${sheet.name}`,
-            null
+            undefined
         );
 
         return NextResponse.json({ success: true });
