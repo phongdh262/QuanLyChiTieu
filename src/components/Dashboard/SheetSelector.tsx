@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Check, X, Trash2, Edit, Plus, RotateCcw, History } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Check, X, Trash2, Edit, Plus, RotateCcw, History, Calendar as CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react";
 
 interface Sheet {
     id: number;
@@ -172,28 +173,42 @@ export default function SheetSelector({ sheets, currentSheetId, workspaceId, onC
                 </div>
             ) : isCreating ? (
                 <div className="flex gap-2 items-center flex-1 animate-in fade-in duration-200 bg-white p-1 rounded-lg border border-slate-200 shadow-sm">
-                    <div className="flex items-center gap-2 px-2">
-                        <span className="text-sm font-semibold text-slate-500 whitespace-nowrap">Tháng:</span>
-                        <Input
-                            type="number"
-                            value={month}
-                            onChange={e => setMonth(parseInt(e.target.value))}
-                            className="w-16 h-8 text-center font-bold"
-                            min={1} max={12}
-                        />
-                        <span className="text-slate-300">/</span>
-                        <Input
-                            type="number"
-                            value={year}
-                            onChange={e => setYear(parseInt(e.target.value))}
-                            className="w-20 h-8 text-center font-bold"
-                        />
-                    </div>
+                    <Popover>
+                        <PopoverTrigger asChild>
+                            <Button variant="outline" className="w-[160px] justify-start text-left font-bold border-slate-200 h-9">
+                                <CalendarIcon className="mr-2 h-4 w-4 text-slate-500" />
+                                {month ? `Tháng ${month}/${year}` : <span>Chọn tháng...</span>}
+                            </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-64 p-3" align="start">
+                            <div className="flex justify-between items-center mb-4">
+                                <Button variant="ghost" size="icon" onClick={() => setYear(year - 1)} className="h-7 w-7">
+                                    <ChevronLeft className="h-4 w-4" />
+                                </Button>
+                                <span className="font-bold text-base">{year}</span>
+                                <Button variant="ghost" size="icon" onClick={() => setYear(year + 1)} className="h-7 w-7">
+                                    <ChevronRight className="h-4 w-4" />
+                                </Button>
+                            </div>
+                            <div className="grid grid-cols-4 gap-2">
+                                {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
+                                    <Button
+                                        key={m}
+                                        variant={m === month ? "default" : "outline"}
+                                        className={`text-xs h-8 px-0 ${m === month ? "bg-blue-600 hover:bg-blue-700 text-white" : ""}`}
+                                        onClick={() => setMonth(m)}
+                                    >
+                                        Th {m}
+                                    </Button>
+                                ))}
+                            </div>
+                        </PopoverContent>
+                    </Popover>
 
                     <div className="flex items-center gap-1 ml-auto">
                         <Button
                             onClick={handleCreate}
-                            className="bg-blue-600 hover:bg-blue-700 h-8 px-3 text-xs"
+                            className="bg-blue-600 hover:bg-blue-700 h-9 px-3 text-xs md:text-sm font-semibold shadow-sm transition-all hover:scale-105 active:scale-95"
                         >
                             <Check className="w-3.5 h-3.5 mr-1" /> Tạo
                         </Button>
@@ -201,7 +216,7 @@ export default function SheetSelector({ sheets, currentSheetId, workspaceId, onC
                             onClick={() => setIsCreating(false)}
                             variant="ghost"
                             size="icon"
-                            className="h-8 w-8 text-slate-400 hover:text-red-500 hover:bg-red-50"
+                            className="h-9 w-9 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
                         >
                             <X className="w-4 h-4" />
                         </Button>
