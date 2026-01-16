@@ -65,15 +65,20 @@ export default function SheetSelector({ sheets, currentSheetId, workspaceId, onC
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ workspaceId, month, year })
             });
-            if (!res.ok) throw new Error('Failed');
+
+            if (!res.ok) {
+                const errorData = await res.json();
+                throw new Error(errorData.error || 'Failed');
+            }
+
             const newSheet = await res.json();
             setIsCreating(false);
             onCreated();
             onChange(newSheet.id);
             addToast('Đã tạo bảng mới', 'success');
-        } catch (e) {
+        } catch (e: any) {
             console.error(e);
-            addToast('Lỗi khi tạo bảng mới', 'error');
+            addToast(e.message || 'Lỗi khi tạo bảng mới', 'error');
         }
     };
 

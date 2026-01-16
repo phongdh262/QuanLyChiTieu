@@ -7,7 +7,8 @@ export async function logActivity(
     action: 'CREATE' | 'UPDATE' | 'DELETE' | 'LOGIN' | 'OTHER',
     entityType: 'EXPENSE' | 'SHEET' | 'MEMBER' | 'SYSTEM',
     entityId: number | null,
-    description: string
+    description: string,
+    sheetId?: number // Optional context
 ) {
     try {
         await prisma.activityLog.create({
@@ -18,7 +19,8 @@ export async function logActivity(
                 action,
                 entityType,
                 entityId: entityId || null,
-                description
+                description,
+                sheetId: sheetId || null
             }
         });
     } catch (error) {

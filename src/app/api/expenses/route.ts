@@ -102,7 +102,8 @@ export async function POST(req: Request) {
             'CREATE',
             'EXPENSE',
             expense.id,
-            `Đã thêm khoản chi: ${description} (${amount.toLocaleString('vi-VN')}đ)`
+            `Đã thêm khoản chi: ${description} (${amount.toLocaleString('vi-VN')}đ)`,
+            sheetId
         );
 
         return NextResponse.json(expense);

@@ -63,7 +63,8 @@ export async function POST(request: Request) {
             'CREATE',
             'SHEET',
             sheet.id,
-            `Đã tạo bảng chi tiết tháng mới: ${name}`
+            `Đã tạo bảng chi tiết tháng mới: ${name}`,
+            sheet.id
         );
 
         return NextResponse.json(sheet);

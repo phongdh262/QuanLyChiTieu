@@ -213,6 +213,7 @@ export default function Home() {
 
             <ActivityLogList
               members={members}
+              sheetId={currentSheetId!}
               month={sheetData?.month}
               year={sheetData?.year}
             />

@@ -24,15 +24,21 @@ interface Props {
     members: Member[];
     month?: number;
     year?: number;
+    sheetId?: number;
 }
 
 const fetcher = (url: string) => fetch(url).then(r => r.json());
 
-export default function ActivityLogList({ members, month, year }: Props) {
+export default function ActivityLogList({ members, month, year, sheetId }: Props) {
     const [isOpen, setIsOpen] = useState(true); // Default OPEN
     const [selectedUser, setSelectedUser] = useState<string>('all');
 
-    const queryString = month && year ? `?month=${month}&year=${year}` : '';
+    const params = new URLSearchParams();
+    if (month) params.append('month', month.toString());
+    if (year) params.append('year', year.toString());
+    if (sheetId) params.append('sheetId', sheetId.toString());
+
+    const queryString = params.toString() ? `?${params.toString()}` : '';
 
     const { data: logs = [], isLoading } = useSWR<Log[]>(
         isOpen ? `/api/activity-logs${queryString}` : null,
