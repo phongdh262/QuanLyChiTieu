@@ -12,6 +12,8 @@ import { Check, X, Trash2, Edit, Plus, RotateCcw, History, Calendar as CalendarI
 interface Sheet {
     id: number;
     name: string;
+    month: number;
+    year: number;
 }
 
 interface Props {
@@ -31,7 +33,8 @@ export default function SheetSelector({ sheets, currentSheetId, workspaceId, onC
 
     // Edit State
     const [isEditing, setIsEditing] = useState(false);
-    const [editName, setEditName] = useState('');
+    const [editMonth, setEditMonth] = useState(1);
+    const [editYear, setEditYear] = useState(new Date().getFullYear());
 
     // Recycle Bin State
     const [isBinOpen, setIsBinOpen] = useState(false);
@@ -118,26 +121,45 @@ export default function SheetSelector({ sheets, currentSheetId, workspaceId, onC
         }
     };
 
+    const handlePermanentDelete = async (id: number) => {
+        const ok = await confirm({
+            title: 'Xóa vĩnh viễn',
+            message: '⚠️ Hành động này không thể hoàn tác! Bạn có chắc chắn muốn xóa vĩnh viễn bảng này và toàn bộ dữ liệu bên trong?',
+            type: 'danger',
+            confirmText: 'Xóa vĩnh viễn',
+            cancelText: 'Hủy'
+        });
+        if (!ok) return;
+
+        try {
+            const res = await fetch(`/api/sheets/${id}/permanent`, { method: 'DELETE' });
+            if (!res.ok) throw new Error('Failed');
+            fetchDeletedSheets();
+            addToast('Đã xóa vĩnh viễn', 'success');
+        } catch (e) {
+            console.error(e);
+            addToast('Lỗi khi xóa vĩnh viễn', 'error');
+        }
+    };
+
     const startEdit = () => {
         if (!currentSheetId) return;
         const current = sheets.find(s => s.id === currentSheetId);
         if (current) {
-            setEditName(current.name);
+            setEditMonth(current.month || 1);
+            setEditYear(current.year || new Date().getFullYear());
             setIsEditing(true);
         }
     };
 
     const saveEdit = async () => {
         if (!currentSheetId) return;
-        if (!editName.trim()) {
-            addToast('Tên không được để trống!', 'warning');
-            return;
-        }
+        const newName = `Tháng ${editMonth}/${editYear}`;
         try {
             const res = await fetch(`/api/sheets/${currentSheetId}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name: editName })
+                body: JSON.stringify({ name: newName })
             });
 
             if (!res.ok) {
@@ -158,12 +180,38 @@ export default function SheetSelector({ sheets, currentSheetId, workspaceId, onC
         <div className="mb-6 flex items-center gap-2 h-10 w-full">
             {isEditing ? (
                 <div className="flex gap-2 items-center flex-1 animate-in fade-in duration-200">
-                    <Input
-                        value={editName}
-                        onChange={e => setEditName(e.target.value)}
-                        className="h-10 font-bold bg-white text-lg"
-                        autoFocus
-                    />
+                    <Popover>
+                        <PopoverTrigger asChild>
+                            <Button variant="outline" className="w-[160px] justify-start text-left font-bold border-slate-200 h-9 bg-white">
+                                <CalendarIcon className="mr-2 h-4 w-4 text-slate-500" />
+                                {`Tháng ${editMonth}/${editYear}`}
+                            </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-64 p-3" align="start">
+                            <div className="flex justify-between items-center mb-4">
+                                <Button variant="ghost" size="icon" onClick={() => setEditYear(editYear - 1)} className="h-7 w-7">
+                                    <ChevronLeft className="h-4 w-4" />
+                                </Button>
+                                <span className="font-bold text-base">{editYear}</span>
+                                <Button variant="ghost" size="icon" onClick={() => setEditYear(editYear + 1)} className="h-7 w-7">
+                                    <ChevronRight className="h-4 w-4" />
+                                </Button>
+                            </div>
+                            <div className="grid grid-cols-4 gap-2">
+                                {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
+                                    <Button
+                                        key={m}
+                                        variant={m === editMonth ? "default" : "outline"}
+                                        className={`text-xs h-8 px-0 ${m === editMonth ? "bg-blue-600 hover:bg-blue-700 text-white" : ""}`}
+                                        onClick={() => setEditMonth(m)}
+                                    >
+                                        Th {m}
+                                    </Button>
+                                ))}
+                            </div>
+                        </PopoverContent>
+                    </Popover>
+
                     <Button onClick={saveEdit} size="icon" className="bg-green-600 hover:bg-green-700 h-10 w-10 shrink-0">
                         <Check className="w-5 h-5" />
                     </Button>
@@ -292,15 +340,27 @@ export default function SheetSelector({ sheets, currentSheetId, workspaceId, onC
                                         deletedSheets.map(s => (
                                             <div key={s.id} className="flex items-center justify-between p-3 rounded-lg border border-slate-100 bg-slate-50">
                                                 <span className="font-bold text-slate-700">{s.name}</span>
-                                                <Button
-                                                    size="sm"
-                                                    variant="secondary"
-                                                    onClick={() => handleRestore(s.id)}
-                                                    className="h-8 gap-1.5 bg-white border border-slate-200 hover:bg-green-50 hover:text-green-600 hover:border-green-200"
-                                                >
-                                                    <RotateCcw className="w-3.5 h-3.5" />
-                                                    Khôi phục
-                                                </Button>
+                                                <div className="flex gap-2">
+                                                    <Button
+                                                        size="sm"
+                                                        variant="secondary"
+                                                        onClick={() => handleRestore(s.id)}
+                                                        className="h-8 gap-1.5 bg-white border border-slate-200 hover:bg-green-50 hover:text-green-600 hover:border-green-200"
+                                                        title="Khôi phục"
+                                                    >
+                                                        <RotateCcw className="w-3.5 h-3.5" />
+                                                        <span className="hidden sm:inline">Khôi phục</span>
+                                                    </Button>
+                                                    <Button
+                                                        size="sm"
+                                                        variant="destructive"
+                                                        onClick={() => handlePermanentDelete(s.id)}
+                                                        className="h-8 w-8 p-0 bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 shadow-sm"
+                                                        title="Xóa vĩnh viễn"
+                                                    >
+                                                        <X className="w-4 h-4" />
+                                                    </Button>
+                                                </div>
                                             </div>
                                         ))
                                     )}

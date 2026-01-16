@@ -56,7 +56,7 @@ model Expense {
   type        String   // SHARED, PRIVATE
   date        DateTime @default(now())
   
-  sheet       Sheet    @relation(fields: [sheetId], references: [id])
+  sheet       Sheet    @relation(fields: [sheetId], references: [id], onDelete: Cascade)
   sheetId     Int
   
   payer       Member   @relation("Payer", fields: [payerId], references: [id])
@@ -71,7 +71,7 @@ model Split {
   id        Int     @id @default(autoincrement())
   amount    Float
   
-  expense   Expense @relation(fields: [expenseId], references: [id])
+  expense   Expense @relation(fields: [expenseId], references: [id], onDelete: Cascade)
   expenseId Int
   
   member    Member  @relation(fields: [memberId], references: [id])
@@ -95,6 +95,6 @@ model ActivityLog {
   workspace   Workspace @relation(fields: [workspaceId], references: [id])
   workspaceId Int
 
-  sheet       Sheet?    @relation(fields: [sheetId], references: [id])
+  sheet       Sheet?    @relation(fields: [sheetId], references: [id], onDelete: SetNull)
   sheetId     Int?
 }

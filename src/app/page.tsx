@@ -21,7 +21,7 @@ export default function Home() {
 
   // Workspace Data
   const [workspace, setWorkspace] = useState<{ id: number; name: string; sheets: any[] } | null>(null);
-  const [sheets, setSheets] = useState<{ id: number; name: string }[]>([]);
+  const [sheets, setSheets] = useState<{ id: number; name: string; month: number; year: number }[]>([]);
   const [currentSheetId, setCurrentSheetId] = useState<number | null>(null);
 
   // Sheet Data
