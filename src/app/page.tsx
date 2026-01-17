@@ -63,19 +63,25 @@ export default function Home() {
   const fetchWorkspace = async () => {
     try {
       const res = await fetch('/api/workspaces');
+      if (!res.ok) throw new Error('Failed to fetch workspace');
       const data = await res.json();
-      // Assuming single workspace for now: id=1
-      // In real app, we would select workspace. For now just take the seed one.
+
       const ws = data[0];
       if (ws) {
         setWorkspace(ws);
         setSheets(ws.sheets);
-        // Default to latest sheet if not set
-        if (!currentSheetId && ws.sheets.length > 0) {
+
+        // Handle case where currentSheetId was deleted or vanished
+        const sheetExists = ws.sheets.some((s: any) => s.id === currentSheetId);
+        if (!sheetExists && ws.sheets.length > 0) {
           setCurrentSheetId(ws.sheets[ws.sheets.length - 1].id);
+        } else if (ws.sheets.length === 0) {
+          setCurrentSheetId(null);
         }
       }
-    } catch (e) { console.error(e); }
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   // Sheet Fetch: Whenever currentSheetId changes
@@ -87,6 +93,11 @@ export default function Home() {
     setLoading(true);
     try {
       const res = await fetch(`/api/sheets/${id}`);
+      if (res.status === 404) {
+        // Sheet might have been deleted, reload workspace to get fresh state
+        fetchWorkspace();
+        return;
+      }
       if (!res.ok) throw new Error('Failed to fetch');
       const json = await res.json();
 

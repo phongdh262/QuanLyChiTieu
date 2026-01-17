@@ -140,9 +140,10 @@ export default function SheetSelector({ sheets, currentSheetId, workspaceId, onC
                 const err = await res.json().catch(() => ({}));
                 throw new Error(err.error || 'Failed to delete');
             }
-            // Success: Close bin, show toast
+            // Success: Close bin, show toast, and REFRESH workspace
             setIsBinOpen(false);
             addToast('Đã xóa vĩnh viễn', 'success');
+            onCreated(); // Reload workspace/sheets list
         } catch (e: any) {
             console.error(e);
             addToast(e.message || 'Lỗi khi xóa vĩnh viễn', 'error');
