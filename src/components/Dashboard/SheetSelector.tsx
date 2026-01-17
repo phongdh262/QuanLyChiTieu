@@ -40,6 +40,7 @@ export default function SheetSelector({ sheets, currentSheetId, workspaceId, onC
     const [isBinOpen, setIsBinOpen] = useState(false);
     const [deletedSheets, setDeletedSheets] = useState<Sheet[]>([]);
     const [loadingBin, setLoadingBin] = useState(false);
+    const [deletingId, setDeletingId] = useState<number | null>(null);
 
     const fetchDeletedSheets = async () => {
         setLoadingBin(true);
@@ -131,6 +132,7 @@ export default function SheetSelector({ sheets, currentSheetId, workspaceId, onC
         });
         if (!ok) return;
 
+        setDeletingId(id);
         try {
             console.log("Requesting delete for", id);
             const res = await fetch(`/api/sheets/${id}/permanent`, { method: 'DELETE' });
@@ -138,11 +140,14 @@ export default function SheetSelector({ sheets, currentSheetId, workspaceId, onC
                 const err = await res.json().catch(() => ({}));
                 throw new Error(err.error || 'Failed to delete');
             }
-            fetchDeletedSheets();
+            // Success: Close bin, show toast
+            setIsBinOpen(false);
             addToast('Đã xóa vĩnh viễn', 'success');
         } catch (e: any) {
             console.error(e);
             addToast(e.message || 'Lỗi khi xóa vĩnh viễn', 'error');
+        } finally {
+            setDeletingId(null);
         }
     };
 
@@ -359,10 +364,15 @@ export default function SheetSelector({ sheets, currentSheetId, workspaceId, onC
                                                         size="sm"
                                                         variant="destructive"
                                                         onClick={() => handlePermanentDelete(s.id)}
-                                                        className="h-8 w-8 p-0 bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 shadow-sm"
+                                                        disabled={deletingId === s.id}
+                                                        className="h-8 w-8 p-0 bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 shadow-sm disabled:opacity-50"
                                                         title="Xóa vĩnh viễn"
                                                     >
-                                                        <X className="w-4 h-4" />
+                                                        {deletingId === s.id ? (
+                                                            <span className="animate-spin">⏳</span>
+                                                        ) : (
+                                                            <X className="w-4 h-4" />
+                                                        )}
                                                     </Button>
                                                 </div>
                                             </div>
