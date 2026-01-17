@@ -9,10 +9,43 @@ export async function POST(
 ) {
     try {
         const session = await getSession();
-        const actorId = session ? (session.id as number) : 0;
-        const actorName = session ? (session.name as string) : 'Hệ thống';
+        if (!session) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+        const actorId = session.id as number;
+        const actorName = session.name as string;
 
         const sheetId = parseInt((await params).sheetId);
+
+        // Get the sheet to restore
+        const sheetToRestore = await prisma.sheet.findUnique({
+            where: { id: sheetId }
+        });
+
+        if (!sheetToRestore) {
+            return NextResponse.json({ error: 'Sheet not found' }, { status: 404 });
+        }
+
+        if (sheetToRestore.status !== 'DELETED') {
+            return NextResponse.json({ error: 'Sheet is not in trash' }, { status: 400 });
+        }
+
+        // Check if there's already an active sheet with the same month/year
+        const existingActiveSheet = await prisma.sheet.findFirst({
+            where: {
+                workspaceId: sheetToRestore.workspaceId,
+                month: sheetToRestore.month,
+                year: sheetToRestore.year,
+                status: { not: 'DELETED' },
+                id: { not: sheetId } // Exclude the sheet being restored
+            }
+        });
+
+        if (existingActiveSheet) {
+            return NextResponse.json({
+                error: `Không thể khôi phục! Đã tồn tại bảng chi tiêu cho tháng ${sheetToRestore.month}/${sheetToRestore.year}. Vui lòng xóa bảng đó trước.`
+            }, { status: 409 });
+        }
 
         const sheet = await prisma.sheet.update({
             where: { id: sheetId },

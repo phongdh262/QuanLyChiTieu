@@ -112,13 +112,16 @@ export default function SheetSelector({ sheets, currentSheetId, workspaceId, onC
     const handleRestore = async (id: number) => {
         try {
             const res = await fetch(`/api/sheets/${id}/restore`, { method: 'POST' });
-            if (!res.ok) throw new Error('Failed');
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}));
+                throw new Error(err.error || 'Failed to restore');
+            }
             onCreated();
             fetchDeletedSheets();
             addToast('Đã khôi phục bảng', 'success');
-        } catch (e) {
+        } catch (e: any) {
             console.error(e);
-            addToast('Lỗi khi khôi phục', 'error');
+            addToast(e.message || 'Lỗi khi khôi phục', 'error');
         }
     };
 
