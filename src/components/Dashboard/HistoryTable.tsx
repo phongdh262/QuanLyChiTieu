@@ -89,10 +89,12 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
   };
 
   const toggleAll = () => {
-    if (selectedIds.size === filteredBills.length && filteredBills.length > 0) {
+    // Only select bills where the current user is the payer (can delete)
+    const deletableBills = filteredBills.filter(b => currentUser?.name === b.payer);
+    if (selectedIds.size === deletableBills.length && deletableBills.length > 0) {
       setSelectedIds(new Set());
     } else {
-      setSelectedIds(new Set(filteredBills.map(b => b.id)));
+      setSelectedIds(new Set(deletableBills.map(b => b.id)));
     }
   };
 
@@ -267,7 +269,9 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
     return colors[Math.abs(hash) % colors.length];
   };
 
-  const isAllSelected = filteredBills.length > 0 && selectedIds.size === filteredBills.length;
+  // Calculate deletable bills count for "select all" checkbox state
+  const deletableBills = filteredBills.filter(b => currentUser?.name === b.payer);
+  const isAllSelected = deletableBills.length > 0 && selectedIds.size === deletableBills.length;
 
   return (
     <>
@@ -421,7 +425,12 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
                             type="checkbox"
                             checked={isSelected}
                             onChange={() => toggleRow(b.id)}
-                            className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer accent-blue-600"
+                            disabled={!canDelete}
+                            className={cn(
+                              "h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 accent-blue-600",
+                              canDelete ? "cursor-pointer" : "cursor-not-allowed opacity-40"
+                            )}
+                            title={canDelete ? "Select to delete" : `Only Payer (${b.payer}) can delete this bill`}
                           />
                         </TableCell>
                         <TableCell className="py-5">

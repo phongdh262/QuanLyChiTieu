@@ -145,6 +145,11 @@ export async function DELETE(
             return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
         }
 
+        // VERIFY PAYER PERMISSION - Only the payer who created the expense can delete it
+        if (expense.payerId !== actorId) {
+            return NextResponse.json({ error: 'Forbidden: Only the payer can delete this expense' }, { status: 403 });
+        }
+
         // Transaction to delete splits then expense
         await prisma.$transaction(async (tx: any) => {
             await tx.split.deleteMany({
