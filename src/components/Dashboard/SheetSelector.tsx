@@ -284,9 +284,10 @@ export default function SheetSelector({ sheets, currentSheetId, workspaceId, onC
                     </div>
                 </div>
             ) : (
-                <>
+                <div className="flex items-center p-1.5 bg-white border border-slate-200 rounded-2xl shadow-sm gap-1 w-full max-w-fit mx-auto">
+                    {/* Month Selector */}
                     <Select value={currentSheetId?.toString()} onValueChange={(val) => onChange(parseInt(val))}>
-                        <SelectTrigger className="h-10 text-lg font-bold bg-white border-slate-200 hover:border-blue-300 focus:ring-2 focus:ring-blue-100 shadow-sm px-3 rounded-xl transition-all w-[200px]">
+                        <SelectTrigger className="h-9 w-[180px] text-base font-bold border-none shadow-none bg-transparent hover:bg-slate-50 focus:ring-0 px-3 rounded-xl transition-all">
                             <SelectValue placeholder="Chọn bảng chi tiêu" />
                         </SelectTrigger>
                         <SelectContent>
@@ -298,103 +299,108 @@ export default function SheetSelector({ sheets, currentSheetId, workspaceId, onC
                         </SelectContent>
                     </Select>
 
-                    <div className="flex items-center gap-2 shrink-0">
-                        {/* Grouped Edit & Delete Actions */}
-                        <div className="flex items-center bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm h-10">
-                            <Button
-                                onClick={startEdit}
-                                disabled={!currentSheetId || !sheets.some(s => s.id === currentSheetId)}
-                                variant="ghost"
-                                className="h-full w-10 text-blue-600 bg-blue-50/50 hover:bg-blue-100 rounded-none border-r border-slate-100 disabled:opacity-50 transition-colors"
-                                title="Đổi tên"
-                            >
-                                <Edit className="w-4 h-4" />
-                            </Button>
-                            <Button
-                                onClick={handleDelete}
-                                disabled={!currentSheetId || !sheets.some(s => s.id === currentSheetId)}
-                                variant="ghost"
-                                className="h-full w-10 text-red-600 bg-red-50/50 hover:bg-red-100 rounded-none disabled:opacity-50 transition-colors"
-                                title="Xóa tháng này"
-                            >
-                                <Trash2 className="w-4 h-4" />
-                            </Button>
-                        </div>
+                    <div className="w-px h-5 bg-slate-200 mx-0.5"></div>
 
-                        <div className="w-px h-6 bg-slate-200 mx-2"></div>
+                    {/* Actions Group */}
+                    <div className="flex items-center gap-0.5">
+                        <Button
+                            onClick={startEdit}
+                            disabled={!currentSheetId || !sheets.some(s => s.id === currentSheetId)}
+                            variant="ghost"
+                            size="icon"
+                            className="h-9 w-9 text-blue-600 hover:bg-blue-50 rounded-lg disabled:opacity-30"
+                            title="Đổi tên"
+                        >
+                            <Edit className="w-4 h-4 stroke-[2.5]" />
+                        </Button>
+                        <Button
+                            onClick={handleDelete}
+                            disabled={!currentSheetId || !sheets.some(s => s.id === currentSheetId)}
+                            variant="ghost"
+                            size="icon"
+                            className="h-9 w-9 text-red-600 hover:bg-red-50 rounded-lg disabled:opacity-30"
+                            title="Xóa tháng này"
+                        >
+                            <Trash2 className="w-4 h-4 stroke-[2.5]" />
+                        </Button>
+                    </div>
 
-                        {/* RECYCLE BIN */}
-                        <Dialog open={isBinOpen} onOpenChange={setIsBinOpen}>
-                            <DialogTrigger asChild>
-                                <Button
-                                    variant="outline"
-                                    size="icon"
-                                    className="h-10 w-10 text-purple-600 bg-purple-50 hover:bg-purple-100 border-purple-100 hover:border-purple-200 shadow-sm transition-all rounded-xl"
-                                    title="Thùng rác"
-                                >
-                                    <RotateCcw className="w-5 h-5 stroke-[2.5]" />
-                                </Button>
-                            </DialogTrigger>
-                            <DialogContent className="max-w-md">
-                                <DialogHeader>
-                                    <DialogTitle className="flex items-center gap-2">
-                                        <History className="w-5 h-5 text-purple-500" />
-                                        Bảng chi tiêu đã xóa (Thùng rác)
-                                    </DialogTitle>
-                                </DialogHeader>
-                                <div className="space-y-4 py-4 max-h-[400px] overflow-y-auto">
-                                    {loadingBin ? (
-                                        <div className="text-center py-8 text-slate-400 italic">Đang tải...</div>
-                                    ) : deletedSheets.length === 0 ? (
-                                        <div className="text-center py-8 text-slate-400 italic">Thùng rác trống.</div>
-                                    ) : (
-                                        deletedSheets.map(s => (
-                                            <div key={s.id} className="flex items-center justify-between p-3 rounded-lg border border-slate-100 bg-slate-50">
-                                                <span className="font-bold text-slate-700">{s.name}</span>
-                                                <div className="flex gap-2">
-                                                    <Button
-                                                        size="sm"
-                                                        variant="secondary"
-                                                        onClick={() => handleRestore(s.id)}
-                                                        className="h-8 gap-1.5 bg-white border border-slate-200 hover:bg-green-50 hover:text-green-600 hover:border-green-200"
-                                                        title="Khôi phục"
-                                                    >
-                                                        <RotateCcw className="w-3.5 h-3.5" />
-                                                        <span className="hidden sm:inline">Khôi phục</span>
-                                                    </Button>
-                                                    <Button
-                                                        size="sm"
-                                                        variant="destructive"
-                                                        onClick={() => handlePermanentDelete(s.id)}
-                                                        disabled={deletingId === s.id}
-                                                        className="h-8 w-8 p-0 bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 shadow-sm disabled:opacity-50"
-                                                        title="Xóa vĩnh viễn"
-                                                    >
-                                                        {deletingId === s.id ? (
-                                                            <span className="animate-spin">⏳</span>
-                                                        ) : (
-                                                            <X className="w-4 h-4" />
-                                                        )}
-                                                    </Button>
-                                                </div>
+                    <div className="w-px h-5 bg-slate-200 mx-0.5"></div>
+
+                    {/* RECYCLE BIN */}
+                    <Dialog open={isBinOpen} onOpenChange={setIsBinOpen}>
+                        <DialogTrigger asChild>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-9 w-9 text-purple-600 hover:bg-purple-50 rounded-lg"
+                                title="Thùng rác"
+                            >
+                                <RotateCcw className="w-4 h-4 stroke-[2.5]" />
+                            </Button>
+                        </DialogTrigger>
+                        <DialogContent className="max-w-md">
+                            <DialogHeader>
+                                <DialogTitle className="flex items-center gap-2">
+                                    <History className="w-5 h-5 text-purple-500" />
+                                    Bảng chi tiêu đã xóa (Thùng rác)
+                                </DialogTitle>
+                            </DialogHeader>
+                            <div className="space-y-4 py-4 max-h-[400px] overflow-y-auto">
+                                {loadingBin ? (
+                                    <div className="text-center py-8 text-slate-400 italic">Đang tải...</div>
+                                ) : deletedSheets.length === 0 ? (
+                                    <div className="text-center py-8 text-slate-400 italic">Thùng rác trống.</div>
+                                ) : (
+                                    deletedSheets.map(s => (
+                                        <div key={s.id} className="flex items-center justify-between p-3 rounded-lg border border-slate-100 bg-slate-50">
+                                            <span className="font-bold text-slate-700">{s.name}</span>
+                                            <div className="flex gap-2">
+                                                <Button
+                                                    size="sm"
+                                                    variant="secondary"
+                                                    onClick={() => handleRestore(s.id)}
+                                                    className="h-8 gap-1.5 bg-white border border-slate-200 hover:bg-green-50 hover:text-green-600 hover:border-green-200"
+                                                    title="Khôi phục"
+                                                >
+                                                    <RotateCcw className="w-3.5 h-3.5" />
+                                                    <span className="hidden sm:inline">Khôi phục</span>
+                                                </Button>
+                                                <Button
+                                                    size="sm"
+                                                    variant="destructive"
+                                                    onClick={() => handlePermanentDelete(s.id)}
+                                                    disabled={deletingId === s.id}
+                                                    className="h-8 w-8 p-0 bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 shadow-sm disabled:opacity-50"
+                                                    title="Xóa vĩnh viễn"
+                                                >
+                                                    {deletingId === s.id ? (
+                                                        <span className="animate-spin">⏳</span>
+                                                    ) : (
+                                                        <X className="w-4 h-4" />
+                                                    )}
+                                                </Button>
                                             </div>
-                                        ))
-                                    )}
-                                </div>
-                            </DialogContent>
-                        </Dialog>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+                        </DialogContent>
+                    </Dialog>
 
+                    {/* Add Button */}
+                    <div className="pl-1">
                         <Button
                             onClick={() => setIsCreating(true)}
                             variant="default"
                             size="icon"
-                            className="h-10 w-10 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl hover:scale-105 transition-all border-none rounded-xl"
+                            className="h-9 w-9 bg-blue-600 hover:bg-blue-700 text-white shadow-sm hover:scale-105 transition-all rounded-xl"
                             title="Thêm tháng mới"
                         >
-                            <Plus className="w-6 h-6 stroke-[3]" />
+                            <Plus className="w-5 h-5 stroke-[3]" />
                         </Button>
                     </div>
-                </>
+                </div>
             )}
         </div>
     );
