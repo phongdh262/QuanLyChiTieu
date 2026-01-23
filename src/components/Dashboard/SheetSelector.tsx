@@ -286,7 +286,7 @@ export default function SheetSelector({ sheets, currentSheetId, workspaceId, onC
             ) : (
                 <>
                     <Select value={currentSheetId?.toString()} onValueChange={(val) => onChange(parseInt(val))}>
-                        <SelectTrigger className="h-10 text-lg font-bold bg-white border-transparent hover:border-slate-200 focus:ring-0 shadow-none px-2 data-[state=open]:bg-slate-50">
+                        <SelectTrigger className="h-10 text-lg font-bold bg-white border-slate-200 hover:border-blue-300 focus:ring-2 focus:ring-blue-100 shadow-sm px-3 rounded-xl transition-all w-[200px]">
                             <SelectValue placeholder="Chọn bảng chi tiêu" />
                         </SelectTrigger>
                         <SelectContent>
@@ -299,29 +299,31 @@ export default function SheetSelector({ sheets, currentSheetId, workspaceId, onC
                     </Select>
 
                     <div className="flex items-center gap-2 shrink-0">
-                        {/* Edit Button */}
-                        <Button
-                            onClick={startEdit}
-                            disabled={!currentSheetId || !sheets.some(s => s.id === currentSheetId)}
-                            variant="outline"
-                            size="icon"
-                            className="h-10 w-10 text-blue-600 bg-blue-50 hover:bg-blue-100 border-blue-100 hover:border-blue-200 shadow-sm transition-all rounded-xl disabled:opacity-50 disabled:cursor-not-allowed"
-                            title="Đổi tên"
-                        >
-                            <Edit className="w-5 h-5 stroke-[2.5]" />
-                        </Button>
+                        <div className="flex items-center gap-1">
+                            {/* Edit Button */}
+                            <Button
+                                onClick={startEdit}
+                                disabled={!currentSheetId || !sheets.some(s => s.id === currentSheetId)}
+                                variant="outline"
+                                size="icon"
+                                className="h-10 w-10 text-blue-600 bg-blue-50 hover:bg-blue-100 border-blue-100 hover:border-blue-200 shadow-sm transition-all rounded-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                                title="Đổi tên"
+                            >
+                                <Edit className="w-5 h-5 stroke-[2.5]" />
+                            </Button>
 
-                        {/* Delete Button */}
-                        <Button
-                            onClick={handleDelete}
-                            disabled={!currentSheetId || !sheets.some(s => s.id === currentSheetId)}
-                            variant="outline"
-                            size="icon"
-                            className="h-10 w-10 text-red-600 bg-red-50 hover:bg-red-100 border-red-100 hover:border-red-200 shadow-sm transition-all rounded-xl disabled:opacity-50 disabled:cursor-not-allowed"
-                            title="Xóa tháng này"
-                        >
-                            <Trash2 className="w-5 h-5 stroke-[2.5]" />
-                        </Button>
+                            {/* Delete Button */}
+                            <Button
+                                onClick={handleDelete}
+                                disabled={!currentSheetId || !sheets.some(s => s.id === currentSheetId)}
+                                variant="outline"
+                                size="icon"
+                                className="h-10 w-10 text-red-600 bg-red-50 hover:bg-red-100 border-red-100 hover:border-red-200 shadow-sm transition-all rounded-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                                title="Xóa tháng này"
+                            >
+                                <Trash2 className="w-5 h-5 stroke-[2.5]" />
+                            </Button>
+                        </div>
 
                         <div className="w-px h-6 bg-slate-200 mx-2"></div>
 
