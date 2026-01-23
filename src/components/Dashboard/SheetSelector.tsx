@@ -299,29 +299,25 @@ export default function SheetSelector({ sheets, currentSheetId, workspaceId, onC
                     </Select>
 
                     <div className="flex items-center gap-2 shrink-0">
-                        <div className="flex items-center gap-1">
-                            {/* Edit Button */}
+                        {/* Grouped Edit & Delete Actions */}
+                        <div className="flex items-center bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm h-10">
                             <Button
                                 onClick={startEdit}
                                 disabled={!currentSheetId || !sheets.some(s => s.id === currentSheetId)}
-                                variant="outline"
-                                size="icon"
-                                className="h-10 w-10 text-blue-600 bg-blue-50 hover:bg-blue-100 border-blue-100 hover:border-blue-200 shadow-sm transition-all rounded-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                                variant="ghost"
+                                className="h-full w-10 text-blue-600 bg-blue-50/50 hover:bg-blue-100 rounded-none border-r border-slate-100 disabled:opacity-50 transition-colors"
                                 title="Đổi tên"
                             >
-                                <Edit className="w-5 h-5 stroke-[2.5]" />
+                                <Edit className="w-4 h-4" />
                             </Button>
-
-                            {/* Delete Button */}
                             <Button
                                 onClick={handleDelete}
                                 disabled={!currentSheetId || !sheets.some(s => s.id === currentSheetId)}
-                                variant="outline"
-                                size="icon"
-                                className="h-10 w-10 text-red-600 bg-red-50 hover:bg-red-100 border-red-100 hover:border-red-200 shadow-sm transition-all rounded-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                                variant="ghost"
+                                className="h-full w-10 text-red-600 bg-red-50/50 hover:bg-red-100 rounded-none disabled:opacity-50 transition-colors"
                                 title="Xóa tháng này"
                             >
-                                <Trash2 className="w-5 h-5 stroke-[2.5]" />
+                                <Trash2 className="w-4 h-4" />
                             </Button>
                         </div>
 
