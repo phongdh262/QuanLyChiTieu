@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { getSession } from '@/lib/auth';
+import { getSession, hashPassword } from '@/lib/auth';
 import { logActivity } from '@/lib/logger';
 import { createMemberSchema } from '@/lib/schemas';
 
@@ -20,16 +20,13 @@ export async function POST(request: Request) {
         if (!validation.success) {
             return NextResponse.json({ error: validation.error.issues[0].message }, { status: 400 });
         }
-        const { workspaceId, name } = validation.data;
+        const { workspaceId, name, username, password } = validation.data;
 
-        // AUTHZ CHECK: Ensure actor is capable of adding members (e.g. is existing member of workspace)
-        // Ideally should be ADMIN, but for now let's minimal check membership.
-        // Actually, let's enforce ADMIN role if possible, or at least membership.
+        // AUTHZ CHECK: Ensure actor is capable of adding members
         const requestor = await prisma.member.findFirst({
             where: {
                 id: actorId,
                 workspaceId: workspaceId,
-                // role: 'ADMIN' // Uncomment this if we want strict ADMIN only
             }
         });
 
@@ -37,10 +34,24 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Forbidden: You must be a member of this workspace to add others' }, { status: 403 });
         }
 
+        // Check if username already exists if provided
+        if (username) {
+            const existingUser = await prisma.member.findUnique({
+                where: { username }
+            });
+            if (existingUser) {
+                return NextResponse.json({ error: 'Username already exists' }, { status: 400 });
+            }
+        }
+
+        const hashedPassword = password ? await hashPassword(password) : null;
+
         const member = await prisma.member.create({
             data: {
                 name,
-                workspaceId: workspaceId
+                workspaceId: workspaceId,
+                username: username || null,
+                password: hashedPassword,
             },
             select: { id: true, name: true, email: true, username: true, role: true, status: true, workspaceId: true }
         });
@@ -52,7 +63,7 @@ export async function POST(request: Request) {
             'CREATE',
             'MEMBER',
             member.id,
-            `Đã thêm thành viên mới: ${name}`
+            `Đã thêm thành viên mới: ${name} (${username || 'No Acc'})`
         );
 
         return NextResponse.json(member);

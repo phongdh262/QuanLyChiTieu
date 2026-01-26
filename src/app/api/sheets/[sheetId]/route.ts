@@ -54,14 +54,19 @@ export async function GET(
             return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
         }
 
-        // 2. Fetch Workspace Members
-        const members = await prisma.member.findMany({
+        // 2. Fetch ALL Workspace Members (including DELETED) for calculations
+        // This ensures historical expenses are calculated correctly
+        const allMembers = await prisma.member.findMany({
             where: { workspaceId: sheet.workspaceId },
             select: { id: true, name: true, email: true, username: true, role: true, status: true, workspaceId: true }
         });
 
-        // 3. Transform DB Data to Service Types
-        const memberNames = members.map(m => m.name);
+        // 3. Filter active members for UI (dropdowns, member list)
+        const activeMembers = allMembers.filter(m => m.status !== 'DELETED');
+
+        // 4. Transform DB Data to Service Types
+        // Use ALL members for calculation to preserve historical data
+        const allMemberNames = allMembers.map(m => m.name);
 
         const bills: Bill[] = sheet.expenses.map((e: any) => {
             const beneficiaries = e.splits.map((s: any) => s.member.name);
@@ -84,15 +89,16 @@ export async function GET(
             };
         });
 
-        // 4. Run Calculations
-        const { balances, stats, privateBalances } = calculateFinalBalances(memberNames, bills);
-        const { matrix, totals: matrixTotals } = calculatePrivateMatrix(memberNames, bills);
+        // 5. Run Calculations with ALL members (preserves historical data)
+        const { balances, stats, privateBalances } = calculateFinalBalances(allMemberNames, bills);
+        const { matrix, totals: matrixTotals } = calculatePrivateMatrix(allMemberNames, bills);
         const globalDebts = calculateDebts(balances);
         const privateDebts = calculateDebts(privateBalances);
 
         return NextResponse.json({
             sheet,
-            members,
+            members: activeMembers, // UI only sees active members
+            allMembers: allMembers, // Include all members for reference
             calculations: {
                 balances,
                 stats,

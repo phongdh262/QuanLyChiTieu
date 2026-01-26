@@ -14,7 +14,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Users, UserPlus, Trash2, Edit, Save, X, RotateCcw, History, Search } from "lucide-react";
+import { Users, UserPlus, Trash2, Edit, Save, X, RotateCcw, History, Search, Lock, Key } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 
@@ -23,6 +23,8 @@ export default function MemberManager({ members, workspaceId, onUpdate }: Props)
     const { addToast } = useToast();
     const [isAdding, setIsAdding] = useState(false);
     const [newName, setNewName] = useState('');
+    const [newUsername, setNewUsername] = useState('');
+    const [newPassword, setNewPassword] = useState('');
     const [editingId, setEditingId] = useState<number | null>(null);
     const [editName, setEditName] = useState('');
 
@@ -47,20 +49,36 @@ export default function MemberManager({ members, workspaceId, onUpdate }: Props)
     };
 
     const handleAdd = async () => {
-        if (!newName) return;
+        if (!newName) {
+            addToast('Name is required', 'warning');
+            return;
+        }
         try {
-            await fetch('/api/members', {
+            const res = await fetch('/api/members', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ workspaceId, name: newName })
+                body: JSON.stringify({
+                    workspaceId,
+                    name: newName,
+                    username: newUsername || undefined,
+                    password: newPassword || undefined
+                })
             });
+
+            if (!res.ok) {
+                const data = await res.json();
+                throw new Error(data.error || 'Failed to add member');
+            }
+
             setNewName('');
+            setNewUsername('');
+            setNewPassword('');
             setIsAdding(false);
             onUpdate(); // Reload members list
             addToast('Member added', 'success');
-        } catch (e) {
+        } catch (e: any) {
             console.error(e);
-            addToast('Error adding member', 'error');
+            addToast(e.message || 'Error adding member', 'error');
         }
     };
 
@@ -207,24 +225,64 @@ export default function MemberManager({ members, workspaceId, onUpdate }: Props)
             </CardHeader>
             <CardContent className="p-4 pt-4">
                 {isAdding && (
-                    <div className="flex gap-2 mb-4 animate-in slide-in-from-top-2 duration-300">
-                        <div className="relative flex-1">
-                            <Users className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-400" />
-                            <Input
-                                value={newName}
-                                onChange={e => setNewName(e.target.value)}
-                                placeholder="Enter member name..."
-                                autoFocus
-                                className="h-9 text-sm pl-9 border-indigo-100 focus:border-indigo-300 focus:ring-indigo-100"
-                                onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
-                            />
+                    <div className="flex flex-col gap-3 mb-6 p-4 rounded-2xl bg-indigo-50/30 border border-indigo-100 animate-in slide-in-from-top-2 duration-300">
+                        <div className="grid grid-cols-1 gap-3">
+                            <div className="relative">
+                                <Users className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-400" />
+                                <Input
+                                    value={newName}
+                                    onChange={e => setNewName(e.target.value)}
+                                    placeholder="Enter full name..."
+                                    autoFocus
+                                    className="h-9 text-sm pl-9 border-white bg-white/80 focus:bg-white transition-all shadow-sm"
+                                    onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
+                                />
+                            </div>
+                            <div className="grid grid-cols-2 gap-3">
+                                <div className="relative">
+                                    <Lock className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-400" />
+                                    <Input
+                                        value={newUsername}
+                                        onChange={e => setNewUsername(e.target.value)}
+                                        placeholder="Username (optional)"
+                                        className="h-9 text-sm pl-9 border-white bg-white/80 focus:bg-white transition-all shadow-sm"
+                                        onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
+                                    />
+                                </div>
+                                <div className="relative">
+                                    <Key className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-400" />
+                                    <Input
+                                        type="password"
+                                        value={newPassword}
+                                        onChange={e => setNewPassword(e.target.value)}
+                                        placeholder="Password (optional)"
+                                        className="h-9 text-sm pl-9 border-white bg-white/80 focus:bg-white transition-all shadow-sm"
+                                        onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
+                                    />
+                                </div>
+                            </div>
                         </div>
-                        <Button
-                            className="h-9 px-4 bg-green-600 hover:bg-green-700 text-white font-bold shadow-md hover:shadow-lg transition-all active:scale-95"
-                            onClick={handleAdd}
-                        >
-                            Save <Save className="w-3.5 h-3.5 ml-1.5" />
-                        </Button>
+                        <div className="flex justify-end gap-2">
+                            <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => {
+                                    setNewName('');
+                                    setNewUsername('');
+                                    setNewPassword('');
+                                    setIsAdding(false);
+                                }}
+                                className="h-8 text-slate-500 hover:text-slate-700"
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                className="h-8 px-6 bg-indigo-600 hover:bg-indigo-700 text-white font-bold shadow-md hover:shadow-indigo-200 transition-all active:scale-95 text-xs uppercase tracking-wider"
+                                onClick={handleAdd}
+                            >
+                                Create Member <Save className="w-3 h-3 ml-2" />
+                            </Button>
+                        </div>
                     </div>
                 )}
 

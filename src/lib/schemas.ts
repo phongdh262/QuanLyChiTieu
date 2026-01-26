@@ -9,6 +9,8 @@ export const loginSchema = z.object({
 export const createMemberSchema = z.object({
     workspaceId: z.number().or(z.string().regex(/^\d+$/).transform(Number)),
     name: z.string().min(1, 'Name is required').max(100),
+    username: z.string().min(3, 'Username must be at least 3 characters').optional(),
+    password: z.string().min(8, 'Password must be at least 8 characters').optional(),
 });
 
 export const createExpenseSchema = z.object({

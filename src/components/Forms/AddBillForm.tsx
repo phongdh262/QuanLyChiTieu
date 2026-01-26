@@ -63,17 +63,13 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
 
     // Initial load & Duplication Effect
     React.useEffect(() => {
-        if (activeMembers.length > 0 && !payerId) {
-            if (currentUser) {
-                // Determine if current user is in the list
-                const me = activeMembers.find(m => m.id === currentUser.id);
-                if (me) {
-                    setPayerId(me.id.toString());
-                } else {
-                    setPayerId(activeMembers[0].id.toString());
-                }
+        // Chỉ set default khi currentUser đã load xong để tránh race condition
+        if (activeMembers.length > 0 && !payerId && currentUser) {
+            const me = activeMembers.find(m => m.id === currentUser.id);
+            if (me) {
+                setPayerId(me.id.toString());
             } else {
-                // Fallback while loading user or if failed
+                // User không có trong danh sách members (edge case)
                 setPayerId(activeMembers[0].id.toString());
             }
         }
