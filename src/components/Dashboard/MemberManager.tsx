@@ -22,6 +22,9 @@ export default function MemberManager({ members, workspaceId, onUpdate }: Props)
     const { confirm } = useConfirm();
     const { addToast } = useToast();
     const [isAdding, setIsAdding] = useState(false);
+
+    const activeMembers = members.filter(m => m.status !== 'DELETED');
+
     const [newName, setNewName] = useState('');
     const [newUsername, setNewUsername] = useState('');
     const [newPassword, setNewPassword] = useState('');
@@ -287,13 +290,13 @@ export default function MemberManager({ members, workspaceId, onUpdate }: Props)
                 )}
 
                 <div className="space-y-1.5 h-[280px] overflow-y-auto custom-scrollbar pr-1">
-                    {members.length === 0 ? (
+                    {activeMembers.length === 0 ? (
                         <div className="h-full flex flex-col items-center justify-center text-slate-400 italic gap-2 opacity-60">
                             <Search className="w-8 h-8 opacity-20" />
                             <p className="text-xs font-semibold uppercase tracking-widest">No members found</p>
                         </div>
                     ) : (
-                        members.map(m => (
+                        activeMembers.map(m => (
                             <div
                                 key={m.id}
                                 className={cn(

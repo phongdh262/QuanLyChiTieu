@@ -5,6 +5,8 @@ import { Bill } from '@/types/expense';
 import { getSession } from '@/lib/auth';
 import { logActivity } from '@/lib/logger';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(
     request: Request,
     { params }: { params: Promise<{ sheetId: string }> }

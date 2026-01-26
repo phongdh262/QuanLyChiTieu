@@ -344,7 +344,7 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
                             <span className="bg-orange-100 p-1 rounded-full"><Users className="w-3 h-3 text-orange-700" /></span>
                             Select Beneficiaries:
                         </Label>
-                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-[160px] overflow-y-auto pr-1 custom-scrollbar">
                             {activeMembers.map(m => {
                                 const isSelected = beneficiaryIds.includes(m.id.toString());
                                 return (
@@ -353,14 +353,14 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
                                         type="button"
                                         onClick={() => toggleBeneficiary(m.id.toString())}
                                         className={cn(
-                                            "flex items-center justify-center gap-2 p-2 rounded-md text-sm font-medium transition-all",
+                                            "flex items-center justify-center gap-2 p-2 rounded-md text-[13px] font-bold transition-all border shadow-sm",
                                             isSelected
-                                                ? "bg-orange-500 text-white shadow-md hover:bg-orange-600"
-                                                : "bg-white border border-gray-200 text-gray-700 hover:bg-gray-50"
+                                                ? "bg-orange-500 text-white border-orange-600 shadow-orange-200 ring-2 ring-orange-100"
+                                                : "bg-white border-slate-200 text-slate-600 hover:border-orange-300 hover:bg-orange-50"
                                         )}
                                     >
-                                        {isSelected && <Check className="w-3 h-3" />}
-                                        {m.name}
+                                        {isSelected && <Check className="w-3 h-3 stroke-[3px]" />}
+                                        <span className="truncate">{m.name}</span>
                                     </button>
                                 );
                             })}
