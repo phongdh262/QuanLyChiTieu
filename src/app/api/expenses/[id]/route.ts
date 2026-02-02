@@ -71,11 +71,14 @@ export async function PUT(
             let splitMembers = [];
 
             if (type === 'SHARED') {
-                // Fetch all members in workspace
-                const allMembers = await tx.member.findMany({
-                    where: { workspaceId: expense.sheet.workspaceId }
+                // Fetch only ACTIVE members in workspace (exclude DELETED)
+                const activeMembers = await tx.member.findMany({
+                    where: {
+                        workspaceId: expense.sheet.workspaceId,
+                        status: { not: 'DELETED' }
+                    }
                 });
-                splitMembers = allMembers.map((m: any) => m.id);
+                splitMembers = activeMembers.map((m: any) => m.id);
             } else {
                 splitMembers = beneficiaryIds || [];
             }

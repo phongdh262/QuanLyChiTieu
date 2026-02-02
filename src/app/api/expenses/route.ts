@@ -45,7 +45,8 @@ export async function POST(req: Request) {
                 return NextResponse.json({ error: 'Forbidden: You are not a member of this workspace' }, { status: 403 });
             }
 
-            splitMembers = sheet.workspace.members;
+            // Only include ACTIVE members for shared expense splits
+            splitMembers = sheet.workspace.members.filter((m: any) => m.status !== 'DELETED');
             workspaceId = sheet.workspaceId;
         } else {
             // PRIVATE
