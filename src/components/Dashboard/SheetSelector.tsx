@@ -3,11 +3,13 @@ import React, { useState, useEffect } from 'react';
 import { useConfirm } from '@/components/ui/ConfirmProvider';
 import { useToast } from '@/components/ui/ToastProvider';
 import { Button } from "@/components/ui/button";
+import { cn } from '@/lib/utils';
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Check, X, Trash2, Edit, Plus, RotateCcw, History, Calendar as CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react";
+import { Check, X, Trash2, Edit, Plus, RotateCcw, History, Calendar as CalendarIcon, ChevronLeft, ChevronRight, Lock, Unlock } from "lucide-react";
+import type { CurrentUser } from '@/types/expense';
 
 interface Sheet {
     id: number;
@@ -22,14 +24,17 @@ interface Props {
     workspaceId: number;
     onChange: (id: number) => void;
     onCreated: () => void;
+    isLocked?: boolean;
+    currentUser?: CurrentUser | null;
 }
 
-export default function SheetSelector({ sheets, currentSheetId, workspaceId, onChange, onCreated }: Props) {
+export default function SheetSelector({ sheets, currentSheetId, workspaceId, onChange, onCreated, isLocked, currentUser }: Props) {
     const { confirm } = useConfirm();
     const { addToast } = useToast();
     const [isCreating, setIsCreating] = useState(false);
     const [month, setMonth] = useState(new Date().getMonth() + 1);
     const [year, setYear] = useState(new Date().getFullYear());
+    const [isLocking, setIsLocking] = useState(false);
 
     // Edit State
     const [isEditing, setIsEditing] = useState(false);
@@ -106,6 +111,37 @@ export default function SheetSelector({ sheets, currentSheetId, workspaceId, onC
         } catch (e) {
             console.error(e);
             addToast('Lỗi khi xóa bảng', 'error');
+        }
+    };
+
+    const handleToggleLock = async () => {
+        if (!currentSheetId) return;
+        const actionText = isLocked ? 'mở khóa' : 'khóa';
+        const ok = await confirm({
+            title: isLocked ? 'Mở khóa bảng chi tiêu' : 'Khóa bảng chi tiêu',
+            message: isLocked
+                ? 'Bạn có chắc chắn muốn mở khóa? Thành viên sẽ có thể thêm/sửa/xóa khoản chi trở lại.'
+                : '🔒 Khóa bảng chi tiêu sẽ ngăn chặn việc thêm, sửa, xóa khoản chi và thay đổi trạng thái thanh toán.',
+            type: isLocked ? 'info' : 'danger',
+            confirmText: `Xác nhận ${actionText}`,
+            cancelText: 'Hủy'
+        });
+        if (!ok) return;
+
+        setIsLocking(true);
+        try {
+            const res = await fetch(`/api/sheets/${currentSheetId}/lock`, { method: 'PATCH' });
+            if (!res.ok) {
+                const err = await res.json();
+                throw new Error(err.error || 'Failed');
+            }
+            onCreated();
+            addToast(`Đã ${actionText} bảng chi tiêu`, 'success');
+        } catch (e: any) {
+            console.error(e);
+            addToast(e.message || `Lỗi khi ${actionText}`, 'error');
+        } finally {
+            setIsLocking(false);
         }
     };
 
@@ -305,7 +341,7 @@ export default function SheetSelector({ sheets, currentSheetId, workspaceId, onC
                     <div className="flex items-center gap-0.5">
                         <Button
                             onClick={startEdit}
-                            disabled={!currentSheetId || !sheets.some(s => s.id === currentSheetId)}
+                            disabled={!currentSheetId || !sheets.some(s => s.id === currentSheetId) || isLocked}
                             variant="ghost"
                             size="icon"
                             className="h-9 w-9 text-blue-600 hover:bg-blue-50 rounded-lg disabled:opacity-30"
@@ -315,7 +351,7 @@ export default function SheetSelector({ sheets, currentSheetId, workspaceId, onC
                         </Button>
                         <Button
                             onClick={handleDelete}
-                            disabled={!currentSheetId || !sheets.some(s => s.id === currentSheetId)}
+                            disabled={!currentSheetId || !sheets.some(s => s.id === currentSheetId) || isLocked}
                             variant="ghost"
                             size="icon"
                             className="h-9 w-9 text-red-600 hover:bg-red-50 rounded-lg disabled:opacity-30"
@@ -324,6 +360,34 @@ export default function SheetSelector({ sheets, currentSheetId, workspaceId, onC
                             <Trash2 className="w-4 h-4 stroke-[2.5]" />
                         </Button>
                     </div>
+
+                    {/* Lock/Unlock Button - ADMIN only */}
+                    {currentUser?.role === 'ADMIN' && (
+                        <>
+                            <div className="w-px h-5 bg-slate-200 mx-0.5"></div>
+                            <Button
+                                onClick={handleToggleLock}
+                                disabled={!currentSheetId || !sheets.some(s => s.id === currentSheetId) || isLocking}
+                                variant="ghost"
+                                size="icon"
+                                className={cn(
+                                    "h-9 w-9 rounded-lg disabled:opacity-30 transition-all",
+                                    isLocked
+                                        ? "text-amber-600 hover:bg-amber-50 hover:text-amber-700"
+                                        : "text-green-600 hover:bg-green-50 hover:text-green-700"
+                                )}
+                                title={isLocked ? 'Mở khóa bảng' : 'Khóa bảng'}
+                            >
+                                {isLocking ? (
+                                    <span className="animate-spin text-sm">⏳</span>
+                                ) : isLocked ? (
+                                    <Lock className="w-4 h-4 stroke-[2.5]" />
+                                ) : (
+                                    <Unlock className="w-4 h-4 stroke-[2.5]" />
+                                )}
+                            </Button>
+                        </>
+                    )}
 
                     <div className="w-px h-5 bg-slate-200 mx-0.5"></div>
 

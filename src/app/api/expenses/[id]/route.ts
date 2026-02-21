@@ -39,6 +39,12 @@ export async function PUT(
                 include: { sheet: true }
             });
             if (!expense) throw new Error('Expense not found');
+
+            // LOCK CHECK
+            if (expense.sheet.status === 'LOCKED') {
+                throw new Error('LOCKED');
+            }
+
             workspaceId = expense.sheet.workspaceId;
             sheetId = expense.sheetId;
 
@@ -108,7 +114,10 @@ export async function PUT(
         );
 
         return NextResponse.json({ success: true });
-    } catch (error) {
+    } catch (error: any) {
+        if (error?.message === 'LOCKED') {
+            return NextResponse.json({ error: 'Sheet đã bị khóa, không thể chỉnh sửa khoản chi' }, { status: 403 });
+        }
         console.error(error);
         return NextResponse.json({ error: 'Failed' }, { status: 500 });
     }
@@ -136,6 +145,11 @@ export async function DELETE(
         });
 
         if (!expense) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+
+        // LOCK CHECK: Block deletion on locked sheets
+        if (expense.sheet.status === 'LOCKED') {
+            return NextResponse.json({ error: 'Sheet đã bị khóa, không thể xóa khoản chi' }, { status: 403 });
+        }
 
         // VERIFY MEMBERSHIP
         const isMember = await prisma.member.findFirst({

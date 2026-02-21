@@ -33,13 +33,13 @@ export async function POST(req: Request) {
             });
             if (!sheet) return NextResponse.json({ error: 'Sheet not found' }, { status: 404 });
 
+            // LOCK CHECK: Block expense creation on locked sheets
+            if (sheet.status === 'LOCKED') {
+                return NextResponse.json({ error: 'Sheet đã bị khóa, không thể thêm khoản chi' }, { status: 403 });
+            }
+
             // SECURITY CHECK: Ensure actor belongs to workspace
             const isMember = sheet.workspace.members.some((m: any) => m.id === actorId);
-            // Note: Since member.id is distinct from User ID in this schema (Member table has auth fields), 
-            // we must assume session.id refers to Member.id as per login route logic.
-            // However, looking at schema, Member has ownerId (string) but session stores Member ID (int).
-            // Let's verify login route. Login creates session with member.id. 
-            // So session.id == Member.id.
 
             if (!isMember) {
                 return NextResponse.json({ error: 'Forbidden: You are not a member of this workspace' }, { status: 403 });
@@ -56,6 +56,12 @@ export async function POST(req: Request) {
             // Fetch sheet to get workspaceId
             const sheet = await prisma.sheet.findUnique({ where: { id: sheetId } });
             if (!sheet) return NextResponse.json({ error: 'Sheet not found' }, { status: 404 });
+
+            // LOCK CHECK: Block expense creation on locked sheets
+            if (sheet.status === 'LOCKED') {
+                return NextResponse.json({ error: 'Sheet đã bị khóa, không thể thêm khoản chi' }, { status: 403 });
+            }
+
             workspaceId = sheet.workspaceId;
 
             splitMembers = await prisma.member.findMany({

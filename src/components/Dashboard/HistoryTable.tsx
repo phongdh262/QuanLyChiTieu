@@ -46,11 +46,12 @@ interface Props {
   onRefresh?: () => void;
   isRefreshing?: boolean;
   currentUser: CurrentUser | null;
+  isLocked?: boolean;
 }
 
 const formatMoney = (amount: number) => amount.toLocaleString('vi-VN') + ' ₫';
 
-export default function HistoryTable({ bills, members, onDelete, onUpdate, onRefresh, isRefreshing, currentUser }: Props) {
+export default function HistoryTable({ bills, members, onDelete, onUpdate, onRefresh, isRefreshing, currentUser, isLocked }: Props) {
   const { confirm } = useConfirm();
   const { addToast } = useToast();
   const [deletingId, setDeletingId] = useState<number | string | null>(null);
@@ -409,7 +410,7 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
                     const isSelected = selectedIds.has(b.id);
                     // Permission: Strictly Payer only
                     const isPayer = currentUser?.name === b.payer;
-                    const canDelete = isPayer;
+                    const canDelete = isPayer && !isLocked;
 
                     return (
                       <TableRow
@@ -487,7 +488,7 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
                               const isSelf = name === b.payer;
 
                               // UNLOCKED: Allow both Payer and Beneficiary to toggle status (Undo if needed)
-                              const canToggle = (isPayer || isBeneficiary) && !isSelf;
+                              const canToggle = (isPayer || isBeneficiary) && !isSelf && !isLocked;
 
                               const formattedPaidAt = paidAt ? new Date(paidAt).toLocaleString('vi-VN', {
                                 day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit'
@@ -562,7 +563,7 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
                         <TableCell className="text-center py-4">
                           <button
                             onClick={() => handleToggleSettle(b)}
-                            disabled={!isPayer}
+                            disabled={!isPayer || isLocked}
                             className={cn(
                               "relative inline-flex items-center justify-center w-8 h-8 rounded-full transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-100",
                               isPayer ? "cursor-pointer" : "cursor-not-allowed opacity-40 grayscale",
@@ -594,8 +595,8 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
                                     ? "text-blue-600 bg-blue-50 hover:bg-blue-100 hover:border-blue-200"
                                     : "text-slate-300 bg-slate-50 cursor-not-allowed opacity-50"
                                 )}
-                                onClick={() => isPayer && setEditingBill(b)}
-                                disabled={!isPayer}
+                                onClick={() => isPayer && !isLocked && setEditingBill(b)}
+                                disabled={!isPayer || isLocked}
                               >
                                 <Edit className="w-4 h-4 stroke-[2.5]" />
                               </Button>

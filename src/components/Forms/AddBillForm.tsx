@@ -4,7 +4,7 @@ import { useToast } from '@/components/ui/ToastProvider';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, Wallet, Calendar as CalendarIcon, Users, Calculator, Check, CheckCircle2 } from 'lucide-react';
+import { PlusCircle, Wallet, Calendar as CalendarIcon, Users, Calculator, Check, CheckCircle2, Lock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -35,9 +35,10 @@ interface Props {
         beneficiaryIds?: number[];
     } | null;
     onOptimisticAdd?: (data: any) => void;
+    isLocked?: boolean;
 }
 
-export default function AddBillForm({ members, sheetId, onAdd, initialData, onOptimisticAdd }: Props) {
+export default function AddBillForm({ members, sheetId, onAdd, initialData, onOptimisticAdd, isLocked }: Props) {
     const { addToast } = useToast();
     const [description, setDescription] = useState('');
     const [amount, setAmount] = useState('');
@@ -183,208 +184,222 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
                 </CardTitle>
             </CardHeader>
 
-            <CardContent className="p-6 pt-2 space-y-5">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                        <Label>Description <span className="text-red-500">*</span></Label>
-                        <div className="relative">
-                            <Wallet className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                            <Input
-                                placeholder="Ex: Dinner, Electricity..."
-                                value={description}
-                                onChange={e => setDescription(e.target.value)}
-                                className="pl-9 h-10"
-                                autoFocus
-                            />
+            {isLocked ? (
+                <CardContent className="p-6">
+                    <div className="flex flex-col items-center justify-center py-8 text-center space-y-3">
+                        <div className="p-3 bg-amber-50 rounded-full">
+                            <Lock className="w-6 h-6 text-amber-500" />
+                        </div>
+                        <div>
+                            <p className="font-bold text-slate-700">🔒 Bảng chi tiêu đã được khóa</p>
+                            <p className="text-sm text-slate-500 mt-1">Không thể thêm khoản chi mới. Liên hệ Admin để mở khóa.</p>
                         </div>
                     </div>
-                    <div className="space-y-2">
-                        <Label>Date</Label>
-                        <Popover>
-                            <PopoverTrigger asChild>
-                                <div className="relative cursor-pointer">
-                                    <CalendarIcon className="absolute left-3 top-3 h-4 w-4 text-muted-foreground z-10" />
-                                    <Button
-                                        variant={"outline"}
-                                        className={cn(
-                                            "w-full h-10 pl-9 text-left font-normal border-input bg-background hover:bg-slate-50 transition-colors justify-start",
-                                            !date && "text-muted-foreground"
-                                        )}
-                                    >
-                                        {date ? (
-                                            format(date, "dd/MM/yyyy")
-                                        ) : (
-                                            "Pick a date"
-                                        )}
-                                    </Button>
-                                </div>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0" align="end">
-                                <Calendar
-                                    mode="single"
-                                    selected={date}
-                                    onSelect={setDate}
-                                    disabled={(date) =>
-                                        date > new Date() || date < new Date("1900-01-01")
-                                    }
-                                    initialFocus
-                                    locale={vi}
+                </CardContent>
+            ) : (
+                <CardContent className="p-6 pt-2 space-y-5">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <Label>Description <span className="text-red-500">*</span></Label>
+                            <div className="relative">
+                                <Wallet className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                                <Input
+                                    placeholder="Ex: Dinner, Electricity..."
+                                    value={description}
+                                    onChange={e => setDescription(e.target.value)}
+                                    className="pl-9 h-10"
+                                    autoFocus
                                 />
-                            </PopoverContent>
-                        </Popover>
-                    </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                        <Label>Amount (VND) <span className="text-red-500">*</span></Label>
-                        <div className="relative">
-                            <Calculator className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                            <Input
-                                type="text"
-                                inputMode="numeric"
-                                placeholder="0"
-                                value={amount}
-                                onChange={handleAmountChange}
-                                onPaste={(e) => {
-                                    const text = e.clipboardData.getData('text');
-                                    // Block if contains letters or special chars (allowed: digits, dots, commas, spaces)
-                                    if (!/^[\d.,\s]+$/.test(text)) {
-                                        e.preventDefault();
-                                        addToast('Please paste valid numbers only', 'warning');
-                                    }
-                                }}
-                                onKeyDown={(e) => {
-                                    // Allow controls
-                                    if (
-                                        ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab', 'Home', 'End', 'Enter'].includes(e.key) ||
-                                        (e.ctrlKey || e.metaKey)
-                                    ) {
-                                        return;
-                                    }
-                                    // Strictly allow ONLY digits 0-9
-                                    if (!/^\d$/.test(e.key)) {
-                                        e.preventDefault();
-                                    }
-                                }}
-                                className="pl-9 h-10 font-mono font-bold text-lg text-green-700"
-                                maxLength={15} // Limit input length to prevent overflow
-                            />
+                            </div>
+                        </div>
+                        <div className="space-y-2">
+                            <Label>Date</Label>
+                            <Popover>
+                                <PopoverTrigger asChild>
+                                    <div className="relative cursor-pointer">
+                                        <CalendarIcon className="absolute left-3 top-3 h-4 w-4 text-muted-foreground z-10" />
+                                        <Button
+                                            variant={"outline"}
+                                            className={cn(
+                                                "w-full h-10 pl-9 text-left font-normal border-input bg-background hover:bg-slate-50 transition-colors justify-start",
+                                                !date && "text-muted-foreground"
+                                            )}
+                                        >
+                                            {date ? (
+                                                format(date, "dd/MM/yyyy")
+                                            ) : (
+                                                "Pick a date"
+                                            )}
+                                        </Button>
+                                    </div>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-auto p-0" align="end">
+                                    <Calendar
+                                        mode="single"
+                                        selected={date}
+                                        onSelect={setDate}
+                                        disabled={(date) =>
+                                            date > new Date() || date < new Date("1900-01-01")
+                                        }
+                                        initialFocus
+                                        locale={vi}
+                                    />
+                                </PopoverContent>
+                            </Popover>
                         </div>
                     </div>
-                    <div className="space-y-2">
-                        <Label>Payer <span className="text-red-500">*</span></Label>
-                        <div className="relative">
-                            <Users className="absolute left-3 top-3 h-4 w-4 text-muted-foreground z-10" />
-                            <Select value={payerId} onValueChange={setPayerId}>
-                                <SelectTrigger className="pl-9 h-10 w-full bg-background border-input focus:ring-2 focus:ring-ring focus:ring-offset-2">
-                                    <SelectValue placeholder="Select Payer" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {activeMembers.map(m => (
-                                        <SelectItem key={m.id} value={m.id.toString()} className="cursor-pointer py-2.5">
-                                            <div className="flex items-center gap-2">
-                                                <div className={cn("w-5 h-5 rounded-full flex items-center justify-center text-white text-[10px] font-bold",
-                                                    ['bg-blue-500', 'bg-red-500', 'bg-green-500', 'bg-amber-500', 'bg-purple-500', 'bg-pink-500'][Math.abs(m.name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)) % 6]
-                                                )}>
-                                                    {m.name.charAt(0).toUpperCase()}
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <Label>Amount (VND) <span className="text-red-500">*</span></Label>
+                            <div className="relative">
+                                <Calculator className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                                <Input
+                                    type="text"
+                                    inputMode="numeric"
+                                    placeholder="0"
+                                    value={amount}
+                                    onChange={handleAmountChange}
+                                    onPaste={(e) => {
+                                        const text = e.clipboardData.getData('text');
+                                        // Block if contains letters or special chars (allowed: digits, dots, commas, spaces)
+                                        if (!/^[\d.,\s]+$/.test(text)) {
+                                            e.preventDefault();
+                                            addToast('Please paste valid numbers only', 'warning');
+                                        }
+                                    }}
+                                    onKeyDown={(e) => {
+                                        // Allow controls
+                                        if (
+                                            ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab', 'Home', 'End', 'Enter'].includes(e.key) ||
+                                            (e.ctrlKey || e.metaKey)
+                                        ) {
+                                            return;
+                                        }
+                                        // Strictly allow ONLY digits 0-9
+                                        if (!/^\d$/.test(e.key)) {
+                                            e.preventDefault();
+                                        }
+                                    }}
+                                    className="pl-9 h-10 font-mono font-bold text-lg text-green-700"
+                                    maxLength={15} // Limit input length to prevent overflow
+                                />
+                            </div>
+                        </div>
+                        <div className="space-y-2">
+                            <Label>Payer <span className="text-red-500">*</span></Label>
+                            <div className="relative">
+                                <Users className="absolute left-3 top-3 h-4 w-4 text-muted-foreground z-10" />
+                                <Select value={payerId} onValueChange={setPayerId}>
+                                    <SelectTrigger className="pl-9 h-10 w-full bg-background border-input focus:ring-2 focus:ring-ring focus:ring-offset-2">
+                                        <SelectValue placeholder="Select Payer" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {activeMembers.map(m => (
+                                            <SelectItem key={m.id} value={m.id.toString()} className="cursor-pointer py-2.5">
+                                                <div className="flex items-center gap-2">
+                                                    <div className={cn("w-5 h-5 rounded-full flex items-center justify-center text-white text-[10px] font-bold",
+                                                        ['bg-blue-500', 'bg-red-500', 'bg-green-500', 'bg-amber-500', 'bg-purple-500', 'bg-pink-500'][Math.abs(m.name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)) % 6]
+                                                    )}>
+                                                        {m.name.charAt(0).toUpperCase()}
+                                                    </div>
+                                                    {m.name}
                                                 </div>
-                                                {m.name}
-                                            </div>
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <div className="space-y-3">
-                    <Label className="block">Expense Type</Label>
-                    <div className="grid grid-cols-2 gap-4">
-                        <button
-                            type="button"
-                            onClick={() => setType('SHARED')}
-                            className={cn(
-                                "relative flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all duration-300 group overflow-hidden",
-                                type === 'SHARED'
-                                    ? "border-blue-500 bg-blue-50/50 text-blue-700 shadow-lg shadow-blue-100/50 scale-[1.02]"
-                                    : "border-slate-100 bg-white text-slate-500 hover:border-blue-200 hover:bg-blue-50/30 hover:shadow-md"
-                            )}
-                        >
-                            <div className={cn("absolute inset-0 bg-gradient-to-br from-blue-50/0 to-blue-100/0 transition-all duration-500", type === 'SHARED' && "from-blue-50/50 to-indigo-50/50")} />
-                            <span className="text-base font-bold flex items-center gap-2 relative z-10">
-                                {type === 'SHARED' && <CheckCircle2 className="w-4 h-4 animate-in zoom-in spin-in-90 duration-300" />} Shared
-                            </span>
-                            <span className="text-xs font-medium opacity-70 mt-1 relative z-10">Split equally among all</span>
-                        </button>
+                    <div className="space-y-3">
+                        <Label className="block">Expense Type</Label>
+                        <div className="grid grid-cols-2 gap-4">
+                            <button
+                                type="button"
+                                onClick={() => setType('SHARED')}
+                                className={cn(
+                                    "relative flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all duration-300 group overflow-hidden",
+                                    type === 'SHARED'
+                                        ? "border-blue-500 bg-blue-50/50 text-blue-700 shadow-lg shadow-blue-100/50 scale-[1.02]"
+                                        : "border-slate-100 bg-white text-slate-500 hover:border-blue-200 hover:bg-blue-50/30 hover:shadow-md"
+                                )}
+                            >
+                                <div className={cn("absolute inset-0 bg-gradient-to-br from-blue-50/0 to-blue-100/0 transition-all duration-500", type === 'SHARED' && "from-blue-50/50 to-indigo-50/50")} />
+                                <span className="text-base font-bold flex items-center gap-2 relative z-10">
+                                    {type === 'SHARED' && <CheckCircle2 className="w-4 h-4 animate-in zoom-in spin-in-90 duration-300" />} Shared
+                                </span>
+                                <span className="text-xs font-medium opacity-70 mt-1 relative z-10">Split equally among all</span>
+                            </button>
 
-                        <button
-                            type="button"
-                            onClick={() => setType('PRIVATE')}
-                            className={cn(
-                                "relative flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all duration-300 group overflow-hidden",
-                                type === 'PRIVATE'
-                                    ? "border-orange-500 bg-orange-50/50 text-orange-700 shadow-lg shadow-orange-100/50 scale-[1.02]"
-                                    : "border-slate-100 bg-white text-slate-500 hover:border-orange-200 hover:bg-orange-50/30 hover:shadow-md"
-                            )}
-                        >
-                            <div className={cn("absolute inset-0 bg-gradient-to-br from-orange-50/0 to-amber-100/0 transition-all duration-500", type === 'PRIVATE' && "from-orange-50/50 to-amber-50/50")} />
-                            <span className="text-base font-bold flex items-center gap-2 relative z-10">
-                                {type === 'PRIVATE' && <CheckCircle2 className="w-4 h-4 animate-in zoom-in spin-in-90 duration-300" />} Private
-                            </span>
-                            <span className="text-xs font-medium opacity-70 mt-1 relative z-10">Split among specific people</span>
-                        </button>
-                    </div>
-                </div>
-
-                {type === 'PRIVATE' && (
-                    <div className="animate-in fade-in slide-in-from-top-2 duration-300 p-4 bg-orange-50/50 border border-orange-100 rounded-lg space-y-3">
-                        <Label className="text-orange-800 flex items-center gap-2">
-                            <span className="bg-orange-100 p-1 rounded-full"><Users className="w-3 h-3 text-orange-700" /></span>
-                            Select Beneficiaries:
-                        </Label>
-                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-[160px] overflow-y-auto pr-1 custom-scrollbar">
-                            {activeMembers.map(m => {
-                                const isSelected = beneficiaryIds.includes(m.id.toString());
-                                return (
-                                    <button
-                                        key={m.id}
-                                        type="button"
-                                        onClick={() => toggleBeneficiary(m.id.toString())}
-                                        className={cn(
-                                            "flex items-center justify-center gap-2 p-2 rounded-md text-[13px] font-bold transition-all border shadow-sm",
-                                            isSelected
-                                                ? "bg-orange-500 text-white border-orange-600 shadow-orange-200 ring-2 ring-orange-100"
-                                                : "bg-white border-slate-200 text-slate-600 hover:border-orange-300 hover:bg-orange-50"
-                                        )}
-                                    >
-                                        {isSelected && <Check className="w-3 h-3 stroke-[3px]" />}
-                                        <span className="truncate">{m.name}</span>
-                                    </button>
-                                );
-                            })}
+                            <button
+                                type="button"
+                                onClick={() => setType('PRIVATE')}
+                                className={cn(
+                                    "relative flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all duration-300 group overflow-hidden",
+                                    type === 'PRIVATE'
+                                        ? "border-orange-500 bg-orange-50/50 text-orange-700 shadow-lg shadow-orange-100/50 scale-[1.02]"
+                                        : "border-slate-100 bg-white text-slate-500 hover:border-orange-200 hover:bg-orange-50/30 hover:shadow-md"
+                                )}
+                            >
+                                <div className={cn("absolute inset-0 bg-gradient-to-br from-orange-50/0 to-amber-100/0 transition-all duration-500", type === 'PRIVATE' && "from-orange-50/50 to-amber-50/50")} />
+                                <span className="text-base font-bold flex items-center gap-2 relative z-10">
+                                    {type === 'PRIVATE' && <CheckCircle2 className="w-4 h-4 animate-in zoom-in spin-in-90 duration-300" />} Private
+                                </span>
+                                <span className="text-xs font-medium opacity-70 mt-1 relative z-10">Split among specific people</span>
+                            </button>
                         </div>
                     </div>
-                )}
 
-                <Button
-                    onClick={handleSubmit as any}
-                    disabled={isSubmitting}
-                    className="relative w-full h-12 text-base font-bold bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white shadow-lg shadow-green-200 hover:shadow-green-300 transition-all hover:scale-[1.01] overflow-hidden group/submit rounded-xl"
-                >
-                    <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover/submit:translate-x-[100%] transition-transform duration-700 pointer-events-none" />
-                    {isSubmitting ? (
-                        <>
-                            <span className="animate-spin mr-2">⏳</span> Saving...
-                        </>
-                    ) : (
-                        <>
-                            <PlusCircle className="mr-2 h-5 w-5" /> Save Expense
-                        </>
+                    {type === 'PRIVATE' && (
+                        <div className="animate-in fade-in slide-in-from-top-2 duration-300 p-4 bg-orange-50/50 border border-orange-100 rounded-lg space-y-3">
+                            <Label className="text-orange-800 flex items-center gap-2">
+                                <span className="bg-orange-100 p-1 rounded-full"><Users className="w-3 h-3 text-orange-700" /></span>
+                                Select Beneficiaries:
+                            </Label>
+                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-[160px] overflow-y-auto pr-1 custom-scrollbar">
+                                {activeMembers.map(m => {
+                                    const isSelected = beneficiaryIds.includes(m.id.toString());
+                                    return (
+                                        <button
+                                            key={m.id}
+                                            type="button"
+                                            onClick={() => toggleBeneficiary(m.id.toString())}
+                                            className={cn(
+                                                "flex items-center justify-center gap-2 p-2 rounded-md text-[13px] font-bold transition-all border shadow-sm",
+                                                isSelected
+                                                    ? "bg-orange-500 text-white border-orange-600 shadow-orange-200 ring-2 ring-orange-100"
+                                                    : "bg-white border-slate-200 text-slate-600 hover:border-orange-300 hover:bg-orange-50"
+                                            )}
+                                        >
+                                            {isSelected && <Check className="w-3 h-3 stroke-[3px]" />}
+                                            <span className="truncate">{m.name}</span>
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </div>
                     )}
-                </Button>
-            </CardContent>
+
+                    <Button
+                        onClick={handleSubmit as any}
+                        disabled={isSubmitting}
+                        className="relative w-full h-12 text-base font-bold bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white shadow-lg shadow-green-200 hover:shadow-green-300 transition-all hover:scale-[1.01] overflow-hidden group/submit rounded-xl"
+                    >
+                        <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover/submit:translate-x-[100%] transition-transform duration-700 pointer-events-none" />
+                        {isSubmitting ? (
+                            <>
+                                <span className="animate-spin mr-2">⏳</span> Saving...
+                            </>
+                        ) : (
+                            <>
+                                <PlusCircle className="mr-2 h-5 w-5" /> Save Expense
+                            </>
+                        )}
+                    </Button>
+                </CardContent>
+            )}
         </Card >
     );
 }

@@ -39,6 +39,11 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Payment record not found' }, { status: 404 });
         }
 
+        // LOCK CHECK: Block payment actions on locked sheets
+        if ((split as any).expense?.sheet?.status === 'LOCKED') {
+            return NextResponse.json({ error: 'Sheet đã bị khóa, không thể thay đổi trạng thái thanh toán' }, { status: 403 });
+        }
+
         const isPayer = String(split.expense.payerId) === String(actorId);
 
         if (!isPayer && !isAdmin) {

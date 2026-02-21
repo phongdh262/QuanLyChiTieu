@@ -7,9 +7,7 @@ import HistoryTable from '@/components/Dashboard/HistoryTable';
 import AddBillForm from '@/components/Forms/AddBillForm';
 import SheetSelector from '@/components/Dashboard/SheetSelector';
 import ActivityLogList from '@/components/Dashboard/ActivityLogList';
-
 import MemberManager from '@/components/Dashboard/MemberManager';
-import StatisticsSection from '@/components/Dashboard/StatisticsSection';
 import Header from '@/components/Layout/Header';
 import Footer from '@/components/Layout/Footer';
 
@@ -195,6 +193,7 @@ export default function Home() {
   }));
 
   const activeSheetName = sheets.find(s => s.id === currentSheetId)?.name || 'QUẢN LÝ CHI TIÊU';
+  const isLocked = sheetData?.status === 'LOCKED';
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-50/30">
@@ -212,6 +211,8 @@ export default function Home() {
                 workspaceId={workspace.id}
                 onChange={setCurrentSheetId}
                 onCreated={reload}
+                isLocked={isLocked}
+                currentUser={currentUser}
               />
             )}
 
@@ -220,6 +221,7 @@ export default function Home() {
               sheetId={currentSheetId!}
               onAdd={reload}
               onOptimisticAdd={handleOptimisticAdd}
+              isLocked={isLocked}
             />
 
             <ActivityLogList
@@ -238,16 +240,13 @@ export default function Home() {
           <section className="xl:col-span-9 space-y-8 min-w-0">
             {calculations && (
               <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-                {/* 1. TOP STATS CARDS */}
-                <StatisticsSection members={members} calculations={calculations} />
-
-                {/* 2. REPORTING AREA: Summary & Matrix grouped */}
+                {/* 1. REPORTING AREA: Summary & Matrix grouped */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 pt-4">
                   <SummaryTable members={members} calculations={calculations} />
                   <PrivateMatrix members={members} matrixData={matrix} />
                 </div>
 
-                {/* 3. MAIN HUB: TABLE AREA (Move to bottom) */}
+                {/* 2. MAIN HUB: TABLE AREA */}
                 <div className="space-y-6">
                   <HistoryTable
                     bills={bills}
@@ -256,6 +255,7 @@ export default function Home() {
                     onRefresh={reload}
                     isRefreshing={loading}
                     currentUser={currentUser}
+                    isLocked={isLocked}
                   />
                 </div>
               </div>
