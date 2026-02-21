@@ -25,11 +25,12 @@ interface Props {
     month?: number;
     year?: number;
     sheetId?: number;
+    sheetName?: string;
 }
 
 const fetcher = (url: string) => fetch(url).then(r => r.json());
 
-export default function ActivityLogList({ members, month, year, sheetId }: Props) {
+export default function ActivityLogList({ members, month, year, sheetId, sheetName }: Props) {
     const [isOpen, setIsOpen] = useState(false); // Default CLOSED
     const [selectedUser, setSelectedUser] = useState<string>('all');
 
@@ -83,7 +84,11 @@ export default function ActivityLogList({ members, month, year, sheetId }: Props
                         <History className="w-4 h-4 text-white" />
                     </div>
                     <CardTitle className="text-base font-black text-slate-800 tracking-tight truncate">
-                        Activity Log <span className="text-[10px] text-indigo-400 font-bold ml-1">LIVE</span>
+                        Activity Log
+                        {sheetName && (
+                            <span className="text-xs font-semibold text-indigo-500 ml-2">— {sheetName}</span>
+                        )}
+                        <span className="text-[10px] text-indigo-400 font-bold ml-1">LIVE</span>
                     </CardTitle>
                 </div>
                 <ChevronDown className={cn("w-5 h-5 text-slate-400 transition-transform duration-300", isOpen ? "rotate-180" : "rotate-0")} />

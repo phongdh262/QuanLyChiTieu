@@ -197,14 +197,16 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
                     </div>
                 </CardContent>
             ) : (
-                <CardContent className="p-6 pt-2 space-y-5">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                            <Label>Description <span className="text-red-500">*</span></Label>
+                <CardContent className="p-5 pt-3 space-y-4">
+                    {/* ROW 1: Main fields - Description, Amount, Date, Payer */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3 items-end">
+                        {/* Description - takes more space */}
+                        <div className="lg:col-span-4 space-y-1.5">
+                            <Label className="text-xs font-semibold text-slate-600">Description <span className="text-red-500">*</span></Label>
                             <div className="relative">
-                                <Wallet className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                                <Wallet className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                                 <Input
-                                    placeholder="Ex: Dinner, Electricity..."
+                                    placeholder="Cơm trưa, Điện, Nước..."
                                     value={description}
                                     onChange={e => setDescription(e.target.value)}
                                     className="pl-9 h-10"
@@ -212,12 +214,49 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
                                 />
                             </div>
                         </div>
-                        <div className="space-y-2">
-                            <Label>Date</Label>
+
+                        {/* Amount */}
+                        <div className="lg:col-span-2 space-y-1.5">
+                            <Label className="text-xs font-semibold text-slate-600">Amount (VND) <span className="text-red-500">*</span></Label>
+                            <div className="relative">
+                                <Calculator className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                                <Input
+                                    type="text"
+                                    inputMode="numeric"
+                                    placeholder="0"
+                                    value={amount}
+                                    onChange={handleAmountChange}
+                                    onPaste={(e) => {
+                                        const text = e.clipboardData.getData('text');
+                                        if (!/^[\d.,\s]+$/.test(text)) {
+                                            e.preventDefault();
+                                            addToast('Please paste valid numbers only', 'warning');
+                                        }
+                                    }}
+                                    onKeyDown={(e) => {
+                                        if (
+                                            ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab', 'Home', 'End', 'Enter'].includes(e.key) ||
+                                            (e.ctrlKey || e.metaKey)
+                                        ) {
+                                            return;
+                                        }
+                                        if (!/^\d$/.test(e.key)) {
+                                            e.preventDefault();
+                                        }
+                                    }}
+                                    className="pl-9 h-10 font-mono font-bold text-lg text-green-700"
+                                    maxLength={15}
+                                />
+                            </div>
+                        </div>
+
+                        {/* Date */}
+                        <div className="lg:col-span-2 space-y-1.5">
+                            <Label className="text-xs font-semibold text-slate-600">Date</Label>
                             <Popover>
                                 <PopoverTrigger asChild>
                                     <div className="relative cursor-pointer">
-                                        <CalendarIcon className="absolute left-3 top-3 h-4 w-4 text-muted-foreground z-10" />
+                                        <CalendarIcon className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground z-10" />
                                         <Button
                                             variant={"outline"}
                                             className={cn(
@@ -225,11 +264,7 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
                                                 !date && "text-muted-foreground"
                                             )}
                                         >
-                                            {date ? (
-                                                format(date, "dd/MM/yyyy")
-                                            ) : (
-                                                "Pick a date"
-                                            )}
+                                            {date ? format(date, "dd/MM/yyyy") : "Pick a date"}
                                         </Button>
                                     </div>
                                 </PopoverTrigger>
@@ -247,52 +282,15 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
                                 </PopoverContent>
                             </Popover>
                         </div>
-                    </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                            <Label>Amount (VND) <span className="text-red-500">*</span></Label>
+                        {/* Payer */}
+                        <div className="lg:col-span-2 space-y-1.5">
+                            <Label className="text-xs font-semibold text-slate-600">Payer <span className="text-red-500">*</span></Label>
                             <div className="relative">
-                                <Calculator className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                                <Input
-                                    type="text"
-                                    inputMode="numeric"
-                                    placeholder="0"
-                                    value={amount}
-                                    onChange={handleAmountChange}
-                                    onPaste={(e) => {
-                                        const text = e.clipboardData.getData('text');
-                                        // Block if contains letters or special chars (allowed: digits, dots, commas, spaces)
-                                        if (!/^[\d.,\s]+$/.test(text)) {
-                                            e.preventDefault();
-                                            addToast('Please paste valid numbers only', 'warning');
-                                        }
-                                    }}
-                                    onKeyDown={(e) => {
-                                        // Allow controls
-                                        if (
-                                            ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab', 'Home', 'End', 'Enter'].includes(e.key) ||
-                                            (e.ctrlKey || e.metaKey)
-                                        ) {
-                                            return;
-                                        }
-                                        // Strictly allow ONLY digits 0-9
-                                        if (!/^\d$/.test(e.key)) {
-                                            e.preventDefault();
-                                        }
-                                    }}
-                                    className="pl-9 h-10 font-mono font-bold text-lg text-green-700"
-                                    maxLength={15} // Limit input length to prevent overflow
-                                />
-                            </div>
-                        </div>
-                        <div className="space-y-2">
-                            <Label>Payer <span className="text-red-500">*</span></Label>
-                            <div className="relative">
-                                <Users className="absolute left-3 top-3 h-4 w-4 text-muted-foreground z-10" />
+                                <Users className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground z-10" />
                                 <Select value={payerId} onValueChange={setPayerId}>
                                     <SelectTrigger className="pl-9 h-10 w-full bg-background border-input focus:ring-2 focus:ring-ring focus:ring-offset-2">
-                                        <SelectValue placeholder="Select Payer" />
+                                        <SelectValue placeholder="Select" />
                                     </SelectTrigger>
                                     <SelectContent>
                                         {activeMembers.map(m => (
@@ -311,54 +309,64 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
                                 </Select>
                             </div>
                         </div>
-                    </div>
 
-                    <div className="space-y-3">
-                        <Label className="block">Expense Type</Label>
-                        <div className="grid grid-cols-2 gap-4">
-                            <button
-                                type="button"
-                                onClick={() => setType('SHARED')}
-                                className={cn(
-                                    "relative flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all duration-300 group overflow-hidden",
-                                    type === 'SHARED'
-                                        ? "border-blue-500 bg-blue-50/50 text-blue-700 shadow-lg shadow-blue-100/50 scale-[1.02]"
-                                        : "border-slate-100 bg-white text-slate-500 hover:border-blue-200 hover:bg-blue-50/30 hover:shadow-md"
-                                )}
+                        {/* Submit Button */}
+                        <div className="lg:col-span-2 space-y-1.5">
+                            <Label className="text-xs font-semibold text-transparent select-none hidden lg:block">.</Label>
+                            <Button
+                                onClick={handleSubmit as any}
+                                disabled={isSubmitting}
+                                className="w-full h-10 text-sm font-bold bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white shadow-lg shadow-green-200/50 hover:shadow-green-300 transition-all hover:scale-[1.01] overflow-hidden rounded-xl"
                             >
-                                <div className={cn("absolute inset-0 bg-gradient-to-br from-blue-50/0 to-blue-100/0 transition-all duration-500", type === 'SHARED' && "from-blue-50/50 to-indigo-50/50")} />
-                                <span className="text-base font-bold flex items-center gap-2 relative z-10">
-                                    {type === 'SHARED' && <CheckCircle2 className="w-4 h-4 animate-in zoom-in spin-in-90 duration-300" />} Shared
-                                </span>
-                                <span className="text-xs font-medium opacity-70 mt-1 relative z-10">Split equally among all</span>
-                            </button>
-
-                            <button
-                                type="button"
-                                onClick={() => setType('PRIVATE')}
-                                className={cn(
-                                    "relative flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all duration-300 group overflow-hidden",
-                                    type === 'PRIVATE'
-                                        ? "border-orange-500 bg-orange-50/50 text-orange-700 shadow-lg shadow-orange-100/50 scale-[1.02]"
-                                        : "border-slate-100 bg-white text-slate-500 hover:border-orange-200 hover:bg-orange-50/30 hover:shadow-md"
+                                {isSubmitting ? (
+                                    <><span className="animate-spin mr-1">⏳</span> Saving</>
+                                ) : (
+                                    <><PlusCircle className="mr-1.5 h-4 w-4" /> Thêm</>
                                 )}
-                            >
-                                <div className={cn("absolute inset-0 bg-gradient-to-br from-orange-50/0 to-amber-100/0 transition-all duration-500", type === 'PRIVATE' && "from-orange-50/50 to-amber-50/50")} />
-                                <span className="text-base font-bold flex items-center gap-2 relative z-10">
-                                    {type === 'PRIVATE' && <CheckCircle2 className="w-4 h-4 animate-in zoom-in spin-in-90 duration-300" />} Private
-                                </span>
-                                <span className="text-xs font-medium opacity-70 mt-1 relative z-10">Split among specific people</span>
-                            </button>
+                            </Button>
                         </div>
                     </div>
 
-                    {type === 'PRIVATE' && (
-                        <div className="animate-in fade-in slide-in-from-top-2 duration-300 p-4 bg-orange-50/50 border border-orange-100 rounded-lg space-y-3">
-                            <Label className="text-orange-800 flex items-center gap-2">
-                                <span className="bg-orange-100 p-1 rounded-full"><Users className="w-3 h-3 text-orange-700" /></span>
-                                Select Beneficiaries:
-                            </Label>
-                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-[160px] overflow-y-auto pr-1 custom-scrollbar">
+                    {/* ROW 2: Expense Type + Beneficiaries */}
+                    <div className="flex flex-col sm:flex-row items-start gap-3">
+                        <div className="flex items-center gap-2 shrink-0">
+                            <Label className="text-xs font-semibold text-slate-600 whitespace-nowrap">Loại chi:</Label>
+                            <div className="flex gap-1.5">
+                                <button
+                                    type="button"
+                                    onClick={() => setType('SHARED')}
+                                    className={cn(
+                                        "flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-bold transition-all duration-200",
+                                        type === 'SHARED'
+                                            ? "border-blue-500 bg-blue-50 text-blue-700 shadow-sm"
+                                            : "border-slate-200 bg-white text-slate-500 hover:border-blue-200 hover:bg-blue-50/50"
+                                    )}
+                                >
+                                    {type === 'SHARED' && <CheckCircle2 className="w-3 h-3" />}
+                                    🔹 Shared
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setType('PRIVATE')}
+                                    className={cn(
+                                        "flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-bold transition-all duration-200",
+                                        type === 'PRIVATE'
+                                            ? "border-orange-500 bg-orange-50 text-orange-700 shadow-sm"
+                                            : "border-slate-200 bg-white text-slate-500 hover:border-orange-200 hover:bg-orange-50/50"
+                                    )}
+                                >
+                                    {type === 'PRIVATE' && <CheckCircle2 className="w-3 h-3" />}
+                                    🔸 Private
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Beneficiaries inline when PRIVATE */}
+                        {type === 'PRIVATE' && (
+                            <div className="flex items-center gap-2 flex-wrap animate-in fade-in slide-in-from-left-2 duration-200">
+                                <span className="text-xs font-semibold text-orange-600 flex items-center gap-1">
+                                    <Users className="w-3 h-3" /> Cho:
+                                </span>
                                 {activeMembers.map(m => {
                                     const isSelected = beneficiaryIds.includes(m.id.toString());
                                     return (
@@ -367,37 +375,20 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
                                             type="button"
                                             onClick={() => toggleBeneficiary(m.id.toString())}
                                             className={cn(
-                                                "flex items-center justify-center gap-2 p-2 rounded-md text-[13px] font-bold transition-all border shadow-sm",
+                                                "flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold transition-all border",
                                                 isSelected
-                                                    ? "bg-orange-500 text-white border-orange-600 shadow-orange-200 ring-2 ring-orange-100"
+                                                    ? "bg-orange-500 text-white border-orange-600 shadow-sm"
                                                     : "bg-white border-slate-200 text-slate-600 hover:border-orange-300 hover:bg-orange-50"
                                             )}
                                         >
                                             {isSelected && <Check className="w-3 h-3 stroke-[3px]" />}
-                                            <span className="truncate">{m.name}</span>
+                                            {m.name}
                                         </button>
                                     );
                                 })}
                             </div>
-                        </div>
-                    )}
-
-                    <Button
-                        onClick={handleSubmit as any}
-                        disabled={isSubmitting}
-                        className="relative w-full h-12 text-base font-bold bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white shadow-lg shadow-green-200 hover:shadow-green-300 transition-all hover:scale-[1.01] overflow-hidden group/submit rounded-xl"
-                    >
-                        <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover/submit:translate-x-[100%] transition-transform duration-700 pointer-events-none" />
-                        {isSubmitting ? (
-                            <>
-                                <span className="animate-spin mr-2">⏳</span> Saving...
-                            </>
-                        ) : (
-                            <>
-                                <PlusCircle className="mr-2 h-5 w-5" /> Save Expense
-                            </>
                         )}
-                    </Button>
+                    </div>
                 </CardContent>
             )}
         </Card >
