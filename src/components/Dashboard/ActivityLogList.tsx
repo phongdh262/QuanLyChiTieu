@@ -31,7 +31,7 @@ interface Props {
 const fetcher = (url: string) => fetch(url).then(r => r.json());
 
 export default function ActivityLogList({ members, month, year, sheetId, sheetName }: Props) {
-    const [isOpen, setIsOpen] = useState(false); // Default CLOSED
+    const [isOpen, setIsOpen] = useState(true); // Default OPEN for drawer mode
     const [selectedUser, setSelectedUser] = useState<string>('all');
 
     const params = new URLSearchParams();

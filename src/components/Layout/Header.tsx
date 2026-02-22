@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { LogOut, User as UserIcon, Shield, Bell } from 'lucide-react';
+import { LogOut, User as UserIcon, Shield, Bell, History, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
@@ -29,9 +29,11 @@ interface Props {
     user: User | null;
     title: string;
     onUpdated?: () => void;
+    onShowActivityLog?: () => void;
+    onShowMemberManager?: () => void;
 }
 
-export default function Header({ user, title, onUpdated }: Props) {
+export default function Header({ user, title, onUpdated, onShowActivityLog, onShowMemberManager }: Props) {
     const [isChangePasswordOpen, setIsChangePasswordOpen] = React.useState(false);
     const [isConfirmModalOpen, setIsConfirmModalOpen] = React.useState(false);
 
@@ -70,41 +72,61 @@ export default function Header({ user, title, onUpdated }: Props) {
                 </h1>
 
                 {/* Right Actions */}
-                <div className="flex items-center gap-3">
-                    {user && (
-                        <div className="relative group">
+                <div className="flex items-center gap-1.5">
+                    {user ? (
+                        <>
+                            {/* Activity Log Button */}
                             <Button
                                 variant="ghost"
                                 size="icon"
-                                className={cn(
-                                    "relative h-12 w-12 rounded-xl transition-all duration-300 overflow-visible group/bell",
-                                    pendingCount > 0
-                                        ? "bg-white text-indigo-600 shadow-lg shadow-indigo-100 ring-1 ring-indigo-50 hover:shadow-indigo-200 hover:ring-indigo-100"
-                                        : "bg-white/40 text-slate-500 hover:bg-white hover:text-indigo-600 hover:shadow-md border border-transparent hover:border-slate-100"
-                                )}
-                                onClick={() => setIsConfirmModalOpen(true)}
+                                className="h-10 w-10 rounded-xl bg-white/40 text-slate-500 hover:bg-white hover:text-indigo-600 hover:shadow-md border border-transparent hover:border-slate-100 transition-all duration-300"
+                                onClick={onShowActivityLog}
+                                title="Activity Log"
                             >
-                                <div className={cn(
-                                    "absolute inset-0 bg-indigo-400/10 rounded-xl opacity-0 scale-90 group-hover/bell:opacity-100 group-hover/bell:scale-100 transition-all duration-300",
-                                    pendingCount > 0 && "animate-pulse opacity-100"
-                                )} />
-                                <Bell className={cn(
-                                    "w-6 h-6 transition-all duration-500 relative z-10",
-                                    pendingCount > 0
-                                        ? "animate-[swing_3s_ease-in-out_infinite] fill-indigo-100 text-indigo-600"
-                                        : "group-hover/bell:scale-110 group-hover/bell:rotate-12"
-                                )} />
-                                {pendingCount > 0 && (
-                                    <span className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-gradient-to-br from-rose-500 to-red-600 text-[10px] font-black text-white ring-2 ring-white shadow-lg animate-in zoom-in duration-300 z-20">
-                                        {pendingCount}
-                                    </span>
-                                )}
+                                <History className="w-5 h-5" />
                             </Button>
-                        </div>
-                    )}
 
-                    {user ? (
-                        <>
+                            {/* Members Button - ADMIN only */}
+                            {user.role === 'ADMIN' && (
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-10 w-10 rounded-xl bg-white/40 text-slate-500 hover:bg-white hover:text-violet-600 hover:shadow-md border border-transparent hover:border-slate-100 transition-all duration-300"
+                                    onClick={onShowMemberManager}
+                                    title="Manage Members"
+                                >
+                                    <Users className="w-5 h-5" />
+                                </Button>
+                            )}
+
+                            {/* Notification Bell */}
+                            <div className="relative group">
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className={cn(
+                                        "relative h-10 w-10 rounded-xl transition-all duration-300 overflow-visible group/bell",
+                                        pendingCount > 0
+                                            ? "bg-white text-indigo-600 shadow-lg shadow-indigo-100 ring-1 ring-indigo-50 hover:shadow-indigo-200 hover:ring-indigo-100"
+                                            : "bg-white/40 text-slate-500 hover:bg-white hover:text-indigo-600 hover:shadow-md border border-transparent hover:border-slate-100"
+                                    )}
+                                    onClick={() => setIsConfirmModalOpen(true)}
+                                >
+                                    <Bell className={cn(
+                                        "w-5 h-5 transition-all duration-500 relative z-10",
+                                        pendingCount > 0
+                                            ? "animate-[swing_3s_ease-in-out_infinite] fill-indigo-100 text-indigo-600"
+                                            : "group-hover/bell:scale-110 group-hover/bell:rotate-12"
+                                    )} />
+                                    {pendingCount > 0 && (
+                                        <span className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-gradient-to-br from-rose-500 to-red-600 text-[10px] font-black text-white ring-2 ring-white shadow-lg animate-in zoom-in duration-300 z-20">
+                                            {pendingCount}
+                                        </span>
+                                    )}
+                                </Button>
+                            </div>
+
+                            {/* User Menu */}
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                     <Button variant="ghost" className="relative h-11 px-2 md:pl-1.5 md:pr-4 rounded-xl hover:bg-white gap-2 border border-transparent bg-white/40 backdrop-blur-sm shadow-sm hover:shadow-md hover:border-slate-100 transition-all duration-300 group overflow-hidden">

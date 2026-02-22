@@ -8,6 +8,7 @@ import AddBillForm from '@/components/Forms/AddBillForm';
 import SheetSelector from '@/components/Dashboard/SheetSelector';
 import ActivityLogList from '@/components/Dashboard/ActivityLogList';
 import MemberManager from '@/components/Dashboard/MemberManager';
+import QuickStats from '@/components/Dashboard/QuickStats';
 import Header from '@/components/Layout/Header';
 import Footer from '@/components/Layout/Footer';
 
@@ -30,11 +31,26 @@ export default function Home() {
   // User Data
   const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
 
-  // Initial Fetch: Workspace & Sheets & User
+  // Panel States
+  const [showActivityLog, setShowActivityLog] = useState(false);
+  const [showMemberManager, setShowMemberManager] = useState(false);
+
+  // Mobile FAB
+  const [showFAB, setShowFAB] = useState(false);
+
   useEffect(() => {
     fetchWorkspace();
     fetchUser();
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Show FAB when scrolled past the form
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowFAB(window.scrollY > 400);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   const fetchUser = async () => {
@@ -43,14 +59,12 @@ export default function Home() {
       if (res.ok) {
         const { user } = await res.json();
         if (!user) {
-          // Zombie session (JWT valid but user deleted). Force logout.
           await fetch('/api/auth/logout', { method: 'POST' });
           window.location.href = '/login';
           return;
         }
         setCurrentUser(user);
       } else {
-        // 401 or failed
         window.location.href = '/login';
       }
     } catch (e) {
@@ -69,7 +83,6 @@ export default function Home() {
         setWorkspace(ws);
         setSheets(ws.sheets);
 
-        // Handle case where currentSheetId was deleted or vanished
         const sheetExists = ws.sheets.some((s: any) => s.id === currentSheetId);
         if (!sheetExists && ws.sheets.length > 0) {
           setCurrentSheetId(ws.sheets[ws.sheets.length - 1].id);
@@ -82,7 +95,6 @@ export default function Home() {
     }
   };
 
-  // Sheet Fetch: Whenever currentSheetId changes
   useEffect(() => {
     if (currentSheetId) fetchSheetData(currentSheetId);
   }, [currentSheetId]);
@@ -92,7 +104,6 @@ export default function Home() {
     try {
       const res = await fetch(`/api/sheets/${id}`);
       if (res.status === 404) {
-        // Sheet might have been deleted, reload workspace to get fresh state
         fetchWorkspace();
         return;
       }
@@ -109,37 +120,26 @@ export default function Home() {
     }
   };
 
-
-
   const reload = () => {
     if (currentSheetId) fetchSheetData(currentSheetId);
-    // Also reload workspace to get new members/sheets if needed
     fetchWorkspace();
   };
 
   const handleOptimisticAdd = (newBill: Bill) => {
     if (!sheetData || !members) return;
 
-    // 1. Update List
     const updatedExpenses = [...sheetData.expenses, {
       ...newBill,
-      // Mock relation structures if needed by UI, though we mapped them in 'bills' variable
       payer: { name: newBill.payer },
       splits: (newBill.beneficiaries || []).map(name => ({ member: { name } }))
     }];
 
-    // Update raw sheet data so 'bills' mapping in render works
     setSheetData({
       ...sheetData,
       expenses: updatedExpenses
     });
 
-    // 2. Recalculate Logic
-    // We need to map the raw expenses back to Bill[] format for the service
     const memberNames = members.map(m => m.name);
-
-    // We can't just use 'bills' const here because it's derived in render. 
-    // We must reconstruct bills array from the updatedExpenses
     const currentBills: Bill[] = updatedExpenses.map((e: any) => ({
       id: e.id,
       amount: e.amount,
@@ -154,17 +154,12 @@ export default function Home() {
     const { matrix: pMatrix, totals: matrixTotals } = calculatePrivateMatrix(memberNames, currentBills);
     const globalDebts = calculateDebts(balances);
 
-    // Update calculations state
     setCalculations({
       balances,
       stats,
       privateBalances,
       matrix: { matrix: pMatrix, totals: matrixTotals },
       globalDebts,
-      // privateDebts is missing in state type above but logic exists in service. 
-      // We can ignore or add if needed, but 'calculations' state type in line 30 might need update if we used it.
-      // Looking at line 30: CalculationResult & { globalDebts: ...; matrix: ... }
-      // It doesn't seem to strictly require privateDebts.
     } as any);
   };
 
@@ -172,7 +167,7 @@ export default function Home() {
   if (loading && !workspace) return <div style={{ padding: 20 }}>Loading...</div>;
 
   const { globalDebts, matrix } = calculations || {};
-  const currentSheet = sheetData || { expenses: [] }; // Fallback
+  const currentSheet = sheetData || { expenses: [] };
 
   const bills: Bill[] = (currentSheet.expenses || []).map((e: any) => ({
     id: e.id,
@@ -194,79 +189,134 @@ export default function Home() {
 
   const activeSheetName = sheets.find(s => s.id === currentSheetId)?.name || 'QUẢN LÝ CHI TIÊU';
   const isLocked = sheetData?.status === 'LOCKED';
+  const hasExpenses = bills.length > 0;
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-50/30">
-      <Header user={currentUser} title={activeSheetName} />
+      <Header
+        user={currentUser}
+        title={activeSheetName}
+        onUpdated={reload}
+        onShowActivityLog={() => setShowActivityLog(true)}
+        onShowMemberManager={() => setShowMemberManager(true)}
+      />
 
-      <main className="flex-1 container mx-auto max-w-[1600px] px-4 py-8">
-        <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 items-start">
+      <main className="flex-1 container mx-auto max-w-[1400px] px-4 py-6">
+        <div className="space-y-6">
 
-          {/* SIDEBAR actions - Sticky and focused */}
-          <aside className="xl:col-span-3 space-y-6 sidebar-action-sticky">
-            {workspace && (
-              <SheetSelector
-                sheets={sheets}
-                currentSheetId={currentSheetId}
-                workspaceId={workspace.id}
-                onChange={setCurrentSheetId}
-                onCreated={reload}
-                isLocked={isLocked}
-                currentUser={currentUser}
-              />
-            )}
-
-
-            <ActivityLogList
-              members={members}
-              sheetId={currentSheetId!}
-              month={sheetData?.month}
-              year={sheetData?.year}
-              sheetName={activeSheetName}
+          {/* TOP BAR: Sheet Selector - Full Width */}
+          {workspace && (
+            <SheetSelector
+              sheets={sheets}
+              currentSheetId={currentSheetId}
+              workspaceId={workspace.id}
+              onChange={setCurrentSheetId}
+              onCreated={reload}
+              isLocked={isLocked}
+              currentUser={currentUser}
             />
+          )}
 
-            {currentUser?.role === 'ADMIN' && (
-              <MemberManager members={members} workspaceId={workspace!.id} onUpdate={reload} />
-            )}
-          </aside>
+          {calculations && (
+            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
 
-          {/* MAIN CONTENT Area */}
-          <section className="xl:col-span-9 space-y-8 min-w-0">
-            {calculations && (
-              <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-                {/* ADD EXPENSE FORM - Full width horizontal */}
-                <AddBillForm
-                  members={members}
-                  sheetId={currentSheetId!}
-                  onAdd={reload}
-                  onOptimisticAdd={handleOptimisticAdd}
-                  isLocked={isLocked}
-                />
+              {/* QUICK STATS - 4 column cards */}
+              <QuickStats members={members} calculations={calculations} bills={bills} />
 
-                {/* 1. REPORTING AREA: Summary & Matrix grouped */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 pt-4">
+              {/* ADD EXPENSE FORM */}
+              <AddBillForm
+                members={members}
+                sheetId={currentSheetId!}
+                onAdd={reload}
+                onOptimisticAdd={handleOptimisticAdd}
+                isLocked={isLocked}
+              />
+
+              {/* REPORTING: Summary + Matrix - only show if there are expenses */}
+              {hasExpenses && (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   <SummaryTable members={members} calculations={calculations} />
                   <PrivateMatrix members={members} matrixData={matrix} />
                 </div>
+              )}
 
-                {/* 2. MAIN HUB: TABLE AREA */}
-                <div className="space-y-6">
-                  <HistoryTable
-                    bills={bills}
-                    members={members}
-                    onDelete={reload}
-                    onRefresh={reload}
-                    isRefreshing={loading}
-                    currentUser={currentUser}
-                    isLocked={isLocked}
-                  />
-                </div>
-              </div>
-            )}
-          </section>
-
+              {/* EXPENSE HISTORY */}
+              <HistoryTable
+                bills={bills}
+                members={members}
+                onDelete={reload}
+                onRefresh={reload}
+                isRefreshing={loading}
+                currentUser={currentUser}
+                isLocked={isLocked}
+              />
+            </div>
+          )}
         </div>
       </main>
+
+      {/* SLIDE-OVER PANELS */}
+      {/* Activity Log Drawer */}
+      {showActivityLog && (
+        <div className="fixed inset-0 z-50 flex justify-end">
+          <div className="fixed inset-0 bg-black/30 backdrop-blur-sm animate-in fade-in duration-200" onClick={() => setShowActivityLog(false)} />
+          <div className="relative w-full max-w-md bg-white shadow-2xl animate-in slide-in-from-right duration-300 flex flex-col">
+            <div className="flex items-center justify-between p-4 border-b border-slate-100">
+              <h2 className="text-lg font-black text-slate-800">Activity Log</h2>
+              <button
+                onClick={() => setShowActivityLog(false)}
+                className="p-2 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6L6 18M6 6l12 12" /></svg>
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto">
+              <ActivityLogList
+                members={members}
+                sheetId={currentSheetId!}
+                month={sheetData?.month}
+                year={sheetData?.year}
+                sheetName={activeSheetName}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Member Manager Drawer */}
+      {showMemberManager && currentUser?.role === 'ADMIN' && (
+        <div className="fixed inset-0 z-50 flex justify-end">
+          <div className="fixed inset-0 bg-black/30 backdrop-blur-sm animate-in fade-in duration-200" onClick={() => setShowMemberManager(false)} />
+          <div className="relative w-full max-w-md bg-white shadow-2xl animate-in slide-in-from-right duration-300 flex flex-col">
+            <div className="flex items-center justify-between p-4 border-b border-slate-100">
+              <h2 className="text-lg font-black text-slate-800">Member Manager</h2>
+              <button
+                onClick={() => setShowMemberManager(false)}
+                className="p-2 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6L6 18M6 6l12 12" /></svg>
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto p-4">
+              <MemberManager members={members} workspaceId={workspace!.id} onUpdate={reload} />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Mobile FAB - Scroll to Add Form */}
+      {showFAB && (
+        <button
+          onClick={() => {
+            const form = document.getElementById('add-bill-form');
+            if (form) form.scrollIntoView({ behavior: 'smooth' });
+          }}
+          className="fixed bottom-6 right-6 z-40 w-14 h-14 rounded-2xl bg-gradient-to-br from-green-500 to-emerald-600 text-white shadow-2xl shadow-green-500/30 flex items-center justify-center hover:scale-110 active:scale-95 transition-all duration-300 md:hidden animate-in zoom-in duration-200"
+          title="Add Expense"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" className="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14M5 12h14" /></svg>
+        </button>
+      )}
 
       <Footer />
     </div>

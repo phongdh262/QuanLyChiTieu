@@ -401,8 +401,36 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
               <TableBody>
                 {filteredBills.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={8} className="h-32 text-center text-muted-foreground italic text-sm">
-                      No expense records found.
+                    <TableCell colSpan={8} className="h-64 text-center">
+                      <div className="flex flex-col items-center justify-center py-8 space-y-4 animate-in fade-in duration-500">
+                        <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-indigo-100 to-violet-100 flex items-center justify-center shadow-inner">
+                          <svg xmlns="http://www.w3.org/2000/svg" className="w-10 h-10 text-indigo-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                            <path d="M14 2v6h6" />
+                            <path d="M12 18v-6" />
+                            <path d="M9 15h6" />
+                          </svg>
+                        </div>
+                        <div className="space-y-1.5">
+                          <p className="text-base font-bold text-slate-600">No expenses yet</p>
+                          <p className="text-sm text-slate-400 max-w-sm">
+                            {searchTerm || filterPayer !== 'ALL' || filterType !== 'ALL'
+                              ? 'No records match your filters. Try adjusting the search or filters.'
+                              : 'Start by adding your first expense above.'}
+                          </p>
+                        </div>
+                        {!searchTerm && filterPayer === 'ALL' && filterType === 'ALL' && (
+                          <button
+                            onClick={() => {
+                              const form = document.getElementById('add-bill-form');
+                              if (form) form.scrollIntoView({ behavior: 'smooth' });
+                            }}
+                            className="mt-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 text-white text-sm font-bold shadow-lg shadow-green-200/50 hover:shadow-green-300 hover:scale-105 active:scale-95 transition-all"
+                          >
+                            + Add First Expense
+                          </button>
+                        )}
+                      </div>
                     </TableCell>
                   </TableRow>
                 ) : (

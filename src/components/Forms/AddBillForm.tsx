@@ -42,7 +42,7 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
     const { addToast } = useToast();
     const [description, setDescription] = useState('');
     const [amount, setAmount] = useState('');
-    const [date, setDate] = useState<Date | undefined>(undefined);
+    const [date, setDate] = useState<Date | undefined>(new Date());
     const [payerId, setPayerId] = useState<string>('');
     const [type, setType] = useState<'SHARED' | 'PRIVATE'>('SHARED');
     const [beneficiaryIds, setBeneficiaryIds] = useState<string[]>([]);
@@ -144,7 +144,7 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
             // Reset form
             setDescription('');
             setAmount('');
-            setDate(undefined);
+            setDate(new Date());
             setType('SHARED');
             setBeneficiaryIds([]);
             addToast('Bill added successfully!', 'success');
