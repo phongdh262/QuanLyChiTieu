@@ -35,6 +35,11 @@ export const updateMemberSchema = z.object({
     name: z.string().min(1).max(100),
 });
 
+export const resetPasswordSchema = z.object({
+    memberId: z.number().int().positive('Member ID is required'),
+    newPassword: z.string().min(8, 'Password must be at least 8 characters'),
+});
+
 export const createSheetSchema = z.object({
     workspaceId: z.number().or(z.string().regex(/^\d+$/).transform(Number)),
     month: z.number().min(1).max(12).or(z.string().regex(/^\d+$/).transform(Number)),

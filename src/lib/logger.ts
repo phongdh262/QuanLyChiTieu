@@ -4,7 +4,7 @@ export async function logActivity(
     workspaceId: number,
     actorId: number,
     actorName: string,
-    action: 'CREATE' | 'UPDATE' | 'DELETE' | 'LOGIN' | 'OTHER',
+    action: 'CREATE' | 'UPDATE' | 'DELETE' | 'LOGIN' | 'RESET_PASSWORD' | 'OTHER',
     entityType: 'EXPENSE' | 'SHEET' | 'MEMBER' | 'SYSTEM',
     entityId: number | null,
     description: string,

@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Member } from '@/types/expense';
 import { useConfirm } from '@/components/ui/ConfirmProvider';
 import { useToast } from '@/components/ui/ToastProvider';
+import ResetPasswordModal from '@/components/Auth/ResetPasswordModal';
 
 interface Props {
     members: Member[];
@@ -30,6 +31,9 @@ export default function MemberManager({ members, workspaceId, onUpdate }: Props)
     const [newPassword, setNewPassword] = useState('');
     const [editingId, setEditingId] = useState<number | null>(null);
     const [editName, setEditName] = useState('');
+
+    // Reset Password State
+    const [resetTarget, setResetTarget] = useState<{ id: number; name: string } | null>(null);
 
     // Recycle Bin State
     const [isBinOpen, setIsBinOpen] = useState(false);
@@ -329,6 +333,17 @@ export default function MemberManager({ members, workspaceId, onUpdate }: Props)
                                             <span className="font-bold text-slate-700 text-sm tracking-tight">{m.name}</span>
                                         </div>
                                         <div className="flex gap-1 items-center opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-1 group-hover:translate-x-0">
+                                            {m.username && (
+                                                <Button
+                                                    size="icon"
+                                                    variant="ghost"
+                                                    className="h-8 w-8 text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg"
+                                                    onClick={() => setResetTarget({ id: m.id, name: m.name })}
+                                                    title="Reset Password"
+                                                >
+                                                    <Key className="w-4 h-4" />
+                                                </Button>
+                                            )}
                                             <Button
                                                 size="icon"
                                                 variant="ghost"
@@ -354,6 +369,14 @@ export default function MemberManager({ members, workspaceId, onUpdate }: Props)
                         ))
                     )}
                 </div>
+
+                {/* Reset Password Modal */}
+                <ResetPasswordModal
+                    open={!!resetTarget}
+                    onOpenChange={(open) => { if (!open) setResetTarget(null); }}
+                    memberId={resetTarget?.id ?? null}
+                    memberName={resetTarget?.name ?? ''}
+                />
             </CardContent>
         </Card>
     );

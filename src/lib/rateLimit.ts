@@ -40,3 +40,10 @@ export const loginRateLimit = new RateLimit({
     uniqueTokenPerInterval: 500,
     interval: 60 * 1000, // 60 seconds
 });
+
+// Global instance for Reset Password route
+// Limit: 3 requests per 60 seconds per IP
+export const resetPasswordRateLimit = new RateLimit({
+    uniqueTokenPerInterval: 500,
+    interval: 60 * 1000, // 60 seconds
+});
