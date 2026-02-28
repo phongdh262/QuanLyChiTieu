@@ -11,8 +11,11 @@ import {
     Menu,
     X,
     ArrowRight,
+    Moon,
+    Sun,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useTheme } from '@/components/ThemeProvider';
 import { Member, CurrentUser, DebtTransaction } from '@/types/expense';
 
 interface Sheet {
@@ -60,6 +63,7 @@ export default function Sidebar({
     isOpen, onToggle,
 }: Props) {
     const activeMembers = members.filter(m => m.status !== 'DELETED');
+    const { theme, toggleTheme } = useTheme();
 
     return (
         <>
@@ -211,6 +215,14 @@ export default function Sidebar({
                     >
                         <KeyRound className="w-4 h-4" />
                         Change Password
+                    </button>
+
+                    <button
+                        onClick={toggleTheme}
+                        className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] font-medium text-white/50 hover:bg-white/[0.06] hover:text-white/80 transition-colors"
+                    >
+                        {theme === 'dark' ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4" />}
+                        {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
                     </button>
                 </div>
 

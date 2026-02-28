@@ -14,6 +14,7 @@ export const metadata: Metadata = {
 
 import ToastProvider from "@/components/ui/ToastProvider";
 import ConfirmProvider from "@/components/ui/ConfirmProvider";
+import ThemeProvider from "@/components/ThemeProvider";
 
 export default function RootLayout({
   children,
@@ -21,13 +22,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
-        <ToastProvider>
-          <ConfirmProvider>
-            {children}
-          </ConfirmProvider>
-        </ToastProvider>
+        <ThemeProvider>
+          <ToastProvider>
+            <ConfirmProvider>
+              {children}
+            </ConfirmProvider>
+          </ToastProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

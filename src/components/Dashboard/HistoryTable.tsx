@@ -321,7 +321,7 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
     <>
       <Card className="w-full premium-card border-none soft-shadow group/history overflow-visible">
         {/* --- FEATURE 4: Sticky Filter Bar --- */}
-        <CardHeader className="pb-4 bg-gradient-to-br from-indigo-50/50 via-white to-transparent border-b border-indigo-50/50 sticky top-0 z-30 backdrop-blur-md bg-white/80">
+        <CardHeader className="pb-4 bg-gradient-to-br from-indigo-50/50 dark:from-indigo-500/5 via-white dark:via-transparent to-transparent border-b border-indigo-50/50 dark:border-white/[0.06] sticky top-0 z-30 backdrop-blur-md bg-white/80 dark:bg-[#1e2235]/80">
           <div className="flex flex-col gap-4">
             {/* Title Row */}
             <div className="flex items-center justify-between">
@@ -355,12 +355,12 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
                   placeholder="Search description..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-8 h-9 bg-white shadow-sm border-slate-200 focus:border-indigo-300 focus:ring-indigo-100 transition-all rounded-xl"
+                  className="pl-8 h-9 bg-white dark:bg-white/[0.06] shadow-sm border-slate-200 dark:border-white/[0.08] focus:border-indigo-300 focus:ring-indigo-100 dark:focus:ring-indigo-500/20 transition-all rounded-xl dark:text-slate-200 dark:placeholder:text-slate-500"
                 />
               </div>
 
               <Select value={filterType} onValueChange={setFilterType}>
-                <SelectTrigger className="w-[130px] h-9 rounded-xl border-slate-200 bg-white/80 backdrop-blur-sm shadow-sm hover:bg-white hover:border-indigo-300 transition-all font-bold text-slate-600 text-xs uppercase tracking-wide focus:ring-indigo-100">
+                <SelectTrigger className="w-[130px] h-9 rounded-xl border-slate-200 dark:border-white/[0.08] bg-white/80 dark:bg-white/[0.06] backdrop-blur-sm shadow-sm hover:bg-white dark:hover:bg-white/[0.1] hover:border-indigo-300 transition-all font-bold text-slate-600 dark:text-slate-300 text-xs uppercase tracking-wide focus:ring-indigo-100">
                   <div className="flex items-center gap-1.5 truncate">
                     <Filter className="w-3 h-3 text-slate-400" />
                     <SelectValue placeholder="All" />
@@ -378,7 +378,7 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
               </Select>
 
               <Select value={filterPayer} onValueChange={setFilterPayer}>
-                <SelectTrigger className="w-[150px] h-9 rounded-xl border-slate-200 bg-white/80 backdrop-blur-sm shadow-sm hover:bg-white hover:border-indigo-300 transition-all font-bold text-slate-600 text-xs uppercase tracking-wide focus:ring-indigo-100">
+                <SelectTrigger className="w-[150px] h-9 rounded-xl border-slate-200 dark:border-white/[0.08] bg-white/80 dark:bg-white/[0.06] backdrop-blur-sm shadow-sm hover:bg-white dark:hover:bg-white/[0.1] hover:border-indigo-300 transition-all font-bold text-slate-600 dark:text-slate-300 text-xs uppercase tracking-wide focus:ring-indigo-100">
                   <div className="flex items-center gap-1.5 truncate">
                     <span className="text-slate-400 font-normal text-[10px]">Payer:</span>
                     <SelectValue placeholder="All" />
@@ -457,15 +457,15 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
                         {/* --- FEATURE 1: Date Group Header --- */}
                         <button
                           onClick={() => toggleGroup(group.dateKey)}
-                          className="w-full flex items-center justify-between px-5 py-3 bg-gradient-to-r from-slate-50/80 to-transparent hover:from-indigo-50/60 hover:to-indigo-50/20 transition-all duration-200 border-b border-slate-100"
+                          className="w-full flex items-center justify-between px-5 py-3 bg-gradient-to-r from-slate-50/80 dark:from-white/[0.03] to-transparent hover:from-indigo-50/60 dark:hover:from-indigo-500/10 hover:to-indigo-50/20 dark:hover:to-transparent transition-all duration-200 border-b border-slate-100 dark:border-white/[0.06]"
                         >
                           <div className="flex items-center gap-3">
                             <div className={cn("transition-transform duration-200", isCollapsed ? "" : "rotate-90")}>
                               <ChevronRight className="w-4 h-4 text-slate-400" />
                             </div>
                             <Calendar className="w-4 h-4 text-indigo-500" />
-                            <span className="font-bold text-[15px] text-slate-700">{group.dateLabel}</span>
-                            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 bg-slate-100 px-2.5 py-0.5 rounded-md">
+                            <span className="font-bold text-[15px] text-slate-700 dark:text-slate-200">{group.dateLabel}</span>
+                            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-white/[0.06] px-2.5 py-0.5 rounded-md">
                               {group.bills.length} khoản
                             </span>
                           </div>
@@ -488,8 +488,8 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
                                   <tr
                                     key={b.id}
                                     className={cn(
-                                      "group transition-all duration-150 border-b border-slate-50/80 last:border-0",
-                                      isSelected ? "bg-indigo-50/60" : "hover:bg-slate-50/50",
+                                      "group transition-all duration-150 border-b border-slate-50/80 dark:border-white/[0.04] last:border-0",
+                                      isSelected ? "bg-indigo-50/60 dark:bg-indigo-500/10" : "hover:bg-slate-50/50 dark:hover:bg-white/[0.03]",
                                       b.isSettled ? "opacity-40" : ""
                                     )}
                                   >
@@ -504,7 +504,7 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
                                     <td className="w-[80px] py-3 pl-1">
                                       <span className={cn(
                                         "text-[10px] uppercase font-bold px-2 py-1 rounded-md tracking-wider",
-                                        b.type === 'SHARED' ? "text-indigo-700 bg-indigo-100" : "text-amber-700 bg-amber-100"
+                                        b.type === 'SHARED' ? "text-indigo-700 dark:text-indigo-400 bg-indigo-100 dark:bg-indigo-500/15" : "text-amber-700 dark:text-amber-400 bg-amber-100 dark:bg-amber-500/15"
                                       )}>
                                         {b.type === 'SHARED' ? 'SHARED' : 'PRIVATE'}
                                       </span>
@@ -512,14 +512,14 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
 
                                     {/* Description */}
                                     <td className="py-3 pl-3">
-                                      <span className={cn("text-sm font-semibold", b.isSettled ? "text-slate-400 line-through" : "text-slate-800")}>
+                                      <span className={cn("text-sm font-semibold", b.isSettled ? "text-slate-400 dark:text-slate-600 line-through" : "text-slate-800 dark:text-slate-100")}>
                                         {b.note}
                                       </span>
                                     </td>
 
                                     {/* Amount */}
                                     <td className="py-3 text-right px-4 w-[130px]">
-                                      <span className={cn("text-[15px] font-black tabular-nums", b.isSettled ? "text-slate-300 line-through" : "text-emerald-700")}>
+                                      <span className={cn("text-[15px] font-black tabular-nums", b.isSettled ? "text-slate-300 dark:text-slate-600 line-through" : "text-emerald-700 dark:text-emerald-400")}>
                                         {formatMoney(b.amount)}
                                       </span>
                                     </td>
@@ -530,7 +530,7 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
                                         <div className={cn("w-7 h-7 rounded-full flex items-center justify-center text-white font-bold text-[10px] ring-2 ring-white shadow-sm", getAvatarColor(b.payer))}>
                                           {b.payer.charAt(0).toUpperCase()}
                                         </div>
-                                        <span className="text-sm text-slate-700 font-semibold truncate max-w-[80px]">{b.payer}</span>
+                                        <span className="text-sm text-slate-700 dark:text-slate-300 font-semibold truncate max-w-[80px]">{b.payer}</span>
                                       </div>
                                     </td>
 

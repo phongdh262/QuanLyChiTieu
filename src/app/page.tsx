@@ -224,7 +224,7 @@ export default function Home() {
 
   return (
     <ErrorBoundary>
-      <div className="min-h-screen flex bg-slate-50/30">
+      <div className="min-h-screen flex bg-slate-50/30 dark:bg-transparent">
         {/* ===== SIDEBAR ===== */}
         <Sidebar
           sheets={sheets}
@@ -247,12 +247,12 @@ export default function Home() {
         {/* ===== MAIN CONTENT ===== */}
         <div className="flex-1 flex flex-col min-h-screen min-w-0">
           {/* Compact Header */}
-          <header className="sticky top-0 z-30 bg-white/90 backdrop-blur-xl border-b border-slate-100/60 h-12 flex items-center px-4 lg:px-6 gap-3">
+          <header className="sticky top-0 z-30 bg-white/90 dark:bg-[#1e2235]/90 backdrop-blur-xl border-b border-slate-100/60 dark:border-white/[0.06] h-12 flex items-center px-4 lg:px-6 gap-3">
             {/* Mobile menu button spacer */}
             <div className="w-10 lg:hidden" />
 
             {/* Sheet Title */}
-            <h1 className="text-xs font-black text-slate-500 uppercase tracking-[0.2em] truncate">
+            <h1 className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.2em] truncate">
               {activeSheetName}
             </h1>
 
@@ -261,7 +261,7 @@ export default function Home() {
             {/* Notification bell */}
             <button
               onClick={() => setIsNotificationsOpen(true)}
-              className="relative p-1.5 rounded-lg hover:bg-slate-50 text-slate-400 hover:text-indigo-600 transition-colors"
+              className="relative p-1.5 rounded-lg hover:bg-slate-50 dark:hover:bg-white/[0.06] text-slate-400 hover:text-indigo-600 transition-colors"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 0 1-3.46 0" />
