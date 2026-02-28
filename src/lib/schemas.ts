@@ -23,6 +23,10 @@ export const createExpenseSchema = z.object({
     beneficiaryIds: z.array(z.number()).optional(),
 });
 
+export const createBatchExpenseSchema = z.object({
+    expenses: z.array(createExpenseSchema).min(1, 'At least 1 expense required').max(10, 'Maximum 10 expenses per batch'),
+});
+
 export const updateExpenseSchema = z.object({
     amount: z.number().positive('Amount must be positive'),
     description: z.string().min(1, 'Description is required').max(200),
