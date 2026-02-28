@@ -17,19 +17,13 @@ export default function QuickStats({ members, calculations, bills }: Props) {
     const { stats } = calculations;
     const memberNames = members.map(m => m.name);
 
-    // Total spent this month
     const totalSpent = memberNames.reduce((sum, name) => {
         const s = stats[name];
         return sum + (s?.totalPaid || 0);
     }, 0);
 
-    // Average per person
     const avgPerPerson = members.length > 0 ? totalSpent / members.length : 0;
-
-    // Transaction count
     const transactionCount = bills.length;
-
-    // Shared total
     const sharedTotal = memberNames.reduce((sum, name) => {
         const s = stats[name];
         return sum + (s?.sharedPaid || 0);
@@ -37,82 +31,67 @@ export default function QuickStats({ members, calculations, bills }: Props) {
 
     const statCards = [
         {
-            label: 'Total Spent',
+            label: 'TỔNG CHI',
             value: `${formatMoney(totalSpent)}₫`,
             icon: TrendingUp,
-            color: 'from-blue-500 to-indigo-600',
-            bgColor: 'bg-blue-50',
-            textColor: 'text-blue-700',
-            ringColor: 'ring-blue-100',
+            gradient: 'from-blue-500 to-indigo-600',
+            text: 'text-blue-600',
+            bg: 'bg-blue-50',
         },
         {
-            label: 'Avg / Person',
+            label: 'BÌNH QUÂN',
             value: `${formatMoney(Math.round(avgPerPerson))}₫`,
             icon: Users,
-            color: 'from-violet-500 to-purple-600',
-            bgColor: 'bg-violet-50',
-            textColor: 'text-violet-700',
-            ringColor: 'ring-violet-100',
+            gradient: 'from-violet-500 to-purple-600',
+            text: 'text-violet-600',
+            bg: 'bg-violet-50',
         },
         {
-            label: 'Transactions',
+            label: 'SỐ GIAO DỊCH',
             value: transactionCount.toString(),
             icon: Receipt,
-            color: 'from-emerald-500 to-green-600',
-            bgColor: 'bg-emerald-50',
-            textColor: 'text-emerald-700',
-            ringColor: 'ring-emerald-100',
+            gradient: 'from-emerald-500 to-green-600',
+            text: 'text-emerald-600',
+            bg: 'bg-emerald-50',
         },
         {
-            label: 'Shared Pool',
+            label: 'SHARED POOL',
             value: `${formatMoney(sharedTotal)}₫`,
             icon: ArrowUpRight,
-            color: 'from-amber-500 to-orange-600',
-            bgColor: 'bg-amber-50',
-            textColor: 'text-amber-700',
-            ringColor: 'ring-amber-100',
+            gradient: 'from-amber-500 to-orange-600',
+            text: 'text-amber-600',
+            bg: 'bg-amber-50',
         },
     ];
 
     return (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            {statCards.map((card, i) => (
+        <div className="grid grid-cols-2 xl:grid-cols-4 gap-3">
+            {statCards.map((card) => (
                 <div
                     key={card.label}
                     className={cn(
-                        "relative overflow-hidden rounded-2xl p-4 sm:p-5",
-                        "bg-white border border-slate-100 shadow-sm",
-                        "hover:shadow-lg hover:border-slate-200 transition-all duration-300",
+                        "relative overflow-hidden rounded-xl p-4",
+                        "bg-white border border-slate-100/80",
+                        "hover:shadow-md hover:border-slate-200 transition-all duration-200",
                         "group cursor-default",
-                        "animate-in fade-in slide-in-from-bottom-2",
                     )}
-                    style={{ animationDelay: `${i * 80}ms`, animationFillMode: 'both' }}
                 >
-                    {/* Background gradient accent */}
-                    <div className={cn(
-                        "absolute top-0 right-0 w-24 h-24 rounded-full opacity-[0.07] blur-2xl",
-                        `bg-gradient-to-br ${card.color}`,
-                        "group-hover:opacity-[0.15] group-hover:scale-125 transition-all duration-500"
-                    )} />
-
+                    <div className={cn("absolute -top-4 -right-4 w-20 h-20 rounded-full opacity-[0.06] blur-2xl bg-gradient-to-br", card.gradient)} />
                     <div className="flex items-start justify-between relative z-10">
-                        <div className="space-y-2">
-                            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                        <div className="space-y-1">
+                            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
                                 {card.label}
                             </p>
-                            <p className={cn(
-                                "text-xl sm:text-2xl font-black tracking-tight",
-                                card.textColor
-                            )}>
+                            <p className={cn("text-lg xl:text-xl font-black tracking-tight", card.text)}>
                                 {card.value}
                             </p>
                         </div>
                         <div className={cn(
-                            "p-2.5 rounded-xl bg-gradient-to-br shadow-lg",
-                            card.color,
-                            "group-hover:scale-110 group-hover:rotate-3 transition-all duration-500"
+                            "p-2 rounded-lg bg-gradient-to-br shadow-md",
+                            card.gradient,
+                            "group-hover:scale-110 transition-transform duration-300"
                         )}>
-                            <card.icon className="w-4 h-4 text-white" />
+                            <card.icon className="w-3.5 h-3.5 text-white" />
                         </div>
                     </div>
                 </div>
