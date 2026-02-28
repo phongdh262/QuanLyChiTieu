@@ -1,5 +1,5 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useToast } from '@/components/ui/ToastProvider';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -78,7 +78,7 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
     const [currentUser, setCurrentUser] = useState<{ id: number; name: string } | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const activeMembers = members.filter(m => m.status !== 'DELETED');
+    const activeMembers = useMemo(() => members.filter(m => m.status !== 'DELETED'), [members]);
 
     // Default payer ID
     const getDefaultPayerId = () => {
