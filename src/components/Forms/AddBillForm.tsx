@@ -89,14 +89,7 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
         return activeMembers.length > 0 ? activeMembers[0].id.toString() : '';
     };
 
-    const [mounted, setMounted] = useState(false);
-    const [rows, setRows] = useState<ExpenseRow[]>([]);
-
-    // Client-only mount: initialize rows with new Date() safely
-    React.useEffect(() => {
-        setRows([createEmptyRow('')]);
-        setMounted(true);
-    }, []);
+    const [rows, setRows] = useState<ExpenseRow[]>(() => [createEmptyRow('')]);
 
     // Fetch current user
     React.useEffect(() => {
@@ -258,24 +251,6 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
             setIsSubmitting(false);
         }
     };
-
-    if (!mounted) {
-        return (
-            <Card className="w-full premium-card overflow-hidden border-none soft-shadow" id="add-bill-form">
-                <CardHeader className="bg-gradient-to-br from-indigo-50/80 via-white to-emerald-50/50 pb-4 border-b border-indigo-50/50">
-                    <CardTitle className="text-xl flex items-center gap-3 text-slate-800">
-                        <div className="p-2.5 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl shadow-lg shadow-green-200/50 ring-2 ring-white">
-                            <PlusCircle className="w-5 h-5 text-white drop-shadow-sm" />
-                        </div>
-                        <span className="font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-slate-700 to-slate-900">Add New Expense</span>
-                    </CardTitle>
-                </CardHeader>
-                <CardContent className="p-5 pt-3">
-                    <div className="h-20 flex items-center justify-center text-sm text-slate-400">Loading...</div>
-                </CardContent>
-            </Card>
-        );
-    }
 
     const isBatch = rows.length > 1;
 

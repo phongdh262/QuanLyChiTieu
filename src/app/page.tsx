@@ -1,10 +1,19 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import dynamic from 'next/dynamic';
 import SummaryTable from '@/components/Dashboard/SummaryTable';
 import PrivateMatrix from '@/components/Dashboard/PrivateMatrix';
 import HistoryTable from '@/components/Dashboard/HistoryTable';
-import AddBillForm from '@/components/Forms/AddBillForm';
+const AddBillForm = dynamic(() => import('@/components/Forms/AddBillForm'), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full rounded-xl border bg-card p-6 animate-pulse">
+      <div className="h-6 w-48 bg-slate-200 rounded mb-4" />
+      <div className="h-10 bg-slate-100 rounded" />
+    </div>
+  ),
+});
 import SheetSelector from '@/components/Dashboard/SheetSelector';
 import ActivityLogList from '@/components/Dashboard/ActivityLogList';
 import MemberManager from '@/components/Dashboard/MemberManager';
