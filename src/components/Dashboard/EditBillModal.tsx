@@ -11,6 +11,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { cn } from '@/lib/utils';
+import { useLanguage } from '@/components/LanguageProvider';
 
 interface Props {
     bill: Bill;
@@ -20,6 +21,7 @@ interface Props {
 }
 
 export default function EditBillModal({ bill, members, onClose, onSave }: Props) {
+    const { t } = useLanguage();
     const { addToast } = useToast();
     const [mounted, setMounted] = useState(false);
 
@@ -65,12 +67,12 @@ export default function EditBillModal({ bill, members, onClose, onSave }: Props)
         if (isSubmitting) return;
 
         if (!description || !amount || !payerId) {
-            addToast('Please fill in all fields', 'warning');
+            addToast(t('fillAllFields'), 'warning');
             return;
         }
 
         if (type === 'PRIVATE' && beneficiaryIds.length === 0) {
-            addToast('Please select beneficiaries for private expense', 'warning');
+            addToast(t('selectBeneficiariesError'), 'warning');
             return;
         }
 
@@ -93,7 +95,7 @@ export default function EditBillModal({ bill, members, onClose, onSave }: Props)
             onSave();
         } catch (error) {
             console.error(error);
-            addToast('Error updating expense', 'error');
+            addToast(t('updateExpenseError'), 'error');
         } finally {
             setIsSubmitting(false);
         }
@@ -123,7 +125,7 @@ export default function EditBillModal({ bill, members, onClose, onSave }: Props)
             <div className="bg-white rounded-lg shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto border border-slate-200 animate-in zoom-in-95 duration-200">
                 <div className="flex justify-between items-center p-4 border-b border-slate-100 bg-slate-50/50 rounded-t-lg">
                     <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
-                        ✏️ Edit Expense
+                        ✏️ {t('editExpense')}
                     </h2>
                     <button
                         onClick={onClose}
@@ -138,18 +140,18 @@ export default function EditBillModal({ bill, members, onClose, onSave }: Props)
                         <div className="space-y-4">
                             <div className="grid grid-cols-3 gap-4">
                                 <div className="col-span-2 space-y-2">
-                                    <label className="text-sm font-medium text-slate-700">Description</label>
+                                    <label className="text-sm font-medium text-slate-700">{t('description')}</label>
                                     <input
                                         type="text"
                                         value={description}
                                         onChange={e => setDescription(e.target.value)}
                                         className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                                        placeholder="Enter description..."
+                                        placeholder={t('enterDescription')}
                                         autoFocus
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-sm font-medium text-slate-700">Date</label>
+                                    <label className="text-sm font-medium text-slate-700">{t('date')}</label>
                                     <input
                                         type="date"
                                         value={date}
@@ -161,7 +163,7 @@ export default function EditBillModal({ bill, members, onClose, onSave }: Props)
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
-                                    <label className="text-sm font-medium text-slate-700">Amount (VND)</label>
+                                    <label className="text-sm font-medium text-slate-700">{t('amount')}</label>
                                     <input
                                         type="text"
                                         inputMode="numeric"
@@ -171,7 +173,7 @@ export default function EditBillModal({ bill, members, onClose, onSave }: Props)
                                             const text = e.clipboardData.getData('text');
                                             if (!/^[\d.,\s]+$/.test(text)) {
                                                 e.preventDefault();
-                                                addToast('Vui lòng chỉ copy số tiền hợp lệ (không chứa chữ)', 'warning');
+                                                addToast(t('invalidAmountCopied'), 'warning');
                                             }
                                         }}
                                         onKeyDown={(e) => {
@@ -191,10 +193,10 @@ export default function EditBillModal({ bill, members, onClose, onSave }: Props)
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-sm font-medium text-slate-700">Payer</label>
+                                    <label className="text-sm font-medium text-slate-700">{t('payer')}</label>
                                     <Select value={payerId} onValueChange={setPayerId}>
                                         <SelectTrigger className="h-10 w-full bg-background border-input focus:ring-2 focus:ring-ring focus:ring-offset-2">
-                                            <SelectValue placeholder="Chọn người chi" />
+                                            <SelectValue placeholder={t('selectPayer')} />
                                         </SelectTrigger>
                                         <SelectContent>
                                             {members.map(m => (
@@ -215,7 +217,7 @@ export default function EditBillModal({ bill, members, onClose, onSave }: Props)
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-sm font-medium text-slate-700">Expense Type</label>
+                                <label className="text-sm font-medium text-slate-700">{t('expenseType')}</label>
                                 <div className="grid grid-cols-2 gap-4">
                                     <button
                                         type="button"
@@ -244,7 +246,7 @@ export default function EditBillModal({ bill, members, onClose, onSave }: Props)
                             {type === 'PRIVATE' && (
                                 <div className="p-4 bg-orange-50 border border-orange-100 rounded-lg space-y-3 animate-in fade-in slide-in-from-top-1">
                                     <label className="text-sm font-bold text-orange-800 block">
-                                        Select Beneficiaries:
+                                        {t('selectBeneficiaries')}
                                     </label>
                                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                                         {members.map(m => {
@@ -278,14 +280,14 @@ export default function EditBillModal({ bill, members, onClose, onSave }: Props)
                                 disabled={isSubmitting}
                                 className="flex-1 h-10 bg-blue-600 hover:bg-blue-700 text-white rounded-md font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
                             >
-                                {isSubmitting ? 'Saving...' : 'Save Changes'}
+                                {isSubmitting ? t('saving') : t('saveChanges')}
                             </button>
                             <button
                                 type="button"
                                 onClick={onClose}
                                 className="px-6 h-10 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-md font-medium transition-colors"
                             >
-                                Cancel
+                                {t('cancel')}
                             </button>
                         </div>
                     </form>

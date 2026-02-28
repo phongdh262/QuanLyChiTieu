@@ -5,6 +5,7 @@ import { Bill, Member, CurrentUser } from '@/types/expense';
 import EditBillModal from './EditBillModal';
 import { useConfirm } from '@/components/ui/ConfirmProvider';
 import { useToast } from '@/components/ui/ToastProvider';
+import { useLanguage } from '@/components/LanguageProvider';
 import {
   Card,
   CardContent,
@@ -56,6 +57,7 @@ interface DateGroup {
 }
 
 export default function HistoryTable({ bills, members, onDelete, onUpdate, onRefresh, isRefreshing, currentUser, isLocked }: Props) {
+  const { t } = useLanguage();
   const { confirm } = useConfirm();
   const { addToast } = useToast();
   const [deletingId, setDeletingId] = useState<number | string | null>(null);
@@ -104,7 +106,7 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
         ? new Date(bill.date).toLocaleDateString('vi-VN', {
           weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric'
         })
-        : 'Không có ngày';
+        : t('noDate');
 
       if (!groups[dateKey]) {
         groups[dateKey] = { dateKey, dateLabel, bills: [], total: 0 };
@@ -113,7 +115,7 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
       groups[dateKey].total += bill.amount;
     });
     return Object.values(groups);
-  }, [filteredBills]);
+  }, [filteredBills, t]);
 
   // --- FEATURE 3: Filter Totals ---
   const filterTotal = useMemo(() => filteredBills.reduce((s, b) => s + b.amount, 0), [filteredBills]);
@@ -149,11 +151,11 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
   const handleBulkDelete = async () => {
     if (selectedIds.size === 0) return;
     const ok = await confirm({
-      title: 'Delete Multiple Bills',
-      message: `Are you sure you want to delete ${selectedIds.size} selected bills? This action cannot be undone.`,
+      title: t('deleteMultiple'),
+      message: t('confirmDeleteMultiple').replace('{count}', selectedIds.size.toString()),
       type: 'danger',
-      confirmText: `Delete ${selectedIds.size} bills`,
-      cancelText: 'Cancel'
+      confirmText: `${t('delete')} (${selectedIds.size})`,
+      cancelText: t('cancel')
     });
     if (!ok) return;
     setIsBulkDeleting(true);
@@ -165,12 +167,12 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
           if (res.ok) successCount++;
         })
       );
-      addToast(`Deleted ${successCount}/${selectedIds.size} bills`, 'success');
+      addToast(`${t('deleteSuccess')} ${successCount}/${selectedIds.size}`, 'success');
       setSelectedIds(new Set());
       onDelete();
     } catch (e) {
       console.error(e);
-      addToast('Có lỗi xảy ra khi xóa', 'error');
+      addToast(t('deleteError'), 'error');
     } finally {
       setIsBulkDeleting(false);
     }
@@ -179,21 +181,21 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
   const handleDeleteClick = async (id: number | string) => {
     if (deletingId) return;
     const ok = await confirm({
-      title: 'Confirm Deletion',
-      message: 'Are you sure you want to delete this bill? This action cannot be undone.',
+      title: t('deleteConfirm'),
+      message: t('deleteWarning'),
       type: 'danger',
-      confirmText: 'Delete',
-      cancelText: 'Cancel'
+      confirmText: t('delete'),
+      cancelText: t('cancel')
     });
     if (!ok) return;
     setDeletingId(id);
     try {
       const res = await fetch(`/api/expenses/${id}`, { method: 'DELETE' });
       if (!res.ok) throw new Error('Failed');
-      addToast('Bill deleted', 'success');
+      addToast(t('deleteSuccess'), 'success');
       onDelete();
     } catch (e) {
-      addToast('Xóa thất bại', 'error');
+      addToast(t('deleteError'), 'error');
       console.error(e);
     } finally {
       setDeletingId(null);
@@ -202,7 +204,6 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
 
   const handleToggleSettle = async (bill: Bill, memberName?: string) => {
     const canSettleGlobal = currentUser?.name === bill.payer;
-    const isPayer = canSettleGlobal;
     let forceReject = false;
 
     const split = memberName ? bill.splits?.find(s => s.member.name === memberName) : null;
@@ -215,12 +216,12 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
 
     if (memberName && !isCurrentlyPaid && currentUser?.name === bill.payer) {
       const result = await confirm({
-        title: 'Confirm Payment',
-        message: `Confirm that ${memberName} has paid or reject this request?`,
+        title: t('settleConfirm'),
+        message: t('settleWarning').replace('{name}', memberName),
         type: 'info',
-        confirmText: 'Confirm Received',
-        cancelText: 'Cancel',
-        rejectText: 'Reject'
+        confirmText: t('confirmPaid'),
+        cancelText: t('cancel'),
+        rejectText: t('reject')
       });
       if (result === false) return;
       if (result === 'reject') forceReject = true;
@@ -228,11 +229,11 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
 
     if (isCurrentlyPaid) {
       const ok = await confirm({
-        title: 'Cancel Payment Confirmation?',
-        message: `Are you sure you want to change status of ${memberName || 'all'} to 'Unpaid'?`,
+        title: t('cancelPaymentConfirm'),
+        message: t('cancelPaymentWarning').replace('{name}', memberName || t('all')),
         type: 'danger',
-        confirmText: 'Yes',
-        cancelText: 'Cancel'
+        confirmText: t('yes'),
+        cancelText: t('cancel')
       });
       if (!ok) return;
     }
@@ -261,12 +262,12 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
       if (data.isPending) {
         addToast('Confirmation request sent to Payer. Waiting for approval.', 'warning');
       } else {
-        addToast('Payment status updated', 'success');
+        addToast(t('paymentStatusUpdated'), 'success');
       }
       if (onDelete) onDelete();
       if (onUpdate) onUpdate();
     } catch (e: unknown) {
-      const errorMessage = e instanceof Error ? e.message : 'Lỗi cập nhật trạng thái';
+      const errorMessage = e instanceof Error ? e.message : t('updateStatusError');
       addToast(errorMessage, 'error');
       console.error(e);
     }
@@ -329,14 +330,14 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
                 <div className="p-2.5 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl shadow-lg shadow-blue-100/50 group-hover/history:scale-110 group-hover/history:rotate-3 transition-all duration-500 ring-2 ring-white">
                   <Clock className="w-5 h-5 text-white drop-shadow-sm" />
                 </div>
-                <span className="font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-slate-700 dark:from-slate-200 to-slate-900 dark:to-white">Expense History</span>
+                <span className="font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-slate-700 dark:from-slate-200 to-slate-900 dark:to-white">{t('expenseHistory')}</span>
               </CardTitle>
 
               <div className="flex items-center gap-2">
                 {selectedIds.size > 0 && (
                   <Button variant="destructive" size="sm" onClick={handleBulkDelete} disabled={isBulkDeleting} className="animate-in fade-in zoom-in duration-200 shadow-md">
                     {isBulkDeleting ? <span className="animate-spin mr-2">⏳</span> : <Trash2 className="w-4 h-4 mr-1" />}
-                    Delete ({selectedIds.size})
+                    {t('delete')} ({selectedIds.size})
                   </Button>
                 )}
                 {onRefresh && (
@@ -352,7 +353,7 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
               <div className="relative flex-1 min-w-[180px]">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Search description..."
+                  placeholder={t('searchDescription')}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-8 h-9 bg-white dark:bg-white/[0.06] shadow-sm border-slate-200 dark:border-white/[0.08] focus:border-indigo-300 focus:ring-indigo-100 dark:focus:ring-indigo-500/20 transition-all rounded-xl dark:text-slate-200 dark:placeholder:text-slate-500"
@@ -363,11 +364,11 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
                 <SelectTrigger className="w-[130px] h-9 rounded-xl border-slate-200 dark:border-white/[0.08] bg-white/80 dark:bg-white/[0.06] backdrop-blur-sm shadow-sm hover:bg-white dark:hover:bg-white/[0.1] hover:border-indigo-300 transition-all font-bold text-slate-600 dark:text-slate-300 text-xs uppercase tracking-wide focus:ring-indigo-100">
                   <div className="flex items-center gap-1.5 truncate">
                     <Filter className="w-3 h-3 text-slate-400" />
-                    <SelectValue placeholder="All" />
+                    <SelectValue placeholder={t('all')} />
                   </div>
                 </SelectTrigger>
                 <SelectContent className="rounded-xl shadow-xl border-slate-100 bg-white/95 backdrop-blur-md">
-                  <SelectItem value="ALL" className="font-medium text-slate-700 cursor-pointer focus:bg-indigo-50 py-2.5">All</SelectItem>
+                  <SelectItem value="ALL" className="font-medium text-slate-700 cursor-pointer focus:bg-indigo-50 py-2.5">{t('all')}</SelectItem>
                   <SelectItem value="SHARED" className="font-medium text-indigo-600 cursor-pointer focus:bg-indigo-50 py-2.5">
                     <span className="flex items-center gap-2">🔹 Shared</span>
                   </SelectItem>
@@ -380,12 +381,12 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
               <Select value={filterPayer} onValueChange={setFilterPayer}>
                 <SelectTrigger className="w-[150px] h-9 rounded-xl border-slate-200 dark:border-white/[0.08] bg-white/80 dark:bg-white/[0.06] backdrop-blur-sm shadow-sm hover:bg-white dark:hover:bg-white/[0.1] hover:border-indigo-300 transition-all font-bold text-slate-600 dark:text-slate-300 text-xs uppercase tracking-wide focus:ring-indigo-100">
                   <div className="flex items-center gap-1.5 truncate">
-                    <span className="text-slate-400 font-normal text-[10px]">Payer:</span>
-                    <SelectValue placeholder="All" />
+                    <span className="text-slate-400 font-normal text-[10px]">{t('payerLabel')}:</span>
+                    <SelectValue placeholder={t('all')} />
                   </div>
                 </SelectTrigger>
                 <SelectContent className="rounded-xl shadow-xl border-slate-100 bg-white/95 backdrop-blur-md max-h-[300px]">
-                  <SelectItem value="ALL" className="font-medium text-slate-700 cursor-pointer py-2.5">All Members</SelectItem>
+                  <SelectItem value="ALL" className="font-medium text-slate-700 cursor-pointer py-2.5">{t('allMembers')}</SelectItem>
                   {members.map(m => (
                     <SelectItem key={m.id} value={m.name} className="font-medium text-slate-700 cursor-pointer py-2.5">
                       <div className="flex items-center gap-2">
@@ -402,7 +403,7 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
               {/* Select All Checkbox */}
               <label className="hidden md:flex items-center gap-1.5 text-xs text-slate-500 cursor-pointer select-none hover:text-indigo-600 transition-colors">
                 <input type="checkbox" checked={isAllSelected} onChange={toggleAll} className="h-3.5 w-3.5 rounded border-slate-300 text-indigo-600 accent-indigo-600 cursor-pointer" />
-                All
+                {t('all')}
               </label>
             </div>
 
@@ -410,8 +411,8 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
             {filteredBills.length > 0 && (
               <div className="flex items-center justify-between text-xs">
                 <span className="text-slate-500">
-                  <span className="font-bold text-slate-700">{filteredBills.length}</span> khoản chi
-                  {isFiltered && <span className="text-indigo-500 ml-1">(đã lọc)</span>}
+                  <span className="font-bold text-slate-700">{filteredBills.length}</span> {t('expensesCount')}
+                  {isFiltered && <span className="text-indigo-500 ml-1">({t('filtered')})</span>}
                 </span>
                 <span className="font-black text-base tabular-nums bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent">
                   {formatMoney(filterTotal)}
@@ -432,9 +433,9 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
                   </svg>
                 </div>
                 <div className="space-y-1.5 text-center">
-                  <p className="text-base font-bold text-slate-600">No expenses yet</p>
+                  <p className="text-base font-bold text-slate-600">{t('noExpensesYet')}</p>
                   <p className="text-sm text-slate-400 max-w-sm">
-                    {isFiltered ? 'No records match your filters.' : 'Start by adding your first expense above.'}
+                    {isFiltered ? t('noRecordsMatch') : t('startAddingExpense')}
                   </p>
                 </div>
                 {!isFiltered && (
@@ -442,7 +443,7 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
                     onClick={() => document.getElementById('add-bill-form')?.scrollIntoView({ behavior: 'smooth' })}
                     className="mt-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 text-white text-sm font-bold shadow-lg shadow-green-200/50 hover:shadow-green-300 hover:scale-105 active:scale-95 transition-all"
                   >
-                    + Add First Expense
+                    + {t('addFirstExpense')}
                   </button>
                 )}
               </div>
@@ -466,7 +467,7 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
                             <Calendar className="w-4 h-4 text-indigo-500" />
                             <span className="font-bold text-[15px] text-slate-700 dark:text-slate-200">{group.dateLabel}</span>
                             <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-white/[0.06] px-2.5 py-0.5 rounded-md">
-                              {group.bills.length} khoản
+                              {group.bills.length} {t('expensesCount')}
                             </span>
                           </div>
                           <span className="font-black text-[15px] tabular-nums text-indigo-600">
@@ -670,14 +671,14 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
                               {/* --- FEATURE 5: Swipe reveal actions --- */}
                               <div className="absolute right-0 top-0 bottom-0 flex items-stretch z-0">
                                 <button
-                                  onClick={() => { isPayer && !isLocked && setEditingBill(b); setSwipedId(null); }}
+                                  onClick={() => { if (isPayer && !isLocked) setEditingBill(b); setSwipedId(null); }}
                                   className={cn("w-16 flex items-center justify-center transition-colors", isPayer ? "bg-blue-500 text-white active:bg-blue-600" : "bg-slate-200 text-slate-400")}
                                   disabled={!isPayer || isLocked}
                                 >
                                   <Edit className="w-5 h-5" />
                                 </button>
                                 <button
-                                  onClick={() => { canDelete && handleDeleteClick(b.id); setSwipedId(null); }}
+                                  onClick={() => { if (canDelete) handleDeleteClick(b.id); setSwipedId(null); }}
                                   className={cn("w-16 flex items-center justify-center transition-colors", canDelete ? "bg-red-500 text-white active:bg-red-600" : "bg-slate-200 text-slate-400")}
                                   disabled={!canDelete}
                                 >

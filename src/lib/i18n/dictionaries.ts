@@ -1,0 +1,242 @@
+export type Language = 'en' | 'vi';
+
+export const dictionaries = {
+    en: {
+        // Sidebar
+        sheets: "SHEETS",
+        members: "MEMBERS",
+        manage: "Manage",
+        debts: "DEBTS",
+        activityLog: "Activity Log",
+        notifications: "Notifications",
+        changePassword: "Change Password",
+        lightMode: "Light Mode",
+        darkMode: "Dark Mode",
+        logout: "Log out",
+
+        // QuickStats
+        totalSpent: "TOTAL SPENT",
+        avgPerPerson: "AVG / PERSON",
+        transactionCount: "TRANSACTIONS",
+        sharedPool: "SHARED POOL",
+
+        // AddBillForm
+        addNewExpense: "Add New Expense",
+        rows: "rows",
+        addRow: "Add row",
+        description: "Description",
+        descriptionPlaceholder: "Lunch, Electricity, Water...",
+        amount: "Amount (VND)",
+        amountPlaceholder: "0",
+        date: "Date",
+        payer: "Payer",
+        type: "Type",
+        add: "Add",
+        addAll: "Add All",
+        submitting: "Submitting...",
+        lockedTitle: "🔒 Sheet is locked",
+        lockedDesc: "Cannot add new expenses. Contact Admin to unlock.",
+
+        // HistoryTable
+        expenseHistory: "Expense History",
+        searchPlaceholder: "Search description...",
+        all: "All",
+        status: "Status",
+        payerLabel: "Payer",
+        items: "items",
+        noData: "No data matching the filter.",
+        noDate: "No Date",
+        deleteMultiple: "Delete Multiple Bills",
+        confirmDeleteMultiple: "Are you sure you want to delete {count} selected bills? This action cannot be undone.",
+        deleteWarning: "Are you sure you want to delete this bill? This action cannot be undone.",
+        deleteConfirm: "Confirm Deletion",
+        deleteSuccess: "Bill deleted",
+        deleteError: "Delete failed",
+        settleConfirm: "Confirm Payment",
+        settleWarning: "Confirm that {name} has paid or reject this request?",
+        confirmPaid: "Confirm Received",
+        reject: "Reject",
+        cancelPaymentConfirm: "Cancel Payment Confirmation?",
+        cancelPaymentWarning: "Are you sure you want to change status of {name} to 'Unpaid'?",
+        yes: "Yes",
+        paymentStatusUpdated: "Payment status updated",
+        updateStatusError: "Update status failed",
+        searchDescription: "Search description...",
+        allMembers: "All Members",
+        filtered: "filtered",
+        noExpensesYet: "No expenses yet",
+        noRecordsMatch: "No records match your filters.",
+        startAddingExpense: "Start by adding your first expense above.",
+        addFirstExpense: "Add First Expense",
+        expensesCount: "expenses",
+
+        // SummaryTable & PrivateMatrix
+        expensesSummary: "Expenses Summary",
+        debtMatrixPrivate: "Debt Matrix (Private)",
+        member: "Member",
+        totalPaid: "Total Paid",
+        netBalanceShared: "Net Balance (Shared)",
+        debtor: "Debtor",
+        pays: "Pays",
+        totalDebt: "Total Debt",
+
+        // EditBillModal
+        editExpense: "Edit Expense",
+        enterDescription: "Enter description...",
+        selectPayer: "Select Payer",
+        expenseType: "Expense Type",
+        selectBeneficiaries: "Select Beneficiaries:",
+        saving: "Saving...",
+        saveChanges: "Save Changes",
+        fillAllFields: "Please fill in all fields",
+        selectBeneficiariesError: "Please select beneficiaries for private expense",
+        updateExpenseError: "Failed to update expense",
+        invalidAmountCopied: "Please paste valid numbers only",
+
+        // Page
+        loading: "Loading...",
+        appTitle: "QUẢN LÝ CHI TIÊU",
+        memberManager: "Member Manager",
+
+        // Header & Toolbars
+        edit: "Edit",
+        delete: "Delete",
+        lock: "Lock",
+        unlock: "Unlock",
+        reload: "Reload",
+
+        // Modals
+        confirmDeleteSheetTitle: "Are you absolutely sure?",
+        confirmDeleteSheetDesc: "This action cannot be undone. This will permanently delete the sheet and remove all its data from our servers.",
+        cancel: "Cancel",
+        continue: "Continue",
+
+        // Messages
+        success: "Success",
+        error: "Error",
+        expenseAdded: "Expense added successfully",
+        batchAdded: "Batch expenses added successfully",
+        sheetLocked: "Sheet locked successfully",
+        sheetUnlocked: "Sheet unlocked successfully",
+    },
+    vi: {
+        // Sidebar
+        sheets: "BẢNG CHI TIÊU",
+        members: "THÀNH VIÊN",
+        manage: "Quản lý",
+        debts: "KHOẢN NỢ",
+        activityLog: "Lịch sử hoạt động",
+        notifications: "Thông báo",
+        changePassword: "Đổi mật khẩu",
+        lightMode: "Chế độ Sáng",
+        darkMode: "Chế độ Tối",
+        logout: "Đăng xuất",
+
+        // QuickStats
+        totalSpent: "TỔNG CHI",
+        avgPerPerson: "BÌNH QUÂN",
+        transactionCount: "SỐ GIAO DỊCH",
+        sharedPool: "SHARED POOL",
+
+        // AddBillForm
+        addNewExpense: "Thêm Khoản Chi",
+        rows: "dòng",
+        addRow: "Thêm dòng",
+        description: "Mô tả",
+        descriptionPlaceholder: "Cơm trưa, Điện, Nước...",
+        amount: "Số tiền (VND)",
+        amountPlaceholder: "0",
+        date: "Ngày",
+        payer: "Người trả",
+        type: "Loại chi",
+        add: "Thêm",
+        addAll: "Thêm tất cả",
+        submitting: "Đang lưu...",
+        lockedTitle: "🔒 Bảng chi tiêu đã được khóa",
+        lockedDesc: "Không thể thêm khoản chi mới. Liên hệ Admin để mở khóa.",
+
+        // HistoryTable
+        expenseHistory: "Lịch sử Chi tiêu",
+        searchPlaceholder: "Tìm kiếm mô tả...",
+        all: "Tất cả",
+        status: "Trạng thái",
+        payerLabel: "Người trả",
+        items: "khoản",
+        noData: "Không tìm thấy dữ liệu phù hợp.",
+        noDate: "Không có ngày",
+        deleteMultiple: "Xóa nhiều khoản chi",
+        confirmDeleteMultiple: "Bạn có chắc chắn muốn xoá {count} khoản chi đã chọn? Hành động này không thể hoàn tác.",
+        deleteWarning: "Bạn có chắc chắn muốn xoá khoản chi này? Hành động này không thể hoàn tác.",
+        deleteConfirm: "Xác nhận xoá",
+        deleteSuccess: "Xóa thành công",
+        deleteError: "Xóa thất bại",
+        settleConfirm: "Xác nhận thanh toán",
+        settleWarning: "Xác nhận {name} đã trả tiền, hoặc từ chối yêu cầu này?",
+        confirmPaid: "Đã nhận tiền",
+        reject: "Từ chối",
+        cancelPaymentConfirm: "Hủy xác nhận thanh toán?",
+        cancelPaymentWarning: "Bạn có chắc muốn chuyển trạng thái của {name} về 'Chưa trả'?",
+        yes: "Đồng ý",
+        paymentStatusUpdated: "Đã cập nhật trạng thái thanh toán",
+        updateStatusError: "Lỗi cập nhật",
+        searchDescription: "Tìm kiếm mô tả...",
+        allMembers: "Tất cả",
+        filtered: "đã lọc",
+        noExpensesYet: "Chưa có khoản chi",
+        noRecordsMatch: "Không có kết quả.",
+        startAddingExpense: "Bắt đầu bằng cách thêm khoản chi.",
+        addFirstExpense: "Thêm khoản chi",
+        expensesCount: "khoản",
+
+        // SummaryTable & PrivateMatrix
+        expensesSummary: "Tổng kết Chi tiêu",
+        debtMatrixPrivate: "Ma trận Nợ (Cá nhân)",
+        member: "Thành viên",
+        totalPaid: "Tổng Đã Trả",
+        netBalanceShared: "Net Balance (Shared)",
+        debtor: "Người nợ",
+        pays: "Trả cho",
+        totalDebt: "Tổng Nợ",
+
+        // EditBillModal
+        editExpense: "Sửa khoản chi",
+        enterDescription: "Nhập mô tả...",
+        selectPayer: "Chọn người chi",
+        expenseType: "Loại chi",
+        selectBeneficiaries: "Chọn người thụ hưởng:",
+        saving: "Đang lưu...",
+        saveChanges: "Lưu thay đổi",
+        fillAllFields: "Vui lòng nhập đủ thông tin",
+        selectBeneficiariesError: "Vui lòng chọn người thụ hưởng cho khoản chi riêng",
+        updateExpenseError: "Lỗi cập nhật khoản chi",
+        invalidAmountCopied: "Vui lòng chỉ copy số liệu hợp lệ",
+
+        // Page
+        loading: "Đang tải...",
+        appTitle: "QUẢN LÝ CHI TIÊU",
+        memberManager: "Quản lý thành viên",
+
+        // Header & Toolbars
+        edit: "Sửa",
+        delete: "Xoá",
+        lock: "Khoá",
+        unlock: "Mở khoá",
+        reload: "Tải lại",
+
+        // Modals
+        confirmDeleteSheetTitle: "Bạn có chắc chắn muốn xoá?",
+        confirmDeleteSheetDesc: "Hành động này không thể hoàn tác. Dữ liệu của bảng này sẽ bị xoá vĩnh viễn.",
+        cancel: "Huỷ",
+        continue: "Tiếp tục",
+
+        // Messages
+        success: "Thành công",
+        error: "Lỗi",
+        expenseAdded: "Thêm khoản chi thành công",
+        batchAdded: "Thêm danh sách khoản chi thành công",
+        sheetLocked: "Đã khóa bảng tính",
+        sheetUnlocked: "Đã mở khóa bảng tính",
+    }
+};
+
+export type DictKey = keyof typeof dictionaries.en;

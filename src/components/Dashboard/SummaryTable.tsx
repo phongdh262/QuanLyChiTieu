@@ -4,6 +4,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import { Wallet } from "lucide-react";
+import { useLanguage } from "@/components/LanguageProvider";
 
 interface Props {
     members: Member[];
@@ -13,6 +14,7 @@ interface Props {
 const formatMoney = (amount: number) => amount.toLocaleString('vi-VN');
 
 export default function SummaryTable({ members, calculations }: Props) {
+    const { t } = useLanguage();
     const { balances, stats, privateBalances } = calculations;
     const [isOpen, setIsOpen] = React.useState(true);
 
@@ -23,7 +25,7 @@ export default function SummaryTable({ members, calculations }: Props) {
                     <div className="p-2.5 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl shadow-lg shadow-blue-100/50 dark:shadow-blue-900/20 group-hover/summary:scale-110 group-hover/summary:rotate-3 transition-all duration-500 ring-2 ring-white dark:ring-white/10">
                         <Wallet className="w-5 h-5 text-white drop-shadow-sm" />
                     </div>
-                    <span className="font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-slate-700 dark:from-slate-200 to-slate-900 dark:to-white">Expenses Summary</span>
+                    <span className="font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-slate-700 dark:from-slate-200 to-slate-900 dark:to-white">{t('expensesSummary')}</span>
                 </CardTitle>
                 <div className={cn("rounded-full p-2 bg-white dark:bg-white/[0.06] shadow-sm text-slate-400 ring-1 ring-slate-100 dark:ring-white/[0.06] transition-transform duration-300 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 hover:text-indigo-600", isOpen && "rotate-180 bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600")}>
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
@@ -38,9 +40,9 @@ export default function SummaryTable({ members, calculations }: Props) {
                         <Table>
                             <TableHeader className="bg-slate-50/50 dark:bg-white/[0.02]">
                                 <TableRow>
-                                    <TableHead className="font-bold text-slate-700 dark:text-slate-300">Member</TableHead>
-                                    <TableHead className="text-right font-bold text-slate-700 dark:text-slate-300">Total Paid</TableHead>
-                                    <TableHead className="text-right font-bold text-slate-700 dark:text-slate-300">Net Balance (Shared)</TableHead>
+                                    <TableHead className="font-bold text-slate-700 dark:text-slate-300">{t('member')}</TableHead>
+                                    <TableHead className="text-right font-bold text-slate-700 dark:text-slate-300">{t('totalPaid')}</TableHead>
+                                    <TableHead className="text-right font-bold text-slate-700 dark:text-slate-300">{t('netBalanceShared')}</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>

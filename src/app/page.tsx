@@ -23,6 +23,7 @@ import Footer from '@/components/Layout/Footer';
 import ErrorBoundary from '@/components/ui/ErrorBoundary';
 import ChangePasswordModal from '@/components/Auth/ChangePasswordModal';
 import ConfirmationModal from '@/components/Dashboard/ConfirmationModal';
+import { useLanguage } from '@/components/LanguageProvider';
 
 import { Bill, Member, CalculationResult, DebtTransaction, CurrentUser } from '@/types/expense';
 import { calculateFinalBalances, calculatePrivateMatrix, calculateDebts } from '@/services/expenseService';
@@ -31,6 +32,7 @@ import useSWR from 'swr';
 const fetcher = (url: string) => fetch(url).then(res => res.json());
 
 export default function Home() {
+  const { t } = useLanguage();
   const [loading, setLoading] = useState(true);
 
   // Workspace Data
@@ -195,7 +197,7 @@ export default function Home() {
   };
 
   if (!workspace && !loading) return <div style={{ padding: 20 }}>No Workspace Found. Seed database.</div>;
-  if (loading && !workspace) return <div style={{ padding: 20 }}>Loading...</div>;
+  if (loading && !workspace) return <div style={{ padding: 20 }}>{t('loading')}</div>;
 
   const { globalDebts, matrix } = calculations || {};
   const currentSheet = sheetData || { expenses: [] };
@@ -218,7 +220,7 @@ export default function Home() {
     })) : []
   }));
 
-  const activeSheetName = sheets.find(s => s.id === currentSheetId)?.name || 'QUẢN LÝ CHI TIÊU';
+  const activeSheetName = sheets.find(s => s.id === currentSheetId)?.name || t('appTitle');
   const isLocked = sheetData?.status === 'LOCKED';
   const hasExpenses = bills.length > 0;
 
@@ -346,7 +348,7 @@ export default function Home() {
             <div className="fixed inset-0 bg-black/30 backdrop-blur-sm animate-in fade-in duration-200" onClick={() => setShowActivityLog(false)} />
             <div className="relative w-full max-w-md h-screen bg-white dark:bg-[#1e2235] shadow-2xl animate-in slide-in-from-right duration-300 flex flex-col">
               <div className="flex items-center justify-between p-4 border-b border-slate-100 dark:border-white/[0.06] shrink-0">
-                <h2 className="text-lg font-black text-slate-800 dark:text-slate-100">Activity Log</h2>
+                <h2 className="text-lg font-black text-slate-800 dark:text-slate-100">{t('activityLog')}</h2>
                 <button onClick={() => setShowActivityLog(false)} className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-white/[0.06] text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
                   <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6L6 18M6 6l12 12" /></svg>
                 </button>
@@ -364,7 +366,7 @@ export default function Home() {
             <div className="fixed inset-0 bg-black/30 backdrop-blur-sm animate-in fade-in duration-200" onClick={() => setShowMemberManager(false)} />
             <div className="relative w-full max-w-md h-screen bg-white dark:bg-[#1e2235] shadow-2xl animate-in slide-in-from-right duration-300 flex flex-col">
               <div className="flex items-center justify-between p-4 border-b border-slate-100 dark:border-white/[0.06]">
-                <h2 className="text-lg font-black text-slate-800 dark:text-slate-100">Member Manager</h2>
+                <h2 className="text-lg font-black text-slate-800 dark:text-slate-100">{t('memberManager')}</h2>
                 <button onClick={() => setShowMemberManager(false)} className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-white/[0.06] text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
                   <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6L6 18M6 6l12 12" /></svg>
                 </button>
@@ -381,7 +383,7 @@ export default function Home() {
           <button
             onClick={() => document.getElementById('add-bill-form')?.scrollIntoView({ behavior: 'smooth' })}
             className="fixed bottom-6 right-6 z-40 w-14 h-14 rounded-2xl bg-gradient-to-br from-green-500 to-emerald-600 text-white shadow-2xl shadow-green-500/30 flex items-center justify-center hover:scale-110 active:scale-95 transition-all duration-300 lg:hidden animate-in zoom-in duration-200"
-            title="Add Expense"
+            title={t('addNewExpense')}
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14M5 12h14" /></svg>
           </button>

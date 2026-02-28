@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { PlusCircle, Wallet, Calendar as CalendarIcon, Users, Calculator, Check, CheckCircle2, Lock, Trash2, Plus, Layers } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useLanguage } from '@/components/LanguageProvider';
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format } from "date-fns";
@@ -74,6 +75,7 @@ function formatAmount(value: string): string {
 }
 
 export default function AddBillForm({ members, sheetId, onAdd, initialData, onOptimisticAdd, isLocked }: Props) {
+    const { t } = useLanguage();
     const { addToast } = useToast();
     const [currentUser, setCurrentUser] = useState<{ id: number; name: string } | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -237,8 +239,8 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
                     }),
                 });
                 if (!res.ok) throw new Error('Failed to add batch expenses');
-                const data = await res.json();
-                addToast(`Đã thêm ${data.count} khoản chi! ✅`, 'success');
+                await res.json();
+                addToast(`${t('batchAdded')}! ✅`, 'success');
             }
 
             // Reset to single empty row
@@ -246,7 +248,7 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
             onAdd();
         } catch (error) {
             console.error(error);
-            addToast('Lỗi khi thêm khoản chi', 'error');
+            addToast(t('error'), 'error');
         } finally {
             setIsSubmitting(false);
         }
@@ -262,14 +264,14 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
                         <div className="p-2.5 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl shadow-lg shadow-green-200/50 dark:shadow-green-900/20 ring-2 ring-white dark:ring-white/10">
                             <PlusCircle className="w-5 h-5 text-white drop-shadow-sm" />
                         </div>
-                        <span className="font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-slate-700 dark:from-slate-200 to-slate-900 dark:to-white">Add New Expense</span>
+                        <span className="font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-slate-700 dark:from-slate-200 to-slate-900 dark:to-white">{t('addNewExpense')}</span>
                     </CardTitle>
                     {!isLocked && (
                         <div className="flex items-center gap-2">
                             {isBatch && (
                                 <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/10 px-2.5 py-1 rounded-full border border-indigo-100 dark:border-indigo-500/20 flex items-center gap-1">
                                     <Layers className="w-3 h-3" />
-                                    {rows.length} dòng
+                                    {rows.length} {t('rows')}
                                 </span>
                             )}
                             <Button
@@ -281,7 +283,7 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
                                 className="text-xs font-bold border-dashed border-emerald-300 dark:border-emerald-500/30 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 hover:border-emerald-400 transition-all"
                             >
                                 <Plus className="w-3.5 h-3.5 mr-1" />
-                                Thêm dòng
+                                {t('addRow')}
                             </Button>
                         </div>
                     )}
@@ -295,8 +297,8 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
                             <Lock className="w-6 h-6 text-amber-500" />
                         </div>
                         <div>
-                            <p className="font-bold text-slate-700 dark:text-slate-200">🔒 Bảng chi tiêu đã được khóa</p>
-                            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Không thể thêm khoản chi mới. Liên hệ Admin để mở khóa.</p>
+                            <p className="font-bold text-slate-700 dark:text-slate-200">{t('lockedTitle')}</p>
+                            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">{t('lockedDesc')}</p>
                         </div>
                     </div>
                 </CardContent>
@@ -317,7 +319,7 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
                                         <span className="w-5 h-5 rounded-md bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center text-[10px] font-bold shadow-sm">
                                             {index + 1}
                                         </span>
-                                        Khoản chi #{index + 1}
+                                        Expense #{index + 1}
                                     </span>
                                     <button
                                         type="button"
@@ -334,11 +336,11 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3 items-end">
                                 {/* Description */}
                                 <div className="lg:col-span-4 space-y-1.5">
-                                    {index === 0 && <Label className="text-xs font-semibold text-slate-600">Description <span className="text-red-500">*</span></Label>}
+                                    {index === 0 && <Label className="text-xs font-semibold text-slate-600">{t('description')} <span className="text-red-500">*</span></Label>}
                                     <div className="relative">
                                         <Wallet className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                                         <Input
-                                            placeholder="Cơm trưa, Điện, Nước..."
+                                            placeholder={t('descriptionPlaceholder')}
                                             value={row.description}
                                             onChange={e => updateRow(row.id, 'description', e.target.value)}
                                             className="pl-9 h-10"
@@ -349,7 +351,7 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
 
                                 {/* Amount */}
                                 <div className="lg:col-span-2 space-y-1.5">
-                                    {index === 0 && <Label className="text-xs font-semibold text-slate-600">Amount (VND) <span className="text-red-500">*</span></Label>}
+                                    {index === 0 && <Label className="text-xs font-semibold text-slate-600">{t('amount')} <span className="text-red-500">*</span></Label>}
                                     <div className="relative">
                                         <Calculator className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                                         <Input
@@ -384,7 +386,7 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
 
                                 {/* Date */}
                                 <div className="lg:col-span-2 space-y-1.5">
-                                    {index === 0 && <Label className="text-xs font-semibold text-slate-600">Date</Label>}
+                                    {index === 0 && <Label className="text-xs font-semibold text-slate-600">{t('date')}</Label>}
                                     <Popover>
                                         <PopoverTrigger asChild>
                                             <div className="relative cursor-pointer">
@@ -396,7 +398,7 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
                                                         !row.date && "text-muted-foreground"
                                                     )}
                                                 >
-                                                    {row.date ? format(row.date, "dd/MM/yyyy") : "Pick a date"}
+                                                    {row.date ? format(row.date, "dd/MM/yyyy") : "Select"}
                                                 </Button>
                                             </div>
                                         </PopoverTrigger>
@@ -417,7 +419,7 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
 
                                 {/* Payer */}
                                 <div className="lg:col-span-2 space-y-1.5">
-                                    {index === 0 && <Label className="text-xs font-semibold text-slate-600">Payer <span className="text-red-500">*</span></Label>}
+                                    {index === 0 && <Label className="text-xs font-semibold text-slate-600">{t('payer')} <span className="text-red-500">*</span></Label>}
                                     <div className="relative">
                                         <Users className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground z-10" />
                                         <Select value={row.payerId} onValueChange={(v) => updateRow(row.id, 'payerId', v)}>
@@ -452,9 +454,9 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
                                             className="w-full h-10 text-sm font-bold bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white shadow-lg shadow-green-200/50 hover:shadow-green-300 transition-all hover:scale-[1.01] overflow-hidden rounded-xl"
                                         >
                                             {isSubmitting ? (
-                                                <><span className="animate-spin mr-1">⏳</span> Saving</>
+                                                <><span className="animate-spin mr-1">⏳</span> {t('submitting')}</>
                                             ) : (
-                                                <><PlusCircle className="mr-1.5 h-4 w-4" /> Thêm</>
+                                                <><PlusCircle className="mr-1.5 h-4 w-4" /> {t('add')}</>
                                             )}
                                         </Button>
                                     </div>
@@ -464,7 +466,7 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
                             {/* Expense Type + Beneficiaries */}
                             <div className="flex flex-col sm:flex-row items-start gap-3">
                                 <div className="flex items-center gap-2 shrink-0">
-                                    <Label className="text-xs font-semibold text-slate-600 whitespace-nowrap">Loại chi:</Label>
+                                    <Label className="text-xs font-semibold text-slate-600 whitespace-nowrap">{t('type')}:</Label>
                                     <div className="flex gap-1.5">
                                         <button
                                             type="button"
@@ -538,7 +540,7 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
                                 className="text-xs font-bold border-dashed border-slate-300 text-slate-600 hover:bg-slate-50 transition-all"
                             >
                                 <Plus className="w-3.5 h-3.5 mr-1" />
-                                Thêm dòng ({rows.length}/{MAX_ROWS})
+                                {t('addRow')} ({rows.length}/{MAX_ROWS})
                             </Button>
                             <div className="flex-1" />
                             <Button
@@ -547,9 +549,9 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
                                 className="h-10 px-6 text-sm font-bold bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white shadow-lg shadow-green-200/50 hover:shadow-green-300 transition-all hover:scale-[1.01] overflow-hidden rounded-xl"
                             >
                                 {isSubmitting ? (
-                                    <><span className="animate-spin mr-1">⏳</span> Đang lưu...</>
+                                    <><span className="animate-spin mr-1">⏳</span> {t('submitting')}</>
                                 ) : (
-                                    <><Layers className="mr-1.5 h-4 w-4" /> Thêm tất cả ({rows.length})</>
+                                    <><Layers className="mr-1.5 h-4 w-4" /> {t('addAll')} ({rows.length})</>
                                 )}
                             </Button>
                         </div>

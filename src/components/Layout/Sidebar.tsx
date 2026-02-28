@@ -13,9 +13,11 @@ import {
     ArrowRight,
     Moon,
     Sun,
+    Globe,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTheme } from '@/components/ThemeProvider';
+import { useLanguage } from '@/components/LanguageProvider';
 import { Member, CurrentUser, DebtTransaction } from '@/types/expense';
 
 interface Sheet {
@@ -64,6 +66,7 @@ export default function Sidebar({
 }: Props) {
     const activeMembers = members.filter(m => m.status !== 'DELETED');
     const { theme, toggleTheme } = useTheme();
+    const { t, language, setLanguage } = useLanguage();
 
     return (
         <>
@@ -108,7 +111,7 @@ export default function Sidebar({
                 <div className="flex-1 overflow-y-auto custom-scrollbar">
                     {/* --- SHEETS --- */}
                     <div className="px-3 pt-5 pb-2">
-                        <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/30 mb-2 px-2">Sheets</h3>
+                        <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/30 mb-2 px-2">{t('sheets')}</h3>
                         <div className="space-y-0.5">
                             {sheets.slice().reverse().map(sheet => {
                                 const isActive = sheet.id === currentSheetId;
@@ -141,13 +144,13 @@ export default function Sidebar({
                     {/* --- MEMBERS --- */}
                     <div className="px-3 pt-3 pb-2">
                         <div className="flex items-center justify-between mb-2 px-2">
-                            <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/30">Members</h3>
+                            <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/30">{t('members')}</h3>
                             {currentUser?.role === 'ADMIN' && (
                                 <button
                                     onClick={() => { onShowMemberManager(); if (window.innerWidth < 1024) onToggle(); }}
                                     className="text-[10px] font-semibold text-indigo-400 hover:text-indigo-300 transition-colors"
                                 >
-                                    Manage
+                                    {t('manage')}
                                 </button>
                             )}
                         </div>
@@ -159,7 +162,7 @@ export default function Sidebar({
                                     </div>
                                     <span className="text-[13px] font-medium text-white/70 truncate">{member.name}</span>
                                     {member.name === currentUser?.name && (
-                                        <span className="text-[9px] font-bold text-indigo-300 bg-indigo-500/20 px-1.5 py-0.5 rounded ml-auto">you</span>
+                                        <span className="text-[9px] font-bold text-indigo-300 bg-indigo-500/20 px-1.5 py-0.5 rounded ml-auto">{language === 'vi' ? 'bạn' : 'you'}</span>
                                     )}
                                 </div>
                             ))}
@@ -171,7 +174,7 @@ export default function Sidebar({
                     {/* --- DEBT SUMMARY --- */}
                     {globalDebts && globalDebts.length > 0 && (
                         <div className="px-3 pt-3 pb-2">
-                            <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/30 mb-2 px-2">Debts</h3>
+                            <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/30 mb-2 px-2">{t('debts')}</h3>
                             <div className="space-y-1">
                                 {globalDebts.slice(0, 5).map((debt, idx) => (
                                     <div key={idx} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white/[0.03] text-[12px]">
@@ -193,7 +196,7 @@ export default function Sidebar({
                         className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] font-medium text-white/50 hover:bg-white/[0.06] hover:text-white/80 transition-colors"
                     >
                         <History className="w-4 h-4" />
-                        Activity Log
+                        {t('activityLog')}
                     </button>
 
                     <button
@@ -201,7 +204,7 @@ export default function Sidebar({
                         className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] font-medium text-white/50 hover:bg-white/[0.06] hover:text-white/80 transition-colors"
                     >
                         <Bell className="w-4 h-4" />
-                        Notifications
+                        {t('notifications')}
                         {(pendingNotifications || 0) > 0 && (
                             <span className="ml-auto flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-rose-500 text-[9px] font-black text-white px-1">
                                 {pendingNotifications}
@@ -214,16 +217,26 @@ export default function Sidebar({
                         className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] font-medium text-white/50 hover:bg-white/[0.06] hover:text-white/80 transition-colors"
                     >
                         <KeyRound className="w-4 h-4" />
-                        Change Password
+                        {t('changePassword')}
                     </button>
 
-                    <button
-                        onClick={toggleTheme}
-                        className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] font-medium text-white/50 hover:bg-white/[0.06] hover:text-white/80 transition-colors"
-                    >
-                        {theme === 'dark' ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4" />}
-                        {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
-                    </button>
+                    <div className="flex gap-1.5 px-3 py-2">
+                        <button
+                            onClick={toggleTheme}
+                            className="flex-1 flex items-center justify-center gap-2 py-1.5 rounded-lg text-[12px] font-bold text-white/50 bg-white/[0.03] hover:bg-white/[0.06] hover:text-white/80 transition-all border border-white/[0.02]"
+                        >
+                            {theme === 'dark' ? <Sun className="w-3.5 h-3.5 text-amber-400" /> : <Moon className="w-3.5 h-3.5" />}
+                            {theme === 'dark' ? t('lightMode') : t('darkMode')}
+                        </button>
+
+                        <button
+                            onClick={() => setLanguage(language === 'en' ? 'vi' : 'en')}
+                            className="flex-1 flex items-center justify-center gap-2 py-1.5 rounded-lg text-[12px] font-bold text-white/50 bg-white/[0.03] hover:bg-white/[0.06] hover:text-white/80 transition-all border border-white/[0.02]"
+                        >
+                            <Globe className="w-3.5 h-3.5 text-blue-400" />
+                            {language === 'en' ? 'Tiếng Việt' : 'English'}
+                        </button>
+                    </div>
                 </div>
 
                 {/* ===== USER INFO ===== */}
