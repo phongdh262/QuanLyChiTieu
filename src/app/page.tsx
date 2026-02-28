@@ -344,14 +344,14 @@ export default function Home() {
         {showActivityLog && (
           <div className="fixed inset-0 z-50 flex justify-end">
             <div className="fixed inset-0 bg-black/30 backdrop-blur-sm animate-in fade-in duration-200" onClick={() => setShowActivityLog(false)} />
-            <div className="relative w-full max-w-md bg-white shadow-2xl animate-in slide-in-from-right duration-300 flex flex-col">
-              <div className="flex items-center justify-between p-4 border-b border-slate-100">
-                <h2 className="text-lg font-black text-slate-800">Activity Log</h2>
-                <button onClick={() => setShowActivityLog(false)} className="p-2 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors">
+            <div className="relative w-full max-w-md h-screen bg-white dark:bg-[#1e2235] shadow-2xl animate-in slide-in-from-right duration-300 flex flex-col">
+              <div className="flex items-center justify-between p-4 border-b border-slate-100 dark:border-white/[0.06] shrink-0">
+                <h2 className="text-lg font-black text-slate-800 dark:text-slate-100">Activity Log</h2>
+                <button onClick={() => setShowActivityLog(false)} className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-white/[0.06] text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
                   <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6L6 18M6 6l12 12" /></svg>
                 </button>
               </div>
-              <div className="flex-1 overflow-y-auto">
+              <div className="flex-1 overflow-hidden">
                 <ActivityLogList members={members} sheetId={currentSheetId!} month={sheetData?.month} year={sheetData?.year} sheetName={activeSheetName} />
               </div>
             </div>
@@ -362,10 +362,10 @@ export default function Home() {
         {showMemberManager && currentUser?.role === 'ADMIN' && (
           <div className="fixed inset-0 z-50 flex justify-end">
             <div className="fixed inset-0 bg-black/30 backdrop-blur-sm animate-in fade-in duration-200" onClick={() => setShowMemberManager(false)} />
-            <div className="relative w-full max-w-md bg-white shadow-2xl animate-in slide-in-from-right duration-300 flex flex-col">
-              <div className="flex items-center justify-between p-4 border-b border-slate-100">
-                <h2 className="text-lg font-black text-slate-800">Member Manager</h2>
-                <button onClick={() => setShowMemberManager(false)} className="p-2 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors">
+            <div className="relative w-full max-w-md h-screen bg-white dark:bg-[#1e2235] shadow-2xl animate-in slide-in-from-right duration-300 flex flex-col">
+              <div className="flex items-center justify-between p-4 border-b border-slate-100 dark:border-white/[0.06]">
+                <h2 className="text-lg font-black text-slate-800 dark:text-slate-100">Member Manager</h2>
+                <button onClick={() => setShowMemberManager(false)} className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-white/[0.06] text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
                   <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6L6 18M6 6l12 12" /></svg>
                 </button>
               </div>
