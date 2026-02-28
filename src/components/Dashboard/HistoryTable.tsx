@@ -1,18 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo, useRef, useCallback } from 'react';
 import { Bill, Member, CurrentUser } from '@/types/expense';
 import EditBillModal from './EditBillModal';
 import { useConfirm } from '@/components/ui/ConfirmProvider';
 import { useToast } from '@/components/ui/ToastProvider';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import {
   Card,
   CardContent,
@@ -34,7 +26,11 @@ import {
   Clock,
   Trash2,
   Edit,
-  RefreshCw
+  RefreshCw,
+  Calendar,
+  ChevronDown,
+  ChevronRight,
+  Filter,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -51,6 +47,14 @@ interface Props {
 
 const formatMoney = (amount: number) => amount.toLocaleString('vi-VN') + ' ₫';
 
+// Group bills by date string
+interface DateGroup {
+  dateKey: string;
+  dateLabel: string;
+  bills: Bill[];
+  total: number;
+}
+
 export default function HistoryTable({ bills, members, onDelete, onUpdate, onRefresh, isRefreshing, currentUser, isLocked }: Props) {
   const { confirm } = useConfirm();
   const { addToast } = useToast();
@@ -66,12 +70,20 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
   const [filterType, setFilterType] = useState<string>('ALL');
   const [searchTerm, setSearchTerm] = useState<string>('');
 
+  // Collapsed date groups
+  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
+
+  // Swipe state for mobile
+  const [swipedId, setSwipedId] = useState<number | null>(null);
+  const touchStartX = useRef(0);
+  const touchCurrentX = useRef(0);
+
   // Logic: Sort by Date Descending -> Filter
-  const filteredBills = [...bills]
+  const filteredBills = useMemo(() => [...bills]
     .sort((a, b) => {
       const dateA = a.date ? new Date(a.date).getTime() : 0;
       const dateB = b.date ? new Date(b.date).getTime() : 0;
-      return dateB - dateA; // Newest first
+      return dateB - dateA;
     })
     .filter(b => {
       if (filterPayer !== 'ALL' && b.payer !== filterPayer) return false;
@@ -79,7 +91,43 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
       const note = b.note || '';
       if (searchTerm && !note.toLowerCase().includes(searchTerm.toLowerCase())) return false;
       return true;
+    }), [bills, filterPayer, filterType, searchTerm]);
+
+  // --- FEATURE 1: Group by Date ---
+  const dateGroups = useMemo((): DateGroup[] => {
+    const groups: Record<string, DateGroup> = {};
+    filteredBills.forEach(bill => {
+      const dateKey = bill.date
+        ? new Date(bill.date).toISOString().split('T')[0]
+        : 'no-date';
+      const dateLabel = bill.date
+        ? new Date(bill.date).toLocaleDateString('vi-VN', {
+          weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric'
+        })
+        : 'Không có ngày';
+
+      if (!groups[dateKey]) {
+        groups[dateKey] = { dateKey, dateLabel, bills: [], total: 0 };
+      }
+      groups[dateKey].bills.push(bill);
+      groups[dateKey].total += bill.amount;
     });
+    return Object.values(groups);
+  }, [filteredBills]);
+
+  // --- FEATURE 3: Filter Totals ---
+  const filterTotal = useMemo(() => filteredBills.reduce((s, b) => s + b.amount, 0), [filteredBills]);
+  const isFiltered = filterPayer !== 'ALL' || filterType !== 'ALL' || searchTerm !== '';
+
+  // Toggle group collapse
+  const toggleGroup = (dateKey: string) => {
+    setCollapsedGroups(prev => {
+      const next = new Set(prev);
+      if (next.has(dateKey)) next.delete(dateKey);
+      else next.add(dateKey);
+      return next;
+    });
+  };
 
   // Bulk Delete Handlers
   const toggleRow = (id: number) => {
@@ -90,7 +138,6 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
   };
 
   const toggleAll = () => {
-    // Only select bills where the current user is the payer (can delete)
     const deletableBills = filteredBills.filter(b => currentUser?.name === b.payer);
     if (selectedIds.size === deletableBills.length && deletableBills.length > 0) {
       setSelectedIds(new Set());
@@ -101,7 +148,6 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
 
   const handleBulkDelete = async () => {
     if (selectedIds.size === 0) return;
-
     const ok = await confirm({
       title: 'Delete Multiple Bills',
       message: `Are you sure you want to delete ${selectedIds.size} selected bills? This action cannot be undone.`,
@@ -109,9 +155,7 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
       confirmText: `Delete ${selectedIds.size} bills`,
       cancelText: 'Cancel'
     });
-
     if (!ok) return;
-
     setIsBulkDeleting(true);
     let successCount = 0;
     try {
@@ -121,7 +165,6 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
           if (res.ok) successCount++;
         })
       );
-
       addToast(`Deleted ${successCount}/${selectedIds.size} bills`, 'success');
       setSelectedIds(new Set());
       onDelete();
@@ -135,7 +178,6 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
 
   const handleDeleteClick = async (id: number | string) => {
     if (deletingId) return;
-
     const ok = await confirm({
       title: 'Confirm Deletion',
       message: 'Are you sure you want to delete this bill? This action cannot be undone.',
@@ -143,9 +185,7 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
       confirmText: 'Delete',
       cancelText: 'Cancel'
     });
-
     if (!ok) return;
-
     setDeletingId(id);
     try {
       const res = await fetch(`/api/expenses/${id}`, { method: 'DELETE' });
@@ -161,11 +201,10 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
   };
 
   const handleToggleSettle = async (bill: Bill, memberName?: string) => {
-    // Permission Check: Strictly Payer only
     const canSettleGlobal = currentUser?.name === bill.payer;
+    const isPayer = canSettleGlobal;
     let forceReject = false;
 
-    // Special logic for unmarking a PAID split
     const split = memberName ? bill.splits?.find(s => s.member.name === memberName) : null;
     const isCurrentlyPaid = memberName ? split?.isPaid : bill.isSettled;
 
@@ -174,7 +213,6 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
       return;
     }
 
-    // CASE: Payer marks an UNPAID split as PAID
     if (memberName && !isCurrentlyPaid && currentUser?.name === bill.payer) {
       const result = await confirm({
         title: 'Confirm Payment',
@@ -182,22 +220,10 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
         type: 'info',
         confirmText: 'Confirm Received',
         cancelText: 'Cancel',
-        rejectText: 'Reject' // New 3rd option
+        rejectText: 'Reject'
       });
-
-      if (result === false) return; // Cancel
-
-      if (result === 'reject') {
-        forceReject = true;
-      }
-
-      // If 'reject', we treat it as strictly *rejecting* a request (if any) or doing nothing if manual.
-      // Actually, if manual marking, 'Not Confirming' just means cancelling.
-      // But if it's a PENDING request, we need to handle Reject vs Confirm.
-      // Wait, this block is for UNPAID split. So Payer is initiating. 
-      // "Rejecting" implies they don't want to mark it paid. So essentially Cancel.
-      // The USER asked for: "Xác nhận" or "Không xác nhận" when clicking on a PENDING avatar?
-      // Let's verify where Pending logic is handled.
+      if (result === false) return;
+      if (result === 'reject') forceReject = true;
     }
 
     if (isCurrentlyPaid) {
@@ -213,47 +239,31 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
 
     try {
       const payload: { isSettled: boolean; paymentFor?: string; isPaid?: boolean } = { isSettled: !bill.isSettled };
-
       if (memberName) {
         if (split) {
           payload.paymentFor = memberName;
-          // Standard toggle
           let nextState = !split.isPaid;
-
-          if (forceReject) {
-            nextState = false;
-          }
-
-          // Special Case: Debtor cancelling their own PENDING request
-          // If it's Pending (and logically isPaid is false), clicking it should revert to false (Unpaid), not toggle to true.
-          if (split.isPending && currentUser?.name === memberName) {
-            nextState = false;
-          }
-
+          if (forceReject) nextState = false;
+          if (split.isPending && currentUser?.name === memberName) nextState = false;
           payload.isPaid = nextState;
         }
       }
-
       const res = await fetch(`/api/expenses/${bill.id}/settle`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
-
       if (!res.ok) {
         if (res.status === 403) throw new Error('Permission denied');
         throw new Error('Failed to update status');
       }
-
       const data = await res.json();
-
       if (data.isPending) {
         addToast('Confirmation request sent to Payer. Waiting for approval.', 'warning');
       } else {
         addToast('Payment status updated', 'success');
       }
-
-      if (onDelete) onDelete(); // Reload
+      if (onDelete) onDelete();
       if (onUpdate) onUpdate();
     } catch (e: unknown) {
       const errorMessage = e instanceof Error ? e.message : 'Lỗi cập nhật trạng thái';
@@ -262,7 +272,6 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
     }
   };
 
-  // Helper for Payer Avatar
   const getAvatarColor = (name: string) => {
     const colors = ['bg-blue-500', 'bg-red-500', 'bg-green-500', 'bg-amber-500', 'bg-purple-500', 'bg-pink-500'];
     let hash = 0;
@@ -270,53 +279,78 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
     return colors[Math.abs(hash) % colors.length];
   };
 
-  // Calculate deletable bills count for "select all" checkbox state
+  // --- FEATURE 6: Payment status summary ---
+  const getPaymentSummary = (bill: Bill) => {
+    const beneficiaries = (bill.beneficiaries || []).filter(name => name !== bill.payer);
+    if (beneficiaries.length === 0) return null;
+    const paidCount = beneficiaries.filter(name => {
+      const split = bill.splits?.find(s => s.member.name === name);
+      return split?.isPaid;
+    }).length;
+    const pendingCount = beneficiaries.filter(name => {
+      const split = bill.splits?.find(s => s.member.name === name);
+      return split?.isPending && !split?.isPaid;
+    }).length;
+    return { paid: paidCount, total: beneficiaries.length, pending: pendingCount };
+  };
+
+  // --- FEATURE 5: Swipe handlers ---
+  const handleTouchStart = useCallback((e: React.TouchEvent, id: number) => {
+    touchStartX.current = e.touches[0].clientX;
+    touchCurrentX.current = e.touches[0].clientX;
+  }, []);
+
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    touchCurrentX.current = e.touches[0].clientX;
+  }, []);
+
+  const handleTouchEnd = useCallback((id: number) => {
+    const diff = touchStartX.current - touchCurrentX.current;
+    if (diff > 60) {
+      setSwipedId(id);
+    } else if (diff < -30) {
+      setSwipedId(null);
+    }
+  }, []);
+
   const deletableBills = filteredBills.filter(b => currentUser?.name === b.payer);
   const isAllSelected = deletableBills.length > 0 && selectedIds.size === deletableBills.length;
 
+  // ========================= RENDER =========================
   return (
     <>
       <Card className="w-full premium-card border-none soft-shadow group/history overflow-visible">
-        <CardHeader className="pb-6 bg-gradient-to-br from-indigo-50/50 via-white to-transparent border-b border-indigo-50/50">
-          <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6">
-            <CardTitle className="text-xl flex items-center gap-3 text-slate-800">
-              <div className="p-2.5 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl shadow-lg shadow-blue-100/50 group-hover/history:scale-110 group-hover/history:rotate-3 transition-all duration-500 ring-2 ring-white">
-                <Clock className="w-5 h-5 text-white drop-shadow-sm" />
+        {/* --- FEATURE 4: Sticky Filter Bar --- */}
+        <CardHeader className="pb-4 bg-gradient-to-br from-indigo-50/50 via-white to-transparent border-b border-indigo-50/50 sticky top-0 z-30 backdrop-blur-md bg-white/80">
+          <div className="flex flex-col gap-4">
+            {/* Title Row */}
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-xl flex items-center gap-3 text-slate-800">
+                <div className="p-2.5 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl shadow-lg shadow-blue-100/50 group-hover/history:scale-110 group-hover/history:rotate-3 transition-all duration-500 ring-2 ring-white">
+                  <Clock className="w-5 h-5 text-white drop-shadow-sm" />
+                </div>
+                <span className="font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-slate-700 to-slate-900">Expense History</span>
+              </CardTitle>
+
+              <div className="flex items-center gap-2">
+                {selectedIds.size > 0 && (
+                  <Button variant="destructive" size="sm" onClick={handleBulkDelete} disabled={isBulkDeleting} className="animate-in fade-in zoom-in duration-200 shadow-md">
+                    {isBulkDeleting ? <span className="animate-spin mr-2">⏳</span> : <Trash2 className="w-4 h-4 mr-1" />}
+                    Delete ({selectedIds.size})
+                  </Button>
+                )}
+                {onRefresh && (
+                  <Button variant="outline" size="icon" onClick={onRefresh} disabled={isRefreshing} className="bg-white/80 backdrop-blur-sm border-slate-200 hover:bg-white hover:border-indigo-300 hover:text-indigo-600 transition-all shadow-sm rounded-xl" title="Refresh Data">
+                    <RefreshCw className={cn("w-4 h-4", isRefreshing ? "animate-spin text-indigo-600" : "text-slate-500")} />
+                  </Button>
+                )}
               </div>
-              <span className="font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-slate-700 to-slate-900">Expense History</span>
-            </CardTitle>
+            </div>
 
-            <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
-              {/* Bulk Delete Button */}
-              {selectedIds.size > 0 && (
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={handleBulkDelete}
-                  disabled={isBulkDeleting}
-                  className="animate-in fade-in zoom-in duration-200 shadow-md"
-                >
-                  {isBulkDeleting ? <span className="animate-spin mr-2">⏳</span> : <Trash2 className="w-4 h-4 mr-1" />}
-                  Delete ({selectedIds.size})
-                </Button>
-              )}
-
-              {/* Refresh Button */}
-              {onRefresh && (
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={onRefresh}
-                  disabled={isRefreshing}
-                  className="bg-white/80 backdrop-blur-sm border-slate-200 hover:bg-white hover:border-indigo-300 hover:text-indigo-600 transition-all shadow-sm rounded-xl"
-                  title="Refresh Data"
-                >
-                  <RefreshCw className={cn("w-4 h-4", isRefreshing ? "animate-spin text-indigo-600" : "text-slate-500")} />
-                </Button>
-              )}
-
-              <div className="relative flex-1 md:w-48 lg:w-64">
-                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+            {/* Filter Row */}
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="relative flex-1 min-w-[180px]">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder="Search description..."
                   value={searchTerm}
@@ -325,338 +359,421 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
                 />
               </div>
 
-              <div className="flex items-center gap-3">
-                {/* Type Filter */}
-                <Select value={filterType} onValueChange={setFilterType}>
-                  <SelectTrigger className="w-[160px] h-9 rounded-xl border-slate-200 bg-white/80 backdrop-blur-sm shadow-sm hover:bg-white hover:border-indigo-300 transition-all font-bold text-slate-600 text-xs uppercase tracking-wide focus:ring-indigo-100">
-                    <div className="flex items-center gap-2 truncate">
-                      <span className="text-slate-400 font-normal">Type:</span>
-                      <SelectValue placeholder="All" />
-                    </div>
-                  </SelectTrigger>
-                  <SelectContent className="rounded-xl shadow-xl border-slate-100 bg-white/95 backdrop-blur-md">
-                    <SelectItem value="ALL" className="font-medium text-slate-700 cursor-pointer focus:bg-indigo-50 focus:text-indigo-700 py-2.5">All</SelectItem>
-                    <SelectItem value="SHARED" className="font-medium text-indigo-600 cursor-pointer focus:bg-indigo-50 focus:text-indigo-700 py-2.5">
-                      <span className="flex items-center gap-2">🔹 Shared</span>
-                    </SelectItem>
-                    <SelectItem value="PRIVATE" className="font-medium text-amber-600 cursor-pointer focus:bg-amber-50 focus:text-amber-700 py-2.5">
-                      <span className="flex items-center gap-2">🔸 Private</span>
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
+              <Select value={filterType} onValueChange={setFilterType}>
+                <SelectTrigger className="w-[130px] h-9 rounded-xl border-slate-200 bg-white/80 backdrop-blur-sm shadow-sm hover:bg-white hover:border-indigo-300 transition-all font-bold text-slate-600 text-xs uppercase tracking-wide focus:ring-indigo-100">
+                  <div className="flex items-center gap-1.5 truncate">
+                    <Filter className="w-3 h-3 text-slate-400" />
+                    <SelectValue placeholder="All" />
+                  </div>
+                </SelectTrigger>
+                <SelectContent className="rounded-xl shadow-xl border-slate-100 bg-white/95 backdrop-blur-md">
+                  <SelectItem value="ALL" className="font-medium text-slate-700 cursor-pointer focus:bg-indigo-50 py-2.5">All</SelectItem>
+                  <SelectItem value="SHARED" className="font-medium text-indigo-600 cursor-pointer focus:bg-indigo-50 py-2.5">
+                    <span className="flex items-center gap-2">🔹 Shared</span>
+                  </SelectItem>
+                  <SelectItem value="PRIVATE" className="font-medium text-amber-600 cursor-pointer focus:bg-amber-50 py-2.5">
+                    <span className="flex items-center gap-2">🔸 Private</span>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
 
-                {/* Payer Filter */}
-                <Select value={filterPayer} onValueChange={setFilterPayer}>
-                  <SelectTrigger className="w-[180px] md:w-[200px] h-9 rounded-xl border-slate-200 bg-white/80 backdrop-blur-sm shadow-sm hover:bg-white hover:border-indigo-300 transition-all font-bold text-slate-600 text-xs uppercase tracking-wide focus:ring-indigo-100">
-                    <div className="flex items-center gap-1.5 truncate">
-                      <span className="text-slate-400 font-normal">Payer:</span>
-                      <SelectValue placeholder="All" />
-                    </div>
-                  </SelectTrigger>
-                  <SelectContent className="rounded-xl shadow-xl border-slate-100 bg-white/95 backdrop-blur-md max-h-[300px]">
-                    <SelectItem value="ALL" className="font-medium text-slate-700 cursor-pointer focus:bg-indigo-50 focus:text-indigo-700 py-2.5">
-                      All Members
-                    </SelectItem>
-                    {members.map(m => (
-                      <SelectItem key={m.id} value={m.name} className="font-medium text-slate-700 cursor-pointer focus:bg-indigo-50 focus:text-indigo-700 py-2.5">
-                        <div className="flex items-center gap-2">
-                          <div className={cn("w-5 h-5 rounded-full flex items-center justify-center text-white text-[9px] font-bold",
-                            ['bg-blue-500', 'bg-red-500', 'bg-green-500', 'bg-amber-500', 'bg-purple-500', 'bg-pink-500'][Math.abs(m.name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)) % 6]
-                          )}>
-                            {m.name.charAt(0).toUpperCase()}
-                          </div>
-                          {m.name}
+              <Select value={filterPayer} onValueChange={setFilterPayer}>
+                <SelectTrigger className="w-[150px] h-9 rounded-xl border-slate-200 bg-white/80 backdrop-blur-sm shadow-sm hover:bg-white hover:border-indigo-300 transition-all font-bold text-slate-600 text-xs uppercase tracking-wide focus:ring-indigo-100">
+                  <div className="flex items-center gap-1.5 truncate">
+                    <span className="text-slate-400 font-normal text-[10px]">Payer:</span>
+                    <SelectValue placeholder="All" />
+                  </div>
+                </SelectTrigger>
+                <SelectContent className="rounded-xl shadow-xl border-slate-100 bg-white/95 backdrop-blur-md max-h-[300px]">
+                  <SelectItem value="ALL" className="font-medium text-slate-700 cursor-pointer py-2.5">All Members</SelectItem>
+                  {members.map(m => (
+                    <SelectItem key={m.id} value={m.name} className="font-medium text-slate-700 cursor-pointer py-2.5">
+                      <div className="flex items-center gap-2">
+                        <div className={cn("w-5 h-5 rounded-full flex items-center justify-center text-white text-[9px] font-bold", getAvatarColor(m.name))}>
+                          {m.name.charAt(0).toUpperCase()}
                         </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+                        {m.name}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              {/* Select All Checkbox */}
+              <label className="hidden md:flex items-center gap-1.5 text-xs text-slate-500 cursor-pointer select-none hover:text-indigo-600 transition-colors">
+                <input type="checkbox" checked={isAllSelected} onChange={toggleAll} className="h-3.5 w-3.5 rounded border-slate-300 text-indigo-600 accent-indigo-600 cursor-pointer" />
+                All
+              </label>
             </div>
+
+            {/* --- FEATURE 3: Filter Totals --- */}
+            {filteredBills.length > 0 && (
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-slate-500">
+                  <span className="font-bold text-slate-700">{filteredBills.length}</span> khoản chi
+                  {isFiltered && <span className="text-indigo-500 ml-1">(đã lọc)</span>}
+                </span>
+                <span className="font-black text-base tabular-nums bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent">
+                  {formatMoney(filterTotal)}
+                </span>
+              </div>
+            )}
           </div>
         </CardHeader>
 
-        <CardContent className="p-0 border-t border-indigo-50/50">
-          <div className="relative w-full overflow-auto max-h-[600px] custom-scrollbar">
-            <table className="w-full caption-bottom text-sm text-left">
-              <TableHeader className="bg-slate-50 sticky top-0 z-20 shadow-sm ring-1 ring-indigo-50/50">
-                <TableRow className="hover:bg-transparent border-none">
-                  <TableHead className="w-[50px] text-center p-2">
-                    <input
-                      type="checkbox"
-                      checked={isAllSelected}
-                      onChange={toggleAll}
-                      className="h-4 w-4 rounded-lg border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer accent-indigo-600"
-                    />
-                  </TableHead>
-                  <TableHead className="w-[110px] text-[10px] font-bold uppercase tracking-wider text-slate-500 whitespace-nowrap px-4">Date</TableHead>
-                  <TableHead className="w-auto min-w-[250px] text-[10px] font-bold uppercase tracking-wider text-slate-500 px-4">Description</TableHead>
-                  <TableHead className="w-[150px] text-right text-[10px] font-bold uppercase tracking-wider text-slate-500 px-4">Amount</TableHead>
-                  <TableHead className="w-[180px] text-left text-[10px] font-bold uppercase tracking-wider text-slate-500 pl-6">Payer</TableHead>
-                  <TableHead className="w-[30%] min-w-[300px] text-left text-[10px] font-bold uppercase tracking-wider text-slate-500 px-4">Split For</TableHead>
-                  <TableHead className="w-[120px] text-center text-[10px] font-bold uppercase tracking-wider text-slate-500">Status</TableHead>
-                  <TableHead className="w-[70px]"></TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredBills.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={8} className="h-64 text-center">
-                      <div className="flex flex-col items-center justify-center py-8 space-y-4 animate-in fade-in duration-500">
-                        <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-indigo-100 to-violet-100 flex items-center justify-center shadow-inner">
-                          <svg xmlns="http://www.w3.org/2000/svg" className="w-10 h-10 text-indigo-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                            <path d="M14 2v6h6" />
-                            <path d="M12 18v-6" />
-                            <path d="M9 15h6" />
-                          </svg>
-                        </div>
-                        <div className="space-y-1.5">
-                          <p className="text-base font-bold text-slate-600">No expenses yet</p>
-                          <p className="text-sm text-slate-400 max-w-sm">
-                            {searchTerm || filterPayer !== 'ALL' || filterType !== 'ALL'
-                              ? 'No records match your filters. Try adjusting the search or filters.'
-                              : 'Start by adding your first expense above.'}
-                          </p>
-                        </div>
-                        {!searchTerm && filterPayer === 'ALL' && filterType === 'ALL' && (
-                          <button
-                            onClick={() => {
-                              const form = document.getElementById('add-bill-form');
-                              if (form) form.scrollIntoView({ behavior: 'smooth' });
-                            }}
-                            className="mt-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 text-white text-sm font-bold shadow-lg shadow-green-200/50 hover:shadow-green-300 hover:scale-105 active:scale-95 transition-all"
-                          >
-                            + Add First Expense
-                          </button>
+        <CardContent className="p-0">
+          <div className="max-h-[600px] overflow-auto custom-scrollbar">
+            {filteredBills.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-16 space-y-4 animate-in fade-in duration-500">
+                <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-indigo-100 to-violet-100 flex items-center justify-center shadow-inner">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="w-10 h-10 text-indigo-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                    <path d="M14 2v6h6" /><path d="M12 18v-6" /><path d="M9 15h6" />
+                  </svg>
+                </div>
+                <div className="space-y-1.5 text-center">
+                  <p className="text-base font-bold text-slate-600">No expenses yet</p>
+                  <p className="text-sm text-slate-400 max-w-sm">
+                    {isFiltered ? 'No records match your filters.' : 'Start by adding your first expense above.'}
+                  </p>
+                </div>
+                {!isFiltered && (
+                  <button
+                    onClick={() => document.getElementById('add-bill-form')?.scrollIntoView({ behavior: 'smooth' })}
+                    className="mt-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 text-white text-sm font-bold shadow-lg shadow-green-200/50 hover:shadow-green-300 hover:scale-105 active:scale-95 transition-all"
+                  >
+                    + Add First Expense
+                  </button>
+                )}
+              </div>
+            ) : (
+              <>
+                {/* ========== DESKTOP TABLE (hidden on mobile) ========== */}
+                <div className="hidden md:block">
+                  {dateGroups.map((group) => {
+                    const isCollapsed = collapsedGroups.has(group.dateKey);
+                    return (
+                      <div key={group.dateKey} className="border-b border-slate-100 last:border-0">
+                        {/* --- FEATURE 1: Date Group Header --- */}
+                        <button
+                          onClick={() => toggleGroup(group.dateKey)}
+                          className="w-full flex items-center justify-between px-5 py-3 bg-gradient-to-r from-slate-50/80 to-white hover:from-indigo-50/50 hover:to-white transition-all duration-200 group/header sticky top-[140px] z-10 backdrop-blur-sm"
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className={cn("transition-transform duration-200", isCollapsed ? "" : "rotate-90")}>
+                              <ChevronRight className="w-4 h-4 text-slate-400" />
+                            </div>
+                            <Calendar className="w-4 h-4 text-indigo-500" />
+                            <span className="font-bold text-sm text-slate-700">{group.dateLabel}</span>
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 bg-slate-100 px-2 py-0.5 rounded-md">
+                              {group.bills.length} khoản
+                            </span>
+                          </div>
+                          <span className="font-black text-sm tabular-nums text-indigo-600">
+                            {formatMoney(group.total)}
+                          </span>
+                        </button>
+
+                        {/* Bills in this group */}
+                        {!isCollapsed && (
+                          <table className="w-full text-sm">
+                            <tbody>
+                              {group.bills.map((b) => {
+                                const isSelected = selectedIds.has(b.id);
+                                const isPayer = currentUser?.name === b.payer;
+                                const canDelete = isPayer && !isLocked;
+                                const paymentSummary = getPaymentSummary(b);
+
+                                return (
+                                  <tr
+                                    key={b.id}
+                                    className={cn(
+                                      "group transition-all duration-200 border-b border-slate-50 last:border-0",
+                                      isSelected ? "bg-indigo-50/60" : "bg-white hover:bg-indigo-50/20",
+                                      b.isSettled ? "opacity-50" : ""
+                                    )}
+                                  >
+                                    {/* Checkbox */}
+                                    <td className="w-[40px] text-center px-2 py-3">
+                                      <input type="checkbox" checked={isSelected} onChange={() => toggleRow(b.id)} disabled={!canDelete}
+                                        className={cn("h-4 w-4 rounded border-slate-300 accent-indigo-600", canDelete ? "cursor-pointer" : "cursor-not-allowed opacity-30")}
+                                      />
+                                    </td>
+
+                                    {/* Type Badge */}
+                                    <td className="w-[70px] py-3">
+                                      <span className={cn(
+                                        "text-[9px] uppercase font-bold px-2 py-0.5 rounded-md tracking-wider border",
+                                        b.type === 'SHARED' ? "text-indigo-600 bg-indigo-50 border-indigo-100" : "text-amber-600 bg-amber-50 border-amber-100"
+                                      )}>
+                                        {b.type === 'SHARED' ? 'SHARED' : 'PRIVATE'}
+                                      </span>
+                                    </td>
+
+                                    {/* Description */}
+                                    <td className="py-3 min-w-[200px]">
+                                      <span className={cn("text-sm font-medium", b.isSettled ? "text-slate-400 line-through" : "text-slate-800")}>
+                                        {b.note}
+                                      </span>
+                                    </td>
+
+                                    {/* Amount */}
+                                    <td className="py-3 text-right px-4 w-[140px]">
+                                      <span className={cn("font-bold tabular-nums", b.isSettled ? "text-slate-300 line-through" : "text-slate-900")}>
+                                        {formatMoney(b.amount)}
+                                      </span>
+                                    </td>
+
+                                    {/* Payer */}
+                                    <td className="py-3 px-2 w-[140px]">
+                                      <div className="flex items-center gap-2">
+                                        <div className={cn("w-7 h-7 rounded-full flex items-center justify-center text-white font-bold text-[10px] shadow-sm ring-2 ring-white", getAvatarColor(b.payer))}>
+                                          {b.payer.charAt(0).toUpperCase()}
+                                        </div>
+                                        <span className="text-xs text-slate-600 font-medium truncate max-w-[80px]">{b.payer}</span>
+                                      </div>
+                                    </td>
+
+                                    {/* Split For Avatars */}
+                                    <td className="py-3 px-2">
+                                      <div className="flex flex-wrap items-center gap-1.5">
+                                        {(b.beneficiaries || []).map((name, idx) => {
+                                          const split = b.splits?.find(s => s.member.name === name);
+                                          const isPaid = split?.isPaid;
+                                          const isPending = split?.isPending;
+                                          const isBeneficiary = currentUser?.name === name;
+                                          const isSelf = name === b.payer;
+                                          const canToggle = (isPayer || isBeneficiary) && !isSelf && !isLocked;
+
+                                          return (
+                                            <button
+                                              key={idx}
+                                              onClick={(e) => { e.stopPropagation(); if (!isSelf) handleToggleSettle(b, name); }}
+                                              disabled={isSelf || !canToggle}
+                                              className={cn(
+                                                "flex items-center gap-1.5 border rounded-full pl-0.5 pr-2.5 py-0.5 transition-all duration-200 text-[11px] font-semibold",
+                                                isSelf ? "bg-slate-50 border-slate-100 opacity-60 cursor-default" :
+                                                  canToggle ? "hover:shadow-md active:scale-95 cursor-pointer" : "cursor-not-allowed opacity-60",
+                                                isPaid ? "bg-emerald-50 border-emerald-200 text-emerald-700" :
+                                                  isPending ? "bg-amber-50 border-amber-200 text-amber-700" :
+                                                    "bg-slate-50 border-slate-200 text-slate-600"
+                                              )}
+                                            >
+                                              <div className={cn("w-5 h-5 rounded-full flex items-center justify-center text-white font-bold text-[9px] relative", getAvatarColor(name))}>
+                                                {name.charAt(0).toUpperCase()}
+                                                {isPaid && (
+                                                  <div className="absolute -bottom-0.5 -right-0.5 bg-emerald-500 rounded-full w-2.5 h-2.5 border border-white flex items-center justify-center">
+                                                    <svg className="w-1.5 h-1.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={4} d="M5 13l4 4L19 7" /></svg>
+                                                  </div>
+                                                )}
+                                                {isPending && !isPaid && (
+                                                  <div className="absolute -bottom-0.5 -right-0.5 bg-amber-500 rounded-full w-2.5 h-2.5 border border-white flex items-center justify-center">
+                                                    <Clock className="w-1.5 h-1.5 text-white" />
+                                                  </div>
+                                                )}
+                                              </div>
+                                              {name}
+                                            </button>
+                                          );
+                                        })}
+                                      </div>
+                                    </td>
+
+                                    {/* --- FEATURE 6: Status Summary --- */}
+                                    <td className="py-3 px-2 w-[120px]">
+                                      {paymentSummary ? (
+                                        <button
+                                          onClick={() => handleToggleSettle(b)}
+                                          disabled={!isPayer || isLocked}
+                                          className={cn(
+                                            "flex items-center gap-1.5 text-[11px] font-bold rounded-lg px-2.5 py-1.5 transition-all",
+                                            isPayer && !isLocked ? "cursor-pointer hover:shadow-md active:scale-95" : "cursor-not-allowed opacity-60",
+                                            paymentSummary.paid === paymentSummary.total
+                                              ? "bg-emerald-100 text-emerald-700 border border-emerald-200"
+                                              : paymentSummary.pending > 0
+                                                ? "bg-amber-50 text-amber-700 border border-amber-200"
+                                                : "bg-slate-100 text-slate-600 border border-slate-200"
+                                          )}
+                                        >
+                                          {paymentSummary.paid === paymentSummary.total ? (
+                                            <><svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd" /></svg> Done</>
+                                          ) : (
+                                            <>{paymentSummary.paid}/{paymentSummary.total} paid</>
+                                          )}
+                                        </button>
+                                      ) : (
+                                        <span className="text-[10px] text-slate-300">—</span>
+                                      )}
+                                    </td>
+
+                                    {/* Actions */}
+                                    <td className="py-3 pr-3 w-[80px]">
+                                      <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                                        <Button variant="ghost" size="icon"
+                                          className={cn("h-8 w-8 rounded-lg", isPayer ? "text-blue-600 hover:bg-blue-50" : "text-slate-300 cursor-not-allowed")}
+                                          onClick={() => isPayer && !isLocked && setEditingBill(b)} disabled={!isPayer || isLocked}>
+                                          <Edit className="w-3.5 h-3.5" />
+                                        </Button>
+                                        <Button variant="ghost" size="icon"
+                                          className={cn("h-8 w-8 rounded-lg", canDelete ? "text-red-600 hover:bg-red-50" : "text-slate-300 cursor-not-allowed")}
+                                          onClick={() => canDelete && handleDeleteClick(b.id)} disabled={!canDelete}>
+                                          {deletingId === b.id ? <div className="w-3.5 h-3.5 border-2 border-red-500 border-t-transparent rounded-full animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
+                                        </Button>
+                                      </div>
+                                    </td>
+                                  </tr>
+                                );
+                              })}
+                            </tbody>
+                          </table>
                         )}
                       </div>
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  filteredBills.map((b) => {
-                    const isSelected = selectedIds.has(b.id);
-                    // Permission: Strictly Payer only
-                    const isPayer = currentUser?.name === b.payer;
-                    const canDelete = isPayer && !isLocked;
-
-                    return (
-                      <TableRow
-                        key={b.id}
-                        className={cn(
-                          "group transition-all duration-500 border-b border-indigo-50/50 last:border-0",
-                          isSelected ? "bg-indigo-50/60" : "bg-white hover:bg-indigo-50/30",
-                          b.isSettled ? "opacity-60 bg-slate-50/30 active:scale-[0.99]" : "active:scale-[0.995]"
-                        )}
-                      >
-                        <TableCell className="text-center p-2">
-                          <input
-                            type="checkbox"
-                            checked={isSelected}
-                            onChange={() => toggleRow(b.id)}
-                            disabled={!canDelete}
-                            className={cn(
-                              "h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 accent-blue-600",
-                              canDelete ? "cursor-pointer" : "cursor-not-allowed opacity-40"
-                            )}
-                            title={canDelete ? "Select to delete" : `Only Payer (${b.payer}) can delete this bill`}
-                          />
-                        </TableCell>
-                        <TableCell className="py-5">
-                          <div className="flex flex-col">
-                            <span className={cn("text-sm font-semibold text-slate-700 font-mono", b.isSettled ? "text-slate-400 line-through" : "")}>
-                              {b.date ? new Date(b.date).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' }) : '-'}
-                            </span>
-                            <span className={cn(
-                              "text-[9px] uppercase font-bold mt-1.5 w-fit px-2 py-0.5 rounded-md tracking-wider border",
-                              b.type === 'SHARED' ? "text-indigo-600 bg-indigo-50 border-indigo-100" : "text-amber-600 bg-amber-50 border-amber-100"
-                            )}>
-                              {b.type === 'SHARED' ? 'SHARED' : 'PRIVATE'}
-                            </span>
-                          </div>
-                        </TableCell>
-
-                        <TableCell className="py-4">
-                          <div className="flex items-center gap-2">
-                            <span className={cn("text-base font-medium", b.isSettled ? "text-slate-500 line-through decoration-slate-400" : "text-slate-800")}>
-                              {b.note}
-                            </span>
-                          </div>
-                        </TableCell>
-
-                        <TableCell className="text-right py-5">
-                          <span className={cn("text-base font-bold tabular-nums tracking-tight", b.isSettled ? "text-slate-300 line-through" : "text-slate-900")}>
-                            {formatMoney(b.amount)}
-                          </span>
-                        </TableCell>
-
-                        <TableCell className="pl-6 py-4">
-                          <div className="flex items-center gap-3">
-                            <div className={cn("w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-xs shadow-sm ring-2 ring-white", getAvatarColor(b.payer))}>
-                              {b.payer.charAt(0).toUpperCase()}
-                            </div>
-                            <span className="text-sm text-slate-700 font-medium truncate max-w-[120px]">{b.payer}</span>
-                          </div>
-                        </TableCell>
-
-                        <TableCell className="py-4">
-                          <div className="flex flex-wrap items-center gap-2">
-                            {(b.beneficiaries || []).map((name, idx) => {
-                              // Find split status
-                              const split = b.splits?.find(s => s.member.name === name);
-                              const isPaid = split?.isPaid;
-                              const isPending = split?.isPending;
-                              const paidAt = split?.paidAt;
-
-                              // Permission Logic:
-                              // - If Paid: Only Payer/Admin can untoggle
-                              // - If Pending: Debtor can cancel, Payer/Admin can confirm
-                              // - If Unpaid: Both can mark as Paid (Debtor -> Pending, Payer -> Paid)
-                              const isBeneficiary = currentUser?.name === name;
-                              const isSelf = name === b.payer;
-
-                              // UNLOCKED: Allow both Payer and Beneficiary to toggle status (Undo if needed)
-                              const canToggle = (isPayer || isBeneficiary) && !isSelf && !isLocked;
-
-                              const formattedPaidAt = paidAt ? new Date(paidAt).toLocaleString('vi-VN', {
-                                day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit'
-                              }) : '';
-
-                              if (isSelf) {
-                                return (
-                                  <div key={idx} className="flex items-center gap-2 border rounded-full pl-1 pr-3 py-1 bg-slate-50 border-slate-100 opacity-70 cursor-default" title="Payer (Paid)">
-                                    <div className={cn("w-5 h-5 rounded-full flex items-center justify-center text-white font-bold text-[9px] relative", getAvatarColor(name))}>
-                                      {name.charAt(0).toUpperCase()}
-                                    </div>
-                                    <span className="text-xs font-bold text-slate-500">{name}</span>
-                                  </div>
-                                );
-                              }
-
-                              return (
-                                <button key={idx}
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleToggleSettle(b, name);
-                                  }}
-                                  disabled={!canToggle}
-                                  className={cn(
-                                    "flex items-center gap-2 border rounded-full pl-1 pr-3 py-1 transition-all duration-200",
-                                    canToggle ? "hover:shadow-md active:scale-95 cursor-pointer" : "cursor-not-allowed opacity-70",
-                                    isPaid
-                                      ? "bg-emerald-50 border-emerald-200 hover:bg-emerald-100 shadow-sm"
-                                      : isPending
-                                        ? "bg-amber-50 border-amber-200 hover:bg-amber-100 shadow-sm"
-                                        : "bg-slate-50 border-slate-200 hover:bg-slate-100"
-                                  )}
-                                  title={
-                                    !canToggle
-                                      ? (isPaid ? 'Payment Confirmed (Cannot undo)' : 'You do not have permission')
-                                      : isPending
-                                        ? `${name} paid (Confirmed at: ${formattedPaidAt}).${currentUser?.name === name ? ' Click to undo.' : ''}`
-                                        : isPending
-                                          ? `${name} is waiting for payer confirmation. Click to cancel.`
-                                          : `Mark ${name} as Paid`
-                                  }
-                                >
-                                  <div className={cn("w-5 h-5 rounded-full flex items-center justify-center text-white font-bold text-[9px] relative", getAvatarColor(name))}>
-                                    {name.charAt(0).toUpperCase()}
-                                    {isPaid && (
-                                      <div className="absolute -bottom-1 -right-1 bg-emerald-500 rounded-full w-3 h-3 border-2 border-white flex items-center justify-center shadow-sm">
-                                        <svg className="w-2 h-2 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={4} d="M5 13l4 4L19 7" />
-                                        </svg>
-                                      </div>
-                                    )}
-                                    {isPending && !isPaid && (
-                                      <div className="absolute -bottom-1 -right-1 bg-amber-500 rounded-full w-3 h-3 border-2 border-white flex items-center justify-center">
-                                        <Clock className="w-2 h-2 text-white" />
-                                      </div>
-                                    )}
-                                  </div>
-                                  <span className={cn(
-                                    "text-xs font-bold tracking-tight",
-                                    isPaid ? "text-emerald-700" : isPending ? "text-amber-700" : "text-slate-600"
-                                  )}>
-                                    {name}
-                                    {isPending && !isPaid && <span className="ml-1 text-[9px] opacity-70">(Waiting...)</span>}
-                                  </span>
-                                </button>
-                              )
-                            })}
-                          </div>
-                        </TableCell>
-
-                        {/* Status Column - Global Toggle */}
-                        <TableCell className="text-center py-4">
-                          <button
-                            onClick={() => handleToggleSettle(b)}
-                            disabled={!isPayer || isLocked}
-                            className={cn(
-                              "relative inline-flex items-center justify-center w-8 h-8 rounded-full transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-100",
-                              isPayer ? "cursor-pointer" : "cursor-not-allowed opacity-40 grayscale",
-                              b.isSettled
-                                ? "bg-emerald-100 text-emerald-600 hover:bg-emerald-200 ring-1 ring-emerald-200 shadow-md scale-105"
-                                : "bg-white text-slate-300 border-2 border-slate-200 hover:border-blue-400 hover:text-blue-500 hover:shadow-md hover:scale-110"
-                            )}
-                            title={!isPayer ? "Only Payer can settle all" : (b.isSettled ? "Expense is fully settled (Locked)" : "Mark all as Paid")}
-                          >
-                            {b.isSettled ? (
-                              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
-                                <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd" />
-                              </svg>
-                            ) : (
-                              <div className="w-1.5 h-1.5 bg-current rounded-full" />
-                            )}
-                          </button>
-                        </TableCell>
-
-                        <TableCell className="py-4 text-right pr-4">
-                          <div className="flex items-center justify-end gap-2 transition-opacity duration-300">
-                            <div title={isPayer ? "Edit Bill" : `Only Payer (${b.payer}) can edit`}>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className={cn(
-                                  "h-9 w-9 rounded-xl transition-all active:scale-95 shadow-sm border border-transparent",
-                                  isPayer
-                                    ? "text-blue-600 bg-blue-50 hover:bg-blue-100 hover:border-blue-200"
-                                    : "text-slate-300 bg-slate-50 cursor-not-allowed opacity-50"
-                                )}
-                                onClick={() => isPayer && !isLocked && setEditingBill(b)}
-                                disabled={!isPayer || isLocked}
-                              >
-                                <Edit className="w-4 h-4 stroke-[2.5]" />
-                              </Button>
-                            </div>
-                            <div title={canDelete ? "Delete Bill" : `Only Payer (${b.payer}) can delete`}>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className={cn(
-                                  "h-9 w-9 rounded-xl transition-all active:scale-95 shadow-sm border border-transparent",
-                                  canDelete
-                                    ? "text-red-600 bg-red-50 hover:bg-red-100 hover:border-red-200"
-                                    : "text-slate-300 bg-slate-50 cursor-not-allowed opacity-50"
-                                )}
-                                onClick={() => canDelete && handleDeleteClick(b.id)}
-                                disabled={!canDelete}
-                              >
-                                {deletingId === b.id ? (
-                                  <div className="w-4 h-4 border-2 border-red-500 border-t-transparent rounded-full animate-spin" />
-                                ) : (
-                                  <Trash2 className="w-4 h-4 stroke-[2.5]" />
-                                )}
-                              </Button>
-                            </div>
-                          </div>
-                        </TableCell>
-                      </TableRow>
                     );
-                  })
-                )}
-              </TableBody>
-            </table>
+                  })}
+                </div>
+
+                {/* ========== MOBILE CARDS (visible on mobile only) ========== */}
+                <div className="md:hidden divide-y divide-slate-100">
+                  {dateGroups.map((group) => {
+                    const isCollapsed = collapsedGroups.has(group.dateKey);
+                    return (
+                      <div key={group.dateKey}>
+                        {/* Mobile Date Header */}
+                        <button
+                          onClick={() => toggleGroup(group.dateKey)}
+                          className="w-full flex items-center justify-between px-4 py-3 bg-slate-50/80 active:bg-slate-100 transition-colors"
+                        >
+                          <div className="flex items-center gap-2">
+                            <ChevronDown className={cn("w-4 h-4 text-slate-400 transition-transform duration-200", isCollapsed ? "-rotate-90" : "")} />
+                            <Calendar className="w-3.5 h-3.5 text-indigo-500" />
+                            <span className="font-bold text-xs text-slate-700">{group.dateLabel}</span>
+                            <span className="text-[10px] text-slate-400">({group.bills.length})</span>
+                          </div>
+                          <span className="font-bold text-xs tabular-nums text-indigo-600">{formatMoney(group.total)}</span>
+                        </button>
+
+                        {/* Mobile Cards */}
+                        {!isCollapsed && group.bills.map((b) => {
+                          const isPayer = currentUser?.name === b.payer;
+                          const canDelete = isPayer && !isLocked;
+                          const paymentSummary = getPaymentSummary(b);
+                          const isSwiped = swipedId === b.id;
+
+                          return (
+                            <div
+                              key={b.id}
+                              className="relative overflow-hidden"
+                              onTouchStart={(e) => handleTouchStart(e, b.id)}
+                              onTouchMove={handleTouchMove}
+                              onTouchEnd={() => handleTouchEnd(b.id)}
+                            >
+                              {/* --- FEATURE 5: Swipe reveal actions --- */}
+                              <div className="absolute right-0 top-0 bottom-0 flex items-stretch z-0">
+                                <button
+                                  onClick={() => { isPayer && !isLocked && setEditingBill(b); setSwipedId(null); }}
+                                  className={cn("w-16 flex items-center justify-center transition-colors", isPayer ? "bg-blue-500 text-white active:bg-blue-600" : "bg-slate-200 text-slate-400")}
+                                  disabled={!isPayer || isLocked}
+                                >
+                                  <Edit className="w-5 h-5" />
+                                </button>
+                                <button
+                                  onClick={() => { canDelete && handleDeleteClick(b.id); setSwipedId(null); }}
+                                  className={cn("w-16 flex items-center justify-center transition-colors", canDelete ? "bg-red-500 text-white active:bg-red-600" : "bg-slate-200 text-slate-400")}
+                                  disabled={!canDelete}
+                                >
+                                  <Trash2 className="w-5 h-5" />
+                                </button>
+                              </div>
+
+                              {/* Card content */}
+                              <div
+                                className={cn(
+                                  "relative z-10 bg-white px-4 py-3.5 transition-transform duration-200 ease-out",
+                                  isSwiped ? "-translate-x-32" : "translate-x-0",
+                                  b.isSettled ? "opacity-50" : ""
+                                )}
+                                onClick={() => isSwiped && setSwipedId(null)}
+                              >
+                                <div className="flex items-start justify-between gap-3">
+                                  {/* Left: Info */}
+                                  <div className="flex-1 min-w-0">
+                                    <div className="flex items-center gap-2 mb-1.5">
+                                      <span className={cn(
+                                        "text-[9px] uppercase font-bold px-1.5 py-0.5 rounded tracking-wider",
+                                        b.type === 'SHARED' ? "text-indigo-600 bg-indigo-50" : "text-amber-600 bg-amber-50"
+                                      )}>
+                                        {b.type}
+                                      </span>
+                                      <span className={cn("text-sm font-semibold truncate", b.isSettled ? "text-slate-400 line-through" : "text-slate-800")}>
+                                        {b.note}
+                                      </span>
+                                    </div>
+                                    <div className="flex items-center gap-2 text-xs text-slate-500">
+                                      <div className="flex items-center gap-1">
+                                        <div className={cn("w-4 h-4 rounded-full flex items-center justify-center text-white font-bold text-[7px]", getAvatarColor(b.payer))}>
+                                          {b.payer.charAt(0).toUpperCase()}
+                                        </div>
+                                        <span className="font-medium">{b.payer}</span>
+                                      </div>
+                                      {paymentSummary && (
+                                        <>
+                                          <span className="text-slate-300">·</span>
+                                          <span className={cn("font-bold",
+                                            paymentSummary.paid === paymentSummary.total ? "text-emerald-600" :
+                                              paymentSummary.pending > 0 ? "text-amber-600" : "text-slate-400"
+                                          )}>
+                                            {paymentSummary.paid}/{paymentSummary.total} paid
+                                          </span>
+                                        </>
+                                      )}
+                                    </div>
+
+                                    {/* Mobile beneficiary pills */}
+                                    <div className="flex flex-wrap gap-1 mt-2">
+                                      {(b.beneficiaries || []).filter(name => name !== b.payer).map((name, idx) => {
+                                        const split = b.splits?.find(s => s.member.name === name);
+                                        const isPaid = split?.isPaid;
+                                        const isPending = split?.isPending;
+                                        const isBeneficiary = currentUser?.name === name;
+                                        const canToggle = (isPayer || isBeneficiary) && !isLocked;
+
+                                        return (
+                                          <button
+                                            key={idx}
+                                            onClick={(e) => { e.stopPropagation(); handleToggleSettle(b, name); }}
+                                            disabled={!canToggle}
+                                            className={cn(
+                                              "text-[10px] font-bold px-2 py-0.5 rounded-full border transition-all",
+                                              canToggle ? "active:scale-95" : "opacity-60",
+                                              isPaid ? "bg-emerald-50 border-emerald-200 text-emerald-700" :
+                                                isPending ? "bg-amber-50 border-amber-200 text-amber-700" :
+                                                  "bg-slate-50 border-slate-200 text-slate-500"
+                                            )}
+                                          >
+                                            {isPaid ? '✓ ' : isPending ? '⏳ ' : ''}{name}
+                                          </button>
+                                        );
+                                      })}
+                                    </div>
+                                  </div>
+
+                                  {/* Right: Amount */}
+                                  <div className="text-right shrink-0">
+                                    <span className={cn("text-base font-black tabular-nums", b.isSettled ? "text-slate-300 line-through" : "text-slate-900")}>
+                                      {formatMoney(b.amount)}
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
+            )}
           </div>
         </CardContent>
 
@@ -665,10 +782,7 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
             bill={editingBill}
             members={members}
             onClose={() => setEditingBill(null)}
-            onSave={() => {
-              setEditingBill(null);
-              onDelete();
-            }}
+            onSave={() => { setEditingBill(null); onDelete(); }}
           />
         )}
       </Card>
