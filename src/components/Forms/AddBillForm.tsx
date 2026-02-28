@@ -52,7 +52,7 @@ const MAX_ROWS = 10;
 
 let rowCounter = 0;
 function generateRowId(): string {
-    return `row-${Date.now()}-${++rowCounter}-${Math.random().toString(36).slice(2, 8)}`;
+    return `row-${++rowCounter}`;
 }
 
 function createEmptyRow(defaultPayerId: string): ExpenseRow {
@@ -60,7 +60,7 @@ function createEmptyRow(defaultPayerId: string): ExpenseRow {
         id: generateRowId(),
         description: '',
         amount: '',
-        date: new Date(),
+        date: undefined,
         payerId: defaultPayerId,
         type: 'SHARED',
         beneficiaryIds: [],
@@ -89,7 +89,12 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
         return activeMembers.length > 0 ? activeMembers[0].id.toString() : '';
     };
 
-    const [rows, setRows] = useState<ExpenseRow[]>([createEmptyRow('')]);
+    const [rows, setRows] = useState<ExpenseRow[]>(() => [createEmptyRow('')]);
+
+    // Set today's date on client only (avoids SSR hydration mismatch)
+    React.useEffect(() => {
+        setRows(prev => prev.map(r => r.date === undefined ? { ...r, date: new Date() } : r));
+    }, []);
 
     // Fetch current user
     React.useEffect(() => {
@@ -136,7 +141,7 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
             addToast(`Tối đa ${MAX_ROWS} khoản chi mỗi lần`, 'warning');
             return;
         }
-        setRows(prev => [...prev, createEmptyRow(getDefaultPayerId())]);
+        setRows(prev => [...prev, { ...createEmptyRow(getDefaultPayerId()), date: new Date() }]);
     };
 
     const removeRow = (rowId: string) => {
@@ -242,7 +247,7 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
             }
 
             // Reset to single empty row
-            setRows([createEmptyRow(getDefaultPayerId())]);
+            setRows([{ ...createEmptyRow(getDefaultPayerId()), date: new Date() }]);
             onAdd();
         } catch (error) {
             console.error(error);
