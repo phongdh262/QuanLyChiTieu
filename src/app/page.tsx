@@ -282,8 +282,8 @@ export default function Home() {
           </header>
 
           {/* Page Content */}
-          <main className="flex-1 px-4 lg:px-6 py-5">
-            <div className="space-y-5">
+          <main className="flex-1 px-4 lg:px-6 py-4">
+            <div className="space-y-4">
 
               {/* SheetSelector Toolbar (create/edit/delete/lock actions) */}
               {workspace && (
@@ -299,7 +299,7 @@ export default function Home() {
               )}
 
               {calculations && (
-                <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-700">
 
                   {/* QUICK STATS */}
                   <QuickStats members={members} calculations={calculations} bills={bills} />
