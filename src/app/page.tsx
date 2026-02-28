@@ -282,7 +282,7 @@ export default function Home() {
           </header>
 
           {/* Page Content */}
-          <main className="flex-1 px-4 lg:px-8 py-6 max-w-[1200px] w-full mx-auto">
+          <main className="flex-1 px-4 lg:px-8 py-6">
             <div className="space-y-6">
 
               {/* SheetSelector Toolbar (create/edit/delete/lock actions) */}
