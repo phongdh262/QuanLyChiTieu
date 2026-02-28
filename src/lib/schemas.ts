@@ -33,6 +33,7 @@ export const updateExpenseSchema = z.object({
     type: z.enum(['SHARED', 'PRIVATE']),
     payerId: z.number().int(),
     beneficiaryIds: z.array(z.number()).optional(),
+    date: z.string().optional(),
 });
 
 export const updateMemberSchema = z.object({

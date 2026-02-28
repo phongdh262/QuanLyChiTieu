@@ -26,7 +26,7 @@ export async function PUT(
         if (!validation.success) {
             return NextResponse.json({ error: validation.error.issues[0].message }, { status: 400 });
         }
-        const { amount, description, payerId, type, beneficiaryIds } = validation.data;
+        const { amount, description, payerId, type, beneficiaryIds, date } = validation.data;
 
         let workspaceId = 0;
         let sheetId = 0;
@@ -64,7 +64,8 @@ export async function PUT(
                     amount,
                     description,
                     type,
-                    payerId
+                    payerId,
+                    ...(date ? { date: new Date(date) } : {})
                 }
             });
 
