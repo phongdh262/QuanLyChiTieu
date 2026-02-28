@@ -83,16 +83,19 @@ export default function Sidebar({
                 )}
             >
                 {/* ===== LOGO ===== */}
-                <div className="flex items-center justify-between px-5 h-14 border-b border-white/[0.06] shrink-0">
-                    <div className="flex items-center gap-2.5 cursor-pointer group" onClick={() => window.location.href = '/'}>
-                        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-400 to-violet-500 flex items-center justify-center text-white font-black text-base shadow-lg shadow-indigo-500/20 group-hover:scale-105 transition-transform">
+                <div className="flex items-center justify-between px-4 h-14 border-b border-white/[0.06] shrink-0">
+                    <div className="flex items-center gap-3 cursor-pointer group" onClick={() => window.location.href = '/'}>
+                        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-400 to-violet-500 flex items-center justify-center text-white font-black text-lg shadow-lg shadow-indigo-500/20 group-hover:scale-105 transition-transform">
                             $
                         </div>
-                        <span className="font-black text-lg tracking-tight text-white/90">
-                            Chi<span className="text-indigo-400">Tiêu</span>
-                        </span>
+                        <div>
+                            <p className="font-black text-base tracking-tight text-white/90 leading-none">
+                                ChiTiêu<span className="text-indigo-400">App</span>
+                            </p>
+                            <p className="text-[9px] text-white/25 font-medium tracking-wider mt-0.5">QUẢN LÝ CHI TIÊU</p>
+                        </div>
                     </div>
-                    <button onClick={onToggle} className="lg:hidden p-1 rounded-md hover:bg-white/10 text-white/50">
+                    <button onClick={onToggle} className="lg:hidden p-1.5 rounded-md hover:bg-white/10 text-white/40">
                         <X className="w-4 h-4" />
                     </button>
                 </div>
@@ -209,24 +212,24 @@ export default function Sidebar({
                         <KeyRound className="w-4 h-4" />
                         Change Password
                     </button>
+                </div>
 
-                    <div className="border-t border-white/[0.06] my-1.5" />
-
-                    {/* User info + Logout */}
-                    <div className="flex items-center gap-2.5 px-3 py-2">
-                        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-400 to-violet-500 text-white flex items-center justify-center font-black text-xs shadow-md">
+                {/* ===== USER INFO ===== */}
+                <div className="border-t border-white/[0.06] p-3 shrink-0">
+                    <div className="flex items-center gap-3 px-2 py-2 rounded-xl bg-white/[0.04]">
+                        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-400 to-violet-500 text-white flex items-center justify-center font-black text-sm shadow-md">
                             {currentUser?.name?.charAt(0).toUpperCase() || 'U'}
                         </div>
                         <div className="flex-1 min-w-0">
-                            <p className="text-[12px] font-semibold text-white/80 truncate">{currentUser?.name || 'User'}</p>
+                            <p className="text-sm font-semibold text-white/85 truncate">{currentUser?.name || 'User'}</p>
                             <p className="text-[10px] text-white/30 truncate">@{currentUser?.username}</p>
                         </div>
                         <button
                             onClick={onLogout}
-                            className="p-1.5 rounded-md text-white/30 hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
-                            title="Sign Out"
+                            className="p-2 rounded-lg text-white/25 hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
+                            title="Đăng xuất"
                         >
-                            <LogOut className="w-3.5 h-3.5" />
+                            <LogOut className="w-4 h-4" />
                         </button>
                     </div>
                 </div>
