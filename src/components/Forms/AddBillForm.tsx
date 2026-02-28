@@ -50,9 +50,14 @@ interface ExpenseRow {
 
 const MAX_ROWS = 10;
 
+let rowCounter = 0;
+function generateRowId(): string {
+    return `row-${Date.now()}-${++rowCounter}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
 function createEmptyRow(defaultPayerId: string): ExpenseRow {
     return {
-        id: crypto.randomUUID(),
+        id: generateRowId(),
         description: '',
         amount: '',
         date: new Date(),
@@ -111,7 +116,7 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
     React.useEffect(() => {
         if (initialData) {
             setRows([{
-                id: crypto.randomUUID(),
+                id: generateRowId(),
                 description: initialData.description,
                 amount: initialData.amount.toString(),
                 date: new Date(),
