@@ -256,18 +256,18 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
 
     return (
         <Card className="w-full premium-card overflow-hidden border-none soft-shadow" id="add-bill-form">
-            <CardHeader className="bg-gradient-to-br from-indigo-50/80 via-white to-emerald-50/50 pb-4 border-b border-indigo-50/50">
+            <CardHeader className="bg-gradient-to-br from-indigo-50/80 dark:from-indigo-500/5 via-white dark:via-transparent to-emerald-50/50 dark:to-transparent pb-4 border-b border-indigo-50/50 dark:border-white/[0.06]">
                 <div className="flex items-center justify-between">
-                    <CardTitle className="text-xl flex items-center gap-3 text-slate-800">
-                        <div className="p-2.5 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl shadow-lg shadow-green-200/50 ring-2 ring-white">
+                    <CardTitle className="text-xl flex items-center gap-3 text-slate-800 dark:text-slate-100">
+                        <div className="p-2.5 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl shadow-lg shadow-green-200/50 dark:shadow-green-900/20 ring-2 ring-white dark:ring-white/10">
                             <PlusCircle className="w-5 h-5 text-white drop-shadow-sm" />
                         </div>
-                        <span className="font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-slate-700 to-slate-900">Add New Expense</span>
+                        <span className="font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-slate-700 dark:from-slate-200 to-slate-900 dark:to-white">Add New Expense</span>
                     </CardTitle>
                     {!isLocked && (
                         <div className="flex items-center gap-2">
                             {isBatch && (
-                                <span className="text-xs font-bold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-full border border-indigo-100 flex items-center gap-1">
+                                <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/10 px-2.5 py-1 rounded-full border border-indigo-100 dark:border-indigo-500/20 flex items-center gap-1">
                                     <Layers className="w-3 h-3" />
                                     {rows.length} dòng
                                 </span>
@@ -278,7 +278,7 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
                                 size="sm"
                                 onClick={addRow}
                                 disabled={rows.length >= MAX_ROWS}
-                                className="text-xs font-bold border-dashed border-emerald-300 text-emerald-700 hover:bg-emerald-50 hover:border-emerald-400 transition-all"
+                                className="text-xs font-bold border-dashed border-emerald-300 dark:border-emerald-500/30 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 hover:border-emerald-400 transition-all"
                             >
                                 <Plus className="w-3.5 h-3.5 mr-1" />
                                 Thêm dòng
@@ -291,12 +291,12 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
             {isLocked ? (
                 <CardContent className="p-6">
                     <div className="flex flex-col items-center justify-center py-8 text-center space-y-3">
-                        <div className="p-3 bg-amber-50 rounded-full">
+                        <div className="p-3 bg-amber-50 dark:bg-amber-500/10 rounded-full">
                             <Lock className="w-6 h-6 text-amber-500" />
                         </div>
                         <div>
-                            <p className="font-bold text-slate-700">🔒 Bảng chi tiêu đã được khóa</p>
-                            <p className="text-sm text-slate-500 mt-1">Không thể thêm khoản chi mới. Liên hệ Admin để mở khóa.</p>
+                            <p className="font-bold text-slate-700 dark:text-slate-200">🔒 Bảng chi tiêu đã được khóa</p>
+                            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Không thể thêm khoản chi mới. Liên hệ Admin để mở khóa.</p>
                         </div>
                     </div>
                 </CardContent>
@@ -307,7 +307,7 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
                             key={row.id}
                             className={cn(
                                 "space-y-3 transition-all duration-300 animate-in fade-in slide-in-from-top-2",
-                                isBatch && "relative p-4 rounded-xl border border-slate-200/80 bg-gradient-to-br from-slate-50/50 to-white hover:border-indigo-200/60 hover:shadow-sm"
+                                isBatch && "relative p-4 rounded-xl border border-slate-200/80 dark:border-white/[0.06] bg-gradient-to-br from-slate-50/50 dark:from-white/[0.02] to-white dark:to-transparent hover:border-indigo-200/60 dark:hover:border-indigo-500/20 hover:shadow-sm"
                             )}
                         >
                             {/* Row number badge + delete button for batch mode */}

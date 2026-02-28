@@ -78,7 +78,7 @@ export default function Sidebar({
             {/* Sidebar — dark premium theme */}
             <aside
                 className={cn(
-                    "fixed top-0 left-0 h-full z-50 lg:sticky lg:top-0 lg:z-auto",
+                    "fixed top-0 left-0 h-full z-50 lg:sticky lg:top-0 lg:h-screen lg:z-auto",
                     "w-[260px] flex flex-col",
                     "bg-[#1a1d2e] text-white",
                     "shadow-2xl lg:shadow-xl",

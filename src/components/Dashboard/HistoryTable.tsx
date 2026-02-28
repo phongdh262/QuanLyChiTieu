@@ -329,7 +329,7 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
                 <div className="p-2.5 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl shadow-lg shadow-blue-100/50 group-hover/history:scale-110 group-hover/history:rotate-3 transition-all duration-500 ring-2 ring-white">
                   <Clock className="w-5 h-5 text-white drop-shadow-sm" />
                 </div>
-                <span className="font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-slate-700 to-slate-900">Expense History</span>
+                <span className="font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-slate-700 dark:from-slate-200 to-slate-900 dark:to-white">Expense History</span>
               </CardTitle>
 
               <div className="flex items-center gap-2">

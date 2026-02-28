@@ -17,22 +17,18 @@ const formatMoney = (amount: number) => amount.toLocaleString('vi-VN');
 
 export default function PrivateMatrix({ members, matrixData }: Props) {
     const { matrix } = matrixData;
-    const [isOpen, setIsOpen] = React.useState(true); // Default open to show "premium" look immediately
-
-    // Logic: Row (Debtor) needs to pay Column (Creditor)
-    // matrix[payer][beneficiary] = Amount payer paid for beneficiary.
-    // So Beneficiary (Debtor) owes Payer (Creditor).
+    const [isOpen, setIsOpen] = React.useState(true);
 
     return (
         <Card className="premium-card overflow-hidden border-none soft-shadow mb-6 group/matrix">
-            <CardHeader className="cursor-pointer flex flex-row items-center justify-between pb-6 bg-gradient-to-br from-orange-50/50 via-white to-transparent border-b border-orange-100/50" onClick={() => setIsOpen(!isOpen)}>
-                <CardTitle className="text-xl flex items-center gap-3 text-slate-800">
-                    <div className="p-2.5 bg-gradient-to-br from-orange-500 to-rose-600 rounded-xl shadow-lg shadow-orange-100/50 group-hover/matrix:scale-110 group-hover/matrix:rotate-3 transition-all duration-500 ring-2 ring-white">
+            <CardHeader className="cursor-pointer flex flex-row items-center justify-between pb-6 bg-gradient-to-br from-orange-50/50 dark:from-orange-500/5 via-white dark:via-transparent to-transparent border-b border-orange-100/50 dark:border-white/[0.06]" onClick={() => setIsOpen(!isOpen)}>
+                <CardTitle className="text-xl flex items-center gap-3 text-slate-800 dark:text-slate-100">
+                    <div className="p-2.5 bg-gradient-to-br from-orange-500 to-rose-600 rounded-xl shadow-lg shadow-orange-100/50 dark:shadow-orange-900/20 group-hover/matrix:scale-110 group-hover/matrix:rotate-3 transition-all duration-500 ring-2 ring-white dark:ring-white/10">
                         <Banknote className="w-5 h-5 text-white drop-shadow-sm" />
                     </div>
-                    <span className="font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-slate-700 to-slate-900">Debt Matrix (Private)</span>
+                    <span className="font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-slate-700 dark:from-slate-200 to-slate-900 dark:to-white">Debt Matrix (Private)</span>
                 </CardTitle>
-                <div className={cn("rounded-full p-2 bg-white shadow-sm text-slate-400 ring-1 ring-slate-100 transition-transform duration-300 hover:bg-orange-50 hover:text-orange-600", isOpen && "rotate-180 bg-orange-100 text-orange-600")}>
+                <div className={cn("rounded-full p-2 bg-white dark:bg-white/[0.06] shadow-sm text-slate-400 ring-1 ring-slate-100 dark:ring-white/[0.06] transition-transform duration-300 hover:bg-orange-50 dark:hover:bg-orange-500/10 hover:text-orange-600", isOpen && "rotate-180 bg-orange-100 dark:bg-orange-500/20 text-orange-600")}>
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
                         <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" />
                     </svg>
@@ -46,9 +42,9 @@ export default function PrivateMatrix({ members, matrixData }: Props) {
                             <Table>
                                 <TableHeader>
                                     <TableRow>
-                                        <TableHead>Debtor</TableHead>
+                                        <TableHead className="dark:text-slate-300">Debtor</TableHead>
                                         {members.map(m => (
-                                            <TableHead key={m.name} className="text-right whitespace-nowrap">Pays {m.name}</TableHead>
+                                            <TableHead key={m.name} className="text-right whitespace-nowrap dark:text-slate-300">Pays {m.name}</TableHead>
                                         ))}
                                         <TableHead className="text-right font-bold text-destructive">Total Debt</TableHead>
                                     </TableRow>
@@ -57,19 +53,19 @@ export default function PrivateMatrix({ members, matrixData }: Props) {
                                     {members.map((debtor) => {
                                         let totalDebt = 0;
                                         return (
-                                            <TableRow key={debtor.name}>
-                                                <TableCell className="font-medium">{debtor.name}</TableCell>
+                                            <TableRow key={debtor.name} className="hover:bg-orange-50/30 dark:hover:bg-orange-500/5">
+                                                <TableCell className="font-medium dark:text-slate-200">{debtor.name}</TableCell>
                                                 {members.map((creditor) => {
                                                     const amount = matrix[creditor.name]?.[debtor.name] || 0;
 
                                                     if (creditor.name === debtor.name) {
-                                                        return <TableCell key={creditor.name} className="bg-muted/50" />;
+                                                        return <TableCell key={creditor.name} className="bg-muted/50 dark:bg-white/[0.02]" />;
                                                     }
 
                                                     if (amount > 0) {
                                                         totalDebt += amount;
                                                         return (
-                                                            <TableCell key={creditor.name} className="text-right font-bold bg-yellow-50 text-yellow-900 dark:bg-yellow-900/20 dark:text-yellow-200">
+                                                            <TableCell key={creditor.name} className="text-right font-bold bg-yellow-50 text-yellow-900 dark:bg-yellow-500/10 dark:text-yellow-300">
                                                                 {formatMoney(amount)}
                                                             </TableCell>
                                                         );
