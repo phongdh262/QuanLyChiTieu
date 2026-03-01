@@ -249,45 +249,50 @@ export default function Home() {
         {/* ===== MAIN CONTENT ===== */}
         <div className="flex-1 flex flex-col min-h-screen min-w-0">
           {/* Compact Header with SheetSelector */}
-          <header className="sticky top-0 z-30 bg-white/90 dark:bg-[#1e2235]/90 backdrop-blur-xl border-b border-slate-100/60 dark:border-white/[0.06] h-12 flex items-center px-4 lg:px-6 gap-3">
+          <header className="sticky top-0 z-30 bg-white/90 dark:bg-[#1e2235]/90 backdrop-blur-xl border-b border-slate-100/60 dark:border-white/[0.06] h-12 flex items-center px-4 lg:px-6 relative">
             {/* Mobile menu button spacer */}
-            <div className="w-10 lg:hidden" />
+            <div className="w-10 lg:hidden shrink-0" />
 
-            {/* Sheet Selector Toolbar — centered in header */}
-            <div className="flex-1 flex justify-center min-w-0">
-              {workspace && (
-                <SheetSelector
-                  sheets={sheets}
-                  currentSheetId={currentSheetId}
-                  workspaceId={workspace.id}
-                  onChange={setCurrentSheetId}
-                  onCreated={reload}
-                  isLocked={isLocked}
-                  currentUser={currentUser}
-                />
-              )}
+            {/* Sheet Selector Toolbar — absolute center */}
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <div className="pointer-events-auto">
+                {workspace && (
+                  <SheetSelector
+                    sheets={sheets}
+                    currentSheetId={currentSheetId}
+                    workspaceId={workspace.id}
+                    onChange={setCurrentSheetId}
+                    onCreated={reload}
+                    isLocked={isLocked}
+                    currentUser={currentUser}
+                  />
+                )}
+              </div>
             </div>
 
-            {/* Notification bell */}
-            <button
-              onClick={() => setIsNotificationsOpen(true)}
-              className="relative p-1.5 rounded-lg hover:bg-slate-50 dark:hover:bg-white/[0.06] text-slate-400 hover:text-indigo-600 transition-colors"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 0 1-3.46 0" />
-              </svg>
-              {pendingCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 flex items-center justify-center rounded-full bg-rose-500 text-[8px] font-black text-white min-w-[16px] h-[16px] px-1 ring-2 ring-white">
-                  {pendingCount}
-                </span>
-              )}
-            </button>
+            {/* Right side controls */}
+            <div className="ml-auto flex items-center gap-3 relative z-10">
+              {/* Notification bell */}
+              <button
+                onClick={() => setIsNotificationsOpen(true)}
+                className="relative p-1.5 rounded-lg hover:bg-slate-50 dark:hover:bg-white/[0.06] text-slate-400 hover:text-indigo-600 transition-colors"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                </svg>
+                {pendingCount > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 flex items-center justify-center rounded-full bg-rose-500 text-[8px] font-black text-white min-w-[16px] h-[16px] px-1 ring-2 ring-white">
+                    {pendingCount}
+                  </span>
+                )}
+              </button>
 
-            {/* User avatar */}
-            <div className="w-7 h-7 rounded-md bg-gradient-to-br from-indigo-500 to-violet-600 text-white flex items-center justify-center font-black text-[10px] shadow-sm cursor-default"
-              title={currentUser?.name || 'User'}
-            >
-              {currentUser?.name?.charAt(0).toUpperCase() || 'U'}
+              {/* User avatar */}
+              <div className="w-7 h-7 rounded-md bg-gradient-to-br from-indigo-500 to-violet-600 text-white flex items-center justify-center font-black text-[10px] shadow-sm cursor-default"
+                title={currentUser?.name || 'User'}
+              >
+                {currentUser?.name?.charAt(0).toUpperCase() || 'U'}
+              </div>
             </div>
           </header>
 
