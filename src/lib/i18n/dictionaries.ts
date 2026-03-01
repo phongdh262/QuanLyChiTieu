@@ -195,7 +195,7 @@ export const dictionaries = {
         debtMatrixPrivate: "Ma trận Nợ (Cá nhân)",
         member: "Thành viên",
         totalPaid: "Tổng Đã Trả",
-        netBalanceShared: "Net Balance (Shared)",
+        netBalanceShared: "Số Dư Ròng (Chung)",
         debtor: "Người nợ",
         pays: "Trả cho",
         totalDebt: "Tổng Nợ",

@@ -253,8 +253,8 @@ export default function Home() {
             {/* Mobile menu button spacer */}
             <div className="w-10 lg:hidden" />
 
-            {/* Sheet Selector Toolbar — in header */}
-            <div className="flex-1 min-w-0">
+            {/* Sheet Selector Toolbar — centered in header */}
+            <div className="flex-1 flex justify-center min-w-0">
               {workspace && (
                 <SheetSelector
                   sheets={sheets}
