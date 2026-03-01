@@ -119,6 +119,27 @@ export const dictionaries = {
         batchAdded: "Batch expenses added successfully",
         sheetLocked: "Sheet locked successfully",
         sheetUnlocked: "Sheet unlocked successfully",
+
+        // Notifications / ConfirmationModal
+        notifTitle: "Notifications",
+        notifSubtitle: "PAYMENT REQUESTS",
+        notifTabApprove: "To Approve",
+        notifTabSent: "Sent",
+        notifTabHistory: "History",
+        notifSearch: "Search transactions...",
+        notifNew: "New",
+        notifNoData: "No data",
+        notifNoResults: "No results found.",
+        notifNoActivity: "No activity in this section yet.",
+        notifSentTo: "Sent to",
+        notifReject: "Reject",
+        notifConfirmPayment: "Confirm Received",
+        notifWaiting: "Waiting for confirmation...",
+        notifReceivedFrom: "Received from",
+        notifPaidTo: "Paid to",
+        notifPaymentConfirmed: "Payment confirmed",
+        notifRequestRejected: "Request rejected",
+        notifError: "An error occurred",
     },
     vi: {
         // Sidebar
@@ -238,6 +259,27 @@ export const dictionaries = {
         batchAdded: "Thêm danh sách khoản chi thành công",
         sheetLocked: "Đã khóa bảng tính",
         sheetUnlocked: "Đã mở khóa bảng tính",
+
+        // Notifications / ConfirmationModal
+        notifTitle: "Thông báo",
+        notifSubtitle: "YÊU CẦU THANH TOÁN",
+        notifTabApprove: "Chờ duyệt",
+        notifTabSent: "Đã gửi",
+        notifTabHistory: "Lịch sử",
+        notifSearch: "Tìm kiếm giao dịch...",
+        notifNew: "Mới",
+        notifNoData: "Không có dữ liệu",
+        notifNoResults: "Không tìm thấy kết quả.",
+        notifNoActivity: "Chưa có hoạt động nào.",
+        notifSentTo: "Gửi đến",
+        notifReject: "Từ chối",
+        notifConfirmPayment: "Xác nhận đã nhận",
+        notifWaiting: "Đang chờ xác nhận...",
+        notifReceivedFrom: "Đã nhận từ",
+        notifPaidTo: "Đã trả cho",
+        notifPaymentConfirmed: "Đã xác nhận thanh toán",
+        notifRequestRejected: "Đã từ chối yêu cầu",
+        notifError: "Đã xảy ra lỗi",
     }
 };
 
