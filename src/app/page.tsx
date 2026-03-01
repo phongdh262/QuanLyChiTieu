@@ -248,17 +248,25 @@ export default function Home() {
 
         {/* ===== MAIN CONTENT ===== */}
         <div className="flex-1 flex flex-col min-h-screen min-w-0">
-          {/* Compact Header */}
+          {/* Compact Header with SheetSelector */}
           <header className="sticky top-0 z-30 bg-white/90 dark:bg-[#1e2235]/90 backdrop-blur-xl border-b border-slate-100/60 dark:border-white/[0.06] h-12 flex items-center px-4 lg:px-6 gap-3">
             {/* Mobile menu button spacer */}
             <div className="w-10 lg:hidden" />
 
-            {/* Sheet Title */}
-            <h1 className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.2em] truncate">
-              {activeSheetName}
-            </h1>
-
-            <div className="flex-1" />
+            {/* Sheet Selector Toolbar — in header */}
+            <div className="flex-1 min-w-0">
+              {workspace && (
+                <SheetSelector
+                  sheets={sheets}
+                  currentSheetId={currentSheetId}
+                  workspaceId={workspace.id}
+                  onChange={setCurrentSheetId}
+                  onCreated={reload}
+                  isLocked={isLocked}
+                  currentUser={currentUser}
+                />
+              )}
+            </div>
 
             {/* Notification bell */}
             <button
@@ -286,19 +294,6 @@ export default function Home() {
           {/* Page Content */}
           <main className="flex-1 px-4 lg:px-6 py-4">
             <div className="space-y-4">
-
-              {/* SheetSelector Toolbar (create/edit/delete/lock actions) */}
-              {workspace && (
-                <SheetSelector
-                  sheets={sheets}
-                  currentSheetId={currentSheetId}
-                  workspaceId={workspace.id}
-                  onChange={setCurrentSheetId}
-                  onCreated={reload}
-                  isLocked={isLocked}
-                  currentUser={currentUser}
-                />
-              )}
 
               {calculations && (
                 <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-700">

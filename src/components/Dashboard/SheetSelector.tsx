@@ -226,7 +226,7 @@ export default function SheetSelector({ sheets, currentSheetId, workspaceId, onC
     };
 
     return (
-        <div className="mb-6 flex items-center gap-2 h-10 w-full">
+        <div className="flex items-center gap-2 h-10 w-full">
             {isEditing ? (
                 <div className="flex gap-2 items-center flex-1 animate-in fade-in duration-200">
                     <Popover>
@@ -320,10 +320,10 @@ export default function SheetSelector({ sheets, currentSheetId, workspaceId, onC
                     </div>
                 </div>
             ) : (
-                <div className="flex items-center p-1.5 bg-white border border-slate-200 rounded-2xl shadow-sm gap-1 w-full max-w-fit mx-auto">
+                <div className="flex items-center p-1 bg-white dark:bg-white/[0.06] border border-slate-200 dark:border-white/[0.08] rounded-xl shadow-sm gap-1">
                     {/* Month Selector */}
                     <Select value={currentSheetId?.toString()} onValueChange={(val) => onChange(parseInt(val))}>
-                        <SelectTrigger className="h-9 w-[180px] text-base font-bold border-none shadow-none bg-transparent hover:bg-slate-50 focus:ring-0 px-3 rounded-xl transition-all">
+                        <SelectTrigger className="h-9 w-[180px] text-base font-bold border-none shadow-none bg-transparent hover:bg-slate-50 dark:hover:bg-white/[0.06] focus:ring-0 px-3 rounded-xl transition-all dark:text-slate-200">
                             <SelectValue placeholder="Chọn bảng chi tiêu" />
                         </SelectTrigger>
                         <SelectContent>
@@ -335,7 +335,7 @@ export default function SheetSelector({ sheets, currentSheetId, workspaceId, onC
                         </SelectContent>
                     </Select>
 
-                    <div className="w-px h-5 bg-slate-200 mx-0.5"></div>
+                    <div className="w-px h-5 bg-slate-200 dark:bg-white/[0.08] mx-0.5"></div>
 
                     {/* Actions Group */}
                     <div className="flex items-center gap-0.5">
@@ -364,7 +364,7 @@ export default function SheetSelector({ sheets, currentSheetId, workspaceId, onC
                     {/* Lock/Unlock Button - ADMIN only */}
                     {currentUser?.role === 'ADMIN' && (
                         <>
-                            <div className="w-px h-5 bg-slate-200 mx-0.5"></div>
+                            <div className="w-px h-5 bg-slate-200 dark:bg-white/[0.08] mx-0.5"></div>
                             <Button
                                 onClick={handleToggleLock}
                                 disabled={!currentSheetId || !sheets.some(s => s.id === currentSheetId) || isLocking}
@@ -389,7 +389,7 @@ export default function SheetSelector({ sheets, currentSheetId, workspaceId, onC
                         </>
                     )}
 
-                    <div className="w-px h-5 bg-slate-200 mx-0.5"></div>
+                    <div className="w-px h-5 bg-slate-200 dark:bg-white/[0.08] mx-0.5"></div>
 
                     {/* RECYCLE BIN */}
                     <Dialog open={isBinOpen} onOpenChange={setIsBinOpen}>
