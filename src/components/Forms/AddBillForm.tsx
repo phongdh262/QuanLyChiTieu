@@ -487,8 +487,8 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
                                             className={cn(
                                                 "flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-bold transition-all duration-200",
                                                 row.type === 'PRIVATE'
-                                                    ? "border-orange-500 bg-orange-50 text-orange-700 shadow-sm"
-                                                    : "border-slate-200 bg-white text-slate-500 hover:border-orange-200 hover:bg-orange-50/50"
+                                                    ? "border-amber-500 bg-amber-50 text-amber-700 shadow-sm dark:bg-amber-500/20 dark:text-amber-400 dark:border-amber-500/50"
+                                                    : "border-slate-200 bg-white text-slate-500 hover:border-amber-200 hover:bg-amber-50/50 dark:border-white/[0.08] dark:bg-white/[0.04] dark:text-slate-400 dark:hover:bg-amber-500/10 dark:hover:border-amber-500/30"
                                             )}
                                         >
                                             {row.type === 'PRIVATE' && <CheckCircle2 className="w-3 h-3" />}
@@ -500,8 +500,8 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
                                 {/* Beneficiaries inline when PRIVATE */}
                                 {row.type === 'PRIVATE' && (
                                     <div className="flex items-center gap-2 flex-wrap animate-in fade-in slide-in-from-left-2 duration-200">
-                                        <span className="text-xs font-semibold text-orange-600 flex items-center gap-1">
-                                            <Users className="w-3 h-3" /> Cho:
+                                        <span className="text-xs font-semibold text-amber-700 dark:text-amber-500 flex items-center gap-1">
+                                            <Users className="w-3 h-3" /> {t('for')}
                                         </span>
                                         {activeMembers.map(m => {
                                             const isSelected = row.beneficiaryIds.includes(m.id.toString());
@@ -513,8 +513,8 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
                                                     className={cn(
                                                         "flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold transition-all border",
                                                         isSelected
-                                                            ? "bg-orange-500 text-white border-orange-600 shadow-sm"
-                                                            : "bg-white border-slate-200 text-slate-600 hover:border-orange-300 hover:bg-orange-50"
+                                                            ? "bg-amber-500 dark:bg-amber-600/90 text-white border-amber-600 dark:border-amber-500 shadow-sm"
+                                                            : "bg-white dark:bg-white/[0.06] border-slate-200 dark:border-white/[0.08] text-slate-600 dark:text-slate-300 hover:border-amber-300 dark:hover:border-amber-500/50 hover:bg-amber-50 dark:hover:bg-amber-500/10"
                                                     )}
                                                 >
                                                     {isSelected && <Check className="w-3 h-3 stroke-[3px]" />}

@@ -379,7 +379,7 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
               </Select>
 
               <Select value={filterPayer} onValueChange={setFilterPayer}>
-                <SelectTrigger className="w-[150px] h-9 rounded-xl border-slate-200 dark:border-white/[0.08] bg-white/80 dark:bg-white/[0.06] backdrop-blur-sm shadow-sm hover:bg-white dark:hover:bg-white/[0.1] hover:border-indigo-300 transition-all font-bold text-slate-600 dark:text-slate-300 text-xs uppercase tracking-wide focus:ring-indigo-100">
+                <SelectTrigger className="min-w-[170px] w-auto h-9 rounded-xl border-slate-200 dark:border-white/[0.08] bg-white/80 dark:bg-white/[0.06] backdrop-blur-sm shadow-sm hover:bg-white dark:hover:bg-white/[0.1] hover:border-indigo-300 transition-all font-bold text-slate-600 dark:text-slate-300 text-xs uppercase tracking-wide focus:ring-indigo-100">
                   <div className="flex items-center gap-1.5 truncate">
                     <span className="text-slate-400 font-normal text-[10px]">{t('payerLabel')}:</span>
                     <SelectValue placeholder={t('all')} />
