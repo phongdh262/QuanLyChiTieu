@@ -57,7 +57,7 @@ interface DateGroup {
 }
 
 export default function HistoryTable({ bills, members, onDelete, onUpdate, onRefresh, isRefreshing, currentUser, isLocked }: Props) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { confirm } = useConfirm();
   const { addToast } = useToast();
   const [deletingId, setDeletingId] = useState<number | string | null>(null);
@@ -103,7 +103,7 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
         ? new Date(bill.date).toISOString().split('T')[0]
         : 'no-date';
       const dateLabel = bill.date
-        ? new Date(bill.date).toLocaleDateString('vi-VN', {
+        ? new Date(bill.date).toLocaleDateString(language === 'vi' ? 'vi-VN' : 'en-US', {
           weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric'
         })
         : t('noDate');
@@ -115,7 +115,7 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
       groups[dateKey].total += bill.amount;
     });
     return Object.values(groups);
-  }, [filteredBills, t]);
+  }, [filteredBills, language, t]);
 
   // --- FEATURE 3: Filter Totals ---
   const filterTotal = useMemo(() => filteredBills.reduce((s, b) => s + b.amount, 0), [filteredBills]);
@@ -210,7 +210,7 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
     const isCurrentlyPaid = memberName ? split?.isPaid : bill.isSettled;
 
     if (isCurrentlyPaid && !canSettleGlobal && currentUser?.name !== memberName) {
-      addToast('You do not have permission to cancel this payment confirmation!', 'warning');
+      addToast(t('cancelPaymentPermissionDenied'), 'warning');
       return;
     }
 
@@ -260,14 +260,19 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
       }
       const data = await res.json();
       if (data.isPending) {
-        addToast('Confirmation request sent to Payer. Waiting for approval.', 'warning');
+        addToast(t('confirmRequestSent'), 'warning');
       } else {
         addToast(t('paymentStatusUpdated'), 'success');
       }
       if (onDelete) onDelete();
       if (onUpdate) onUpdate();
     } catch (e: unknown) {
-      const errorMessage = e instanceof Error ? e.message : t('updateStatusError');
+      let errorMessage = t('updateStatusError');
+      if (e instanceof Error) {
+        if (e.message === 'Permission denied') errorMessage = t('permissionDeniedMessage');
+        else if (e.message === 'Failed to update status') errorMessage = t('updateStatusError');
+        else errorMessage = e.message;
+      }
       addToast(errorMessage, 'error');
       console.error(e);
     }
@@ -295,6 +300,14 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
     return { paid: paidCount, total: beneficiaries.length, pending: pendingCount };
   };
 
+  const withVars = (template: string, vars: Record<string, string | number>) => {
+    return Object.entries(vars).reduce((acc, [key, value]) => acc.replace(`{${key}}`, String(value)), template);
+  };
+
+  const getTypeLabel = (type: Bill['type']) => type === 'SHARED' ? t('sharedLabel') : t('privateLabel');
+  const getPaidLabel = (paid: number, total: number) => withVars(t('statusPaidCount'), { paid, total });
+  const getPendingLabel = (count: number) => withVars(t('statusPendingCount'), { count });
+
   const getStatusChip = (bill: Bill) => {
     const paymentSummary = getPaymentSummary(bill);
     if (!paymentSummary) return null;
@@ -302,20 +315,20 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
     if (paymentSummary.paid === paymentSummary.total) {
       return {
         className: "bg-emerald-100 text-emerald-700 border border-emerald-200 dark:bg-emerald-500/15 dark:text-emerald-300 dark:border-emerald-500/20",
-        label: 'Done'
+        label: t('statusDone')
       };
     }
 
     if (paymentSummary.pending > 0) {
       return {
         className: "bg-amber-100 text-amber-700 border border-amber-200 dark:bg-amber-500/15 dark:text-amber-300 dark:border-amber-500/20",
-        label: `${paymentSummary.pending} pending`
+        label: getPendingLabel(paymentSummary.pending)
       };
     }
 
     return {
       className: "bg-slate-100 text-slate-600 border border-slate-200 dark:bg-white/[0.04] dark:text-slate-300 dark:border-white/[0.08]",
-      label: `${paymentSummary.paid}/${paymentSummary.total} paid`
+      label: getPaidLabel(paymentSummary.paid, paymentSummary.total)
     };
   };
 
@@ -365,7 +378,7 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
                   </Button>
                 )}
                 {onRefresh && (
-                  <Button variant="outline" size="icon" onClick={onRefresh} disabled={isRefreshing} className="bg-white/80 dark:bg-white/[0.06] backdrop-blur-sm border-slate-200 dark:border-white/[0.08] hover:bg-white dark:hover:bg-white/[0.1] hover:border-blue-300 dark:hover:border-blue-500/40 hover:text-blue-600 transition-all shadow-sm rounded-xl" title="Refresh Data">
+                  <Button variant="outline" size="icon" onClick={onRefresh} disabled={isRefreshing} className="bg-white/80 dark:bg-white/[0.06] backdrop-blur-sm border-slate-200 dark:border-white/[0.08] hover:bg-white dark:hover:bg-white/[0.1] hover:border-blue-300 dark:hover:border-blue-500/40 hover:text-blue-600 transition-all shadow-sm rounded-xl" title={t('reload')}>
                     <RefreshCw className={cn("w-4 h-4", isRefreshing ? "animate-spin text-blue-600 dark:text-blue-400" : "text-slate-500 dark:text-slate-400")} />
                   </Button>
                 )}
@@ -394,10 +407,10 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
                 <SelectContent className="rounded-xl shadow-xl border-slate-200/80 dark:border-white/[0.08] bg-white/95 dark:bg-[#20263a]/95 backdrop-blur-md">
                   <SelectItem value="ALL" className="font-medium text-slate-700 cursor-pointer focus:bg-indigo-50 py-2.5">{t('all')}</SelectItem>
                   <SelectItem value="SHARED" className="font-medium text-indigo-600 cursor-pointer focus:bg-indigo-50 dark:focus:bg-indigo-500/20 py-2.5">
-                    <span className="flex items-center gap-2">Shared</span>
+                    <span className="flex items-center gap-2">{t('sharedLabel')}</span>
                   </SelectItem>
                   <SelectItem value="PRIVATE" className="font-medium text-cyan-600 cursor-pointer focus:bg-cyan-50 dark:focus:bg-cyan-500/20 py-2.5">
-                    <span className="flex items-center gap-2">Private</span>
+                    <span className="flex items-center gap-2">{t('privateLabel')}</span>
                   </SelectItem>
                 </SelectContent>
               </Select>
@@ -538,7 +551,7 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
                                           "text-[10px] uppercase font-bold px-2 py-1 rounded-md tracking-[0.18em]",
                                           b.type === 'SHARED' ? "text-indigo-700 dark:text-indigo-300 bg-indigo-100 dark:bg-indigo-500/15" : "text-cyan-700 dark:text-cyan-300 bg-cyan-100 dark:bg-cyan-500/15"
                                         )}>
-                                          {b.type === 'SHARED' ? 'Shared' : 'Private'}
+                                          {getTypeLabel(b.type)}
                                         </span>
                                         {statusChip && (
                                           <span className={cn("text-[11px] font-bold px-2.5 py-1 rounded-full", statusChip.className)}>
@@ -552,10 +565,10 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
                                           "text-base font-black tracking-tight",
                                           b.isSettled ? "text-slate-400 dark:text-slate-500 line-through" : "text-slate-800 dark:text-slate-100"
                                         )}>
-                                          {b.note || 'Untitled expense'}
+                                          {b.note || t('untitledExpense')}
                                         </p>
                                         <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
-                                          <span className="font-semibold uppercase tracking-[0.16em] text-[10px] text-slate-400 dark:text-slate-500">Paid by</span>
+                                          <span className="font-semibold uppercase tracking-[0.16em] text-[10px] text-slate-400 dark:text-slate-500">{t('paidByLabel')}</span>
                                           <div className="flex items-center gap-2 rounded-full border border-slate-200/80 bg-slate-50/80 px-2.5 py-1 dark:border-white/[0.08] dark:bg-white/[0.04]">
                                             <div className={cn("w-6 h-6 rounded-full flex items-center justify-center text-white font-bold text-[10px]", getAvatarColor(b.payer))}>
                                               {b.payer.charAt(0).toUpperCase()}
@@ -568,7 +581,7 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
 
                                     <div className="min-w-0 space-y-2 border-l border-slate-200/70 pl-4 dark:border-white/[0.08]">
                                       <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400 dark:text-slate-500">
-                                        Beneficiaries
+                                        {t('beneficiariesLabel')}
                                       </div>
                                       <div className="flex flex-wrap items-center gap-2">
                                         {nonPayerBeneficiaries.map((name, idx) => {
@@ -617,14 +630,14 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
                                                 : "bg-slate-100 text-slate-600 border border-slate-200 dark:bg-white/[0.04] dark:text-slate-300 dark:border-white/[0.08]"
                                           )}
                                         >
-                                          {paymentSummary.paid === paymentSummary.total ? 'Done' : `${paymentSummary.paid}/${paymentSummary.total} paid`}
+                                          {paymentSummary.paid === paymentSummary.total ? t('statusDone') : getPaidLabel(paymentSummary.paid, paymentSummary.total)}
                                         </button>
                                       )}
                                     </div>
 
                                     <div className="flex flex-col items-end gap-3 border-l border-slate-200/70 pl-4 dark:border-white/[0.08]">
                                       <div className="text-right">
-                                        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">Amount</p>
+                                        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">{t('amountColumnLabel')}</p>
                                         <p className={cn(
                                           "mt-1 text-[17px] font-black tabular-nums tracking-tight",
                                           b.isSettled ? "text-slate-300 dark:text-slate-500 line-through" : "text-slate-900 dark:text-slate-100"
@@ -735,10 +748,10 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
                                         "text-[9px] uppercase font-bold px-1.5 py-0.5 rounded tracking-wider",
                                         b.type === 'SHARED' ? "text-indigo-600 bg-indigo-50 dark:bg-indigo-500/20 dark:text-indigo-300" : "text-cyan-700 bg-cyan-50 dark:bg-cyan-500/20 dark:text-cyan-300"
                                       )}>
-                                        {b.type}
+                                        {getTypeLabel(b.type)}
                                       </span>
                                       <span className={cn("text-sm font-semibold truncate", b.isSettled ? "text-slate-400 dark:text-slate-500 line-through" : "text-slate-800 dark:text-slate-100")}>
-                                        {b.note}
+                                        {b.note || t('untitledExpense')}
                                       </span>
                                     </div>
                                     <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
@@ -755,7 +768,7 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
                                             paymentSummary.paid === paymentSummary.total ? "text-emerald-600" :
                                               paymentSummary.pending > 0 ? "text-amber-600" : "text-slate-400"
                                           )}>
-                                            {paymentSummary.paid}/{paymentSummary.total} paid
+                                            {getPaidLabel(paymentSummary.paid, paymentSummary.total)}
                                           </span>
                                         </>
                                       )}
