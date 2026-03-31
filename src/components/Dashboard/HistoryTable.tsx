@@ -274,7 +274,7 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
   };
 
   const getAvatarColor = (name: string) => {
-    const colors = ['bg-blue-500', 'bg-red-500', 'bg-green-500', 'bg-amber-500', 'bg-purple-500', 'bg-pink-500'];
+    const colors = ['bg-blue-500', 'bg-cyan-500', 'bg-emerald-500', 'bg-indigo-500', 'bg-teal-500', 'bg-slate-600'];
     let hash = 0;
     for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
     return colors[Math.abs(hash) % colors.length];
@@ -296,7 +296,7 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
   };
 
   // --- FEATURE 5: Swipe handlers ---
-  const handleTouchStart = useCallback((e: React.TouchEvent, _id: number) => {
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
     touchStartX.current = e.touches[0].clientX;
     touchCurrentX.current = e.touches[0].clientX;
   }, []);
@@ -322,12 +322,12 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
     <>
       <Card className="w-full premium-card border-none soft-shadow group/history overflow-visible">
         {/* --- FEATURE 4: Sticky Filter Bar --- */}
-        <CardHeader className="pb-4 bg-gradient-to-br from-indigo-50/50 dark:from-indigo-500/5 via-white dark:via-transparent to-transparent border-b border-indigo-50/50 dark:border-white/[0.06] sticky top-0 z-30 backdrop-blur-md bg-white/80 dark:bg-[#1e2235]/80">
+        <CardHeader className="pb-4 bg-gradient-to-br from-slate-50/95 dark:from-slate-500/5 via-white dark:via-transparent to-blue-50/40 dark:to-transparent border-b border-slate-200/60 dark:border-white/[0.06] sticky top-0 z-30 backdrop-blur-md bg-white/85 dark:bg-[#1e2235]/85">
           <div className="flex flex-col gap-4">
             {/* Title Row */}
             <div className="flex items-center justify-between">
-              <CardTitle className="text-xl flex items-center gap-3 text-slate-800">
-                <div className="p-2.5 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl shadow-lg shadow-blue-100/50 group-hover/history:scale-110 group-hover/history:rotate-3 transition-all duration-500 ring-2 ring-white">
+              <CardTitle className="text-lg sm:text-xl flex items-center gap-3 text-slate-800 dark:text-slate-100">
+                <div className="p-2.5 bg-gradient-to-br from-blue-600 to-cyan-600 rounded-xl shadow-lg shadow-blue-200/40 dark:shadow-blue-950/30 group-hover/history:scale-110 group-hover/history:rotate-3 transition-all duration-500 ring-2 ring-white dark:ring-white/10">
                   <Clock className="w-5 h-5 text-white drop-shadow-sm" />
                 </div>
                 <span className="font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-slate-700 dark:from-slate-200 to-slate-900 dark:to-white">{t('expenseHistory')}</span>
@@ -341,8 +341,8 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
                   </Button>
                 )}
                 {onRefresh && (
-                  <Button variant="outline" size="icon" onClick={onRefresh} disabled={isRefreshing} className="bg-white/80 backdrop-blur-sm border-slate-200 hover:bg-white hover:border-indigo-300 hover:text-indigo-600 transition-all shadow-sm rounded-xl" title="Refresh Data">
-                    <RefreshCw className={cn("w-4 h-4", isRefreshing ? "animate-spin text-indigo-600" : "text-slate-500")} />
+                  <Button variant="outline" size="icon" onClick={onRefresh} disabled={isRefreshing} className="bg-white/80 dark:bg-white/[0.06] backdrop-blur-sm border-slate-200 dark:border-white/[0.08] hover:bg-white dark:hover:bg-white/[0.1] hover:border-blue-300 dark:hover:border-blue-500/40 hover:text-blue-600 transition-all shadow-sm rounded-xl" title="Refresh Data">
+                    <RefreshCw className={cn("w-4 h-4", isRefreshing ? "animate-spin text-blue-600 dark:text-blue-400" : "text-slate-500 dark:text-slate-400")} />
                   </Button>
                 )}
               </div>
@@ -356,36 +356,36 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
                   placeholder={t('searchDescription')}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-8 h-9 bg-white dark:bg-white/[0.06] shadow-sm border-slate-200 dark:border-white/[0.08] focus:border-indigo-300 focus:ring-indigo-100 dark:focus:ring-indigo-500/20 transition-all rounded-xl dark:text-slate-200 dark:placeholder:text-slate-500"
+                  className="pl-8 h-9 bg-white dark:bg-white/[0.06] shadow-sm border-slate-200 dark:border-white/[0.08] focus:border-blue-300 focus:ring-blue-100 dark:focus:ring-blue-500/20 transition-all rounded-xl dark:text-slate-200 dark:placeholder:text-slate-500"
                 />
               </div>
 
               <Select value={filterType} onValueChange={setFilterType}>
-                <SelectTrigger className="w-[130px] h-9 rounded-xl border-slate-200 dark:border-white/[0.08] bg-white/80 dark:bg-white/[0.06] backdrop-blur-sm shadow-sm hover:bg-white dark:hover:bg-white/[0.1] hover:border-indigo-300 transition-all font-bold text-slate-600 dark:text-slate-300 text-xs uppercase tracking-wide focus:ring-indigo-100">
+                <SelectTrigger className="w-[130px] h-9 rounded-xl border-slate-200 dark:border-white/[0.08] bg-white/80 dark:bg-white/[0.06] backdrop-blur-sm shadow-sm hover:bg-white dark:hover:bg-white/[0.1] hover:border-blue-300 transition-all font-bold text-slate-600 dark:text-slate-300 text-[11px] tracking-wide focus:ring-blue-100">
                   <div className="flex items-center gap-1.5 truncate">
                     <Filter className="w-3 h-3 text-slate-400" />
                     <SelectValue placeholder={t('all')} />
                   </div>
                 </SelectTrigger>
-                <SelectContent className="rounded-xl shadow-xl border-slate-100 bg-white/95 backdrop-blur-md">
+                <SelectContent className="rounded-xl shadow-xl border-slate-200/80 dark:border-white/[0.08] bg-white/95 dark:bg-[#20263a]/95 backdrop-blur-md">
                   <SelectItem value="ALL" className="font-medium text-slate-700 cursor-pointer focus:bg-indigo-50 py-2.5">{t('all')}</SelectItem>
-                  <SelectItem value="SHARED" className="font-medium text-indigo-600 cursor-pointer focus:bg-indigo-50 py-2.5">
-                    <span className="flex items-center gap-2">🔹 Shared</span>
+                  <SelectItem value="SHARED" className="font-medium text-indigo-600 cursor-pointer focus:bg-indigo-50 dark:focus:bg-indigo-500/20 py-2.5">
+                    <span className="flex items-center gap-2">Shared</span>
                   </SelectItem>
-                  <SelectItem value="PRIVATE" className="font-medium text-amber-600 cursor-pointer focus:bg-amber-50 py-2.5">
-                    <span className="flex items-center gap-2">🔸 Private</span>
+                  <SelectItem value="PRIVATE" className="font-medium text-cyan-600 cursor-pointer focus:bg-cyan-50 dark:focus:bg-cyan-500/20 py-2.5">
+                    <span className="flex items-center gap-2">Private</span>
                   </SelectItem>
                 </SelectContent>
               </Select>
 
               <Select value={filterPayer} onValueChange={setFilterPayer}>
-                <SelectTrigger className="min-w-[170px] w-auto h-9 rounded-xl border-slate-200 dark:border-white/[0.08] bg-white/80 dark:bg-white/[0.06] backdrop-blur-sm shadow-sm hover:bg-white dark:hover:bg-white/[0.1] hover:border-indigo-300 transition-all font-bold text-slate-600 dark:text-slate-300 text-xs uppercase tracking-wide focus:ring-indigo-100">
+                <SelectTrigger className="min-w-[170px] w-auto h-9 rounded-xl border-slate-200 dark:border-white/[0.08] bg-white/80 dark:bg-white/[0.06] backdrop-blur-sm shadow-sm hover:bg-white dark:hover:bg-white/[0.1] hover:border-blue-300 transition-all font-bold text-slate-600 dark:text-slate-300 text-[11px] tracking-wide focus:ring-blue-100">
                   <div className="flex items-center gap-1.5 truncate">
                     <span className="text-slate-400 font-normal text-[10px]">{t('payerLabel')}:</span>
                     <SelectValue placeholder={t('all')} />
                   </div>
                 </SelectTrigger>
-                <SelectContent className="rounded-xl shadow-xl border-slate-100 bg-white/95 backdrop-blur-md max-h-[300px]">
+                <SelectContent className="rounded-xl shadow-xl border-slate-200/80 dark:border-white/[0.08] bg-white/95 dark:bg-[#20263a]/95 backdrop-blur-md max-h-[300px]">
                   <SelectItem value="ALL" className="font-medium text-slate-700 cursor-pointer py-2.5">{t('allMembers')}</SelectItem>
                   {members.map(m => (
                     <SelectItem key={m.id} value={m.name} className="font-medium text-slate-700 cursor-pointer py-2.5">
@@ -412,9 +412,9 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
               <div className="flex items-center justify-between text-xs">
                 <span className="text-slate-500">
                   <span className="font-bold text-slate-700">{filteredBills.length}</span> {t('expensesCount')}
-                  {isFiltered && <span className="text-indigo-500 ml-1">({t('filtered')})</span>}
+                  {isFiltered && <span className="text-blue-600 dark:text-blue-400 ml-1">({t('filtered')})</span>}
                 </span>
-                <span className="font-black text-base tabular-nums bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent">
+                <span className="font-black text-base tabular-nums bg-gradient-to-r from-blue-700 to-cyan-600 bg-clip-text text-transparent">
                   {formatMoney(filterTotal)}
                 </span>
               </div>
@@ -426,8 +426,8 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
           <div className="max-h-[600px] overflow-auto custom-scrollbar">
             {filteredBills.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-16 space-y-4 animate-in fade-in duration-500">
-                <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-indigo-100 to-violet-100 flex items-center justify-center shadow-inner">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="w-10 h-10 text-indigo-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-blue-100 to-cyan-100 flex items-center justify-center shadow-inner">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="w-10 h-10 text-blue-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
                     <path d="M14 2v6h6" /><path d="M12 18v-6" /><path d="M9 15h6" />
                   </svg>
@@ -441,7 +441,7 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
                 {!isFiltered && (
                   <button
                     onClick={() => document.getElementById('add-bill-form')?.scrollIntoView({ behavior: 'smooth' })}
-                    className="mt-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 text-white text-sm font-bold shadow-lg shadow-green-200/50 hover:shadow-green-300 hover:scale-105 active:scale-95 transition-all"
+                    className="mt-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-600 text-white text-sm font-bold shadow-lg shadow-blue-200/50 hover:shadow-blue-300 hover:scale-105 active:scale-95 transition-all"
                   >
                     + {t('addFirstExpense')}
                   </button>
@@ -454,26 +454,26 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
                   {dateGroups.map((group) => {
                     const isCollapsed = collapsedGroups.has(group.dateKey);
                     return (
-                      <div key={group.dateKey} className="border-b border-slate-100 last:border-0">
+                      <div key={group.dateKey} className="border-b border-slate-100 dark:border-white/[0.06] last:border-0">
                         {/* --- FEATURE 1: Date Group Header --- */}
                         <button
                           onClick={() => toggleGroup(group.dateKey)}
-                          className="w-full flex items-center justify-between px-5 py-3 bg-gradient-to-r from-slate-50/80 dark:from-white/[0.03] to-transparent hover:from-indigo-50/60 dark:hover:from-indigo-500/10 hover:to-indigo-50/20 dark:hover:to-transparent transition-all duration-200 border-b border-slate-100 dark:border-white/[0.06]"
+                          className="w-full flex items-center justify-between px-5 py-3 bg-gradient-to-r from-slate-50/80 dark:from-white/[0.03] to-transparent hover:from-blue-50/70 dark:hover:from-blue-500/10 hover:to-cyan-50/25 dark:hover:to-transparent transition-all duration-200 border-b border-slate-100 dark:border-white/[0.06]"
                         >
                           <div className="flex items-center gap-3">
                             <div className={cn("transition-transform duration-200", isCollapsed ? "" : "rotate-90")}>
                               <ChevronRight className="w-4 h-4 text-slate-400" />
                             </div>
-                            <Calendar className="w-4 h-4 text-indigo-500" />
-                            <span className="font-bold text-[15px] text-slate-700 dark:text-slate-200">{group.dateLabel}</span>
+                            <Calendar className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                            <span className="font-bold text-sm sm:text-[15px] text-slate-700 dark:text-slate-200">{group.dateLabel}</span>
                             <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-white/[0.06] px-2.5 py-0.5 rounded-md">
                               {group.bills.length} {t('expensesCount')}
                             </span>
                           </div>
-                          <span className="font-black text-[15px] tabular-nums text-indigo-600">
-                            {formatMoney(group.total)}
-                          </span>
-                        </button>
+                            <span className="font-black text-[15px] tabular-nums text-blue-700 dark:text-blue-400">
+                              {formatMoney(group.total)}
+                            </span>
+                          </button>
 
                         {/* Bills in this group */}
                         {!isCollapsed && (
@@ -505,7 +505,7 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
                                     <td className="w-[80px] py-3 pl-1">
                                       <span className={cn(
                                         "text-[10px] uppercase font-bold px-2 py-1 rounded-md tracking-wider",
-                                        b.type === 'SHARED' ? "text-indigo-700 dark:text-indigo-400 bg-indigo-100 dark:bg-indigo-500/15" : "text-amber-700 dark:text-amber-400 bg-amber-100 dark:bg-amber-500/15"
+                                        b.type === 'SHARED' ? "text-indigo-700 dark:text-indigo-400 bg-indigo-100 dark:bg-indigo-500/15" : "text-cyan-700 dark:text-cyan-300 bg-cyan-100 dark:bg-cyan-500/15"
                                       )}>
                                         {b.type === 'SHARED' ? 'SHARED' : 'PRIVATE'}
                                       </span>
@@ -553,11 +553,11 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
                                               disabled={isSelf || !canToggle}
                                               className={cn(
                                                 "flex items-center gap-1.5 border rounded-full pl-0.5 pr-2.5 py-0.5 transition-all duration-200 text-xs font-semibold",
-                                                isSelf ? "bg-slate-50 border-slate-100 opacity-60 cursor-default" :
+                                                isSelf ? "bg-slate-50 dark:bg-white/[0.03] border-slate-100 dark:border-white/[0.06] opacity-60 cursor-default" :
                                                   canToggle ? "hover:shadow-md active:scale-95 cursor-pointer" : "cursor-not-allowed opacity-60",
                                                 isPaid ? "bg-emerald-50 border-emerald-200 text-emerald-700" :
                                                   isPending ? "bg-amber-50 border-amber-200 text-amber-700" :
-                                                    "bg-slate-50 border-slate-200 text-slate-600"
+                                                    "bg-slate-50 dark:bg-white/[0.03] border-slate-200 dark:border-white/[0.08] text-slate-600 dark:text-slate-300"
                                               )}
                                             >
                                               <div className={cn("w-6 h-6 rounded-full flex items-center justify-center text-white font-bold text-[10px] relative", getAvatarColor(name))}>
@@ -593,7 +593,7 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
                                               ? "bg-emerald-100 text-emerald-700 border border-emerald-200"
                                               : paymentSummary.pending > 0
                                                 ? "bg-amber-100 text-amber-700 border border-amber-200"
-                                                : "bg-slate-100 text-slate-600 border border-slate-200"
+                                                : "bg-slate-100 dark:bg-white/[0.04] text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-white/[0.08]"
                                           )}
                                         >
                                           {paymentSummary.paid === paymentSummary.total ? (
@@ -634,7 +634,7 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
                 </div>
 
                 {/* ========== MOBILE CARDS (visible on mobile only) ========== */}
-                <div className="md:hidden divide-y divide-slate-100">
+                  <div className="md:hidden divide-y divide-slate-100 dark:divide-white/[0.06]">
                   {dateGroups.map((group) => {
                     const isCollapsed = collapsedGroups.has(group.dateKey);
                     return (
@@ -642,15 +642,15 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
                         {/* Mobile Date Header */}
                         <button
                           onClick={() => toggleGroup(group.dateKey)}
-                          className="w-full flex items-center justify-between px-4 py-3 bg-slate-50/80 active:bg-slate-100 transition-colors"
+                          className="w-full flex items-center justify-between px-4 py-3 bg-slate-50/80 dark:bg-white/[0.03] active:bg-slate-100 dark:active:bg-white/[0.06] transition-colors"
                         >
                           <div className="flex items-center gap-2">
                             <ChevronDown className={cn("w-4 h-4 text-slate-400 transition-transform duration-200", isCollapsed ? "-rotate-90" : "")} />
-                            <Calendar className="w-3.5 h-3.5 text-indigo-500" />
-                            <span className="font-bold text-xs text-slate-700">{group.dateLabel}</span>
+                            <Calendar className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+                            <span className="font-bold text-xs text-slate-700 dark:text-slate-200">{group.dateLabel}</span>
                             <span className="text-[10px] text-slate-400">({group.bills.length})</span>
                           </div>
-                          <span className="font-bold text-xs tabular-nums text-indigo-600">{formatMoney(group.total)}</span>
+                          <span className="font-bold text-xs tabular-nums text-blue-700 dark:text-blue-400">{formatMoney(group.total)}</span>
                         </button>
 
                         {/* Mobile Cards */}
@@ -664,7 +664,7 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
                             <div
                               key={b.id}
                               className="relative overflow-hidden"
-                              onTouchStart={(e) => handleTouchStart(e, b.id)}
+                              onTouchStart={handleTouchStart}
                               onTouchMove={handleTouchMove}
                               onTouchEnd={() => handleTouchEnd(b.id)}
                             >
@@ -672,7 +672,7 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
                               <div className="absolute right-0 top-0 bottom-0 flex items-stretch z-0">
                                 <button
                                   onClick={() => { if (isPayer && !isLocked) setEditingBill(b); setSwipedId(null); }}
-                                  className={cn("w-16 flex items-center justify-center transition-colors", isPayer ? "bg-blue-500 text-white active:bg-blue-600" : "bg-slate-200 text-slate-400")}
+                                  className={cn("w-16 flex items-center justify-center transition-colors", isPayer ? "bg-blue-600 text-white active:bg-blue-700" : "bg-slate-200 text-slate-400")}
                                   disabled={!isPayer || isLocked}
                                 >
                                   <Edit className="w-5 h-5" />
@@ -688,8 +688,8 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
 
                               {/* Card content */}
                               <div
-                                className={cn(
-                                  "relative z-10 bg-white px-4 py-3.5 transition-transform duration-200 ease-out",
+                                  className={cn(
+                                  "relative z-10 bg-white dark:bg-[#1f2639] px-4 py-3.5 transition-transform duration-200 ease-out",
                                   isSwiped ? "-translate-x-32" : "translate-x-0",
                                   b.isSettled ? "opacity-50" : ""
                                 )}
@@ -701,15 +701,15 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
                                     <div className="flex items-center gap-2 mb-1.5">
                                       <span className={cn(
                                         "text-[9px] uppercase font-bold px-1.5 py-0.5 rounded tracking-wider",
-                                        b.type === 'SHARED' ? "text-indigo-600 bg-indigo-50" : "text-amber-600 bg-amber-50"
+                                        b.type === 'SHARED' ? "text-indigo-600 bg-indigo-50 dark:bg-indigo-500/20 dark:text-indigo-300" : "text-cyan-700 bg-cyan-50 dark:bg-cyan-500/20 dark:text-cyan-300"
                                       )}>
                                         {b.type}
                                       </span>
-                                      <span className={cn("text-sm font-semibold truncate", b.isSettled ? "text-slate-400 line-through" : "text-slate-800")}>
+                                      <span className={cn("text-sm font-semibold truncate", b.isSettled ? "text-slate-400 dark:text-slate-500 line-through" : "text-slate-800 dark:text-slate-100")}>
                                         {b.note}
                                       </span>
                                     </div>
-                                    <div className="flex items-center gap-2 text-xs text-slate-500">
+                                    <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
                                       <div className="flex items-center gap-1">
                                         <div className={cn("w-4 h-4 rounded-full flex items-center justify-center text-white font-bold text-[7px]", getAvatarColor(b.payer))}>
                                           {b.payer.charAt(0).toUpperCase()}
@@ -748,7 +748,7 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
                                               canToggle ? "active:scale-95" : "opacity-60",
                                               isPaid ? "bg-emerald-50 border-emerald-200 text-emerald-700" :
                                                 isPending ? "bg-amber-50 border-amber-200 text-amber-700" :
-                                                  "bg-slate-50 border-slate-200 text-slate-500"
+                                                    "bg-slate-50 dark:bg-white/[0.05] border-slate-200 dark:border-white/[0.08] text-slate-500 dark:text-slate-300"
                                             )}
                                           >
                                             {isPaid ? '✓ ' : isPending ? '⏳ ' : ''}{name}
@@ -760,7 +760,7 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
 
                                   {/* Right: Amount */}
                                   <div className="text-right shrink-0">
-                                    <span className={cn("text-base font-black tabular-nums", b.isSettled ? "text-slate-300 line-through" : "text-slate-900")}>
+                                    <span className={cn("text-base font-black tabular-nums", b.isSettled ? "text-slate-300 dark:text-slate-500 line-through" : "text-slate-900 dark:text-slate-100")}>
                                       {formatMoney(b.amount)}
                                     </span>
                                   </div>

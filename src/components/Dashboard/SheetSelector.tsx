@@ -47,6 +47,10 @@ export default function SheetSelector({ sheets, currentSheetId, workspaceId, onC
     const [loadingBin, setLoadingBin] = useState(false);
     const [deletingId, setDeletingId] = useState<number | null>(null);
 
+    const getErrorMessage = (error: unknown, fallback: string) => {
+        return error instanceof Error ? error.message : fallback;
+    };
+
     const fetchDeletedSheets = async () => {
         setLoadingBin(true);
         try {
@@ -86,9 +90,9 @@ export default function SheetSelector({ sheets, currentSheetId, workspaceId, onC
             onCreated();
             onChange(newSheet.id);
             addToast('Đã tạo bảng mới', 'success');
-        } catch (e: any) {
+        } catch (e: unknown) {
             console.error(e);
-            addToast(e.message || 'Lỗi khi tạo bảng mới', 'error');
+            addToast(getErrorMessage(e, 'Lỗi khi tạo bảng mới'), 'error');
         }
     };
 
@@ -137,9 +141,9 @@ export default function SheetSelector({ sheets, currentSheetId, workspaceId, onC
             }
             onCreated();
             addToast(`Đã ${actionText} bảng chi tiêu`, 'success');
-        } catch (e: any) {
+        } catch (e: unknown) {
             console.error(e);
-            addToast(e.message || `Lỗi khi ${actionText}`, 'error');
+            addToast(getErrorMessage(e, `Lỗi khi ${actionText}`), 'error');
         } finally {
             setIsLocking(false);
         }
@@ -155,9 +159,9 @@ export default function SheetSelector({ sheets, currentSheetId, workspaceId, onC
             onCreated();
             fetchDeletedSheets();
             addToast('Đã khôi phục bảng', 'success');
-        } catch (e: any) {
+        } catch (e: unknown) {
             console.error(e);
-            addToast(e.message || 'Lỗi khi khôi phục', 'error');
+            addToast(getErrorMessage(e, 'Lỗi khi khôi phục'), 'error');
         }
     };
 
@@ -183,9 +187,9 @@ export default function SheetSelector({ sheets, currentSheetId, workspaceId, onC
             setIsBinOpen(false);
             addToast('Đã xóa vĩnh viễn', 'success');
             onCreated(); // Reload workspace/sheets list
-        } catch (e: any) {
+        } catch (e: unknown) {
             console.error(e);
-            addToast(e.message || 'Lỗi khi xóa vĩnh viễn', 'error');
+            addToast(getErrorMessage(e, 'Lỗi khi xóa vĩnh viễn'), 'error');
         } finally {
             setDeletingId(null);
         }
@@ -219,14 +223,14 @@ export default function SheetSelector({ sheets, currentSheetId, workspaceId, onC
             setIsEditing(false);
             onCreated();
             addToast('Đã cập nhật tên', 'success');
-        } catch (e: any) {
+        } catch (e: unknown) {
             console.error(e);
-            addToast(e.message || 'Lỗi khi cập nhật tên', 'error');
+            addToast(getErrorMessage(e, 'Lỗi khi cập nhật tên'), 'error');
         }
     };
 
     return (
-        <div className="flex items-center gap-2 h-10 w-full">
+        <div className="flex h-10 w-full min-w-0 items-center gap-2">
             {isEditing ? (
                 <div className="flex gap-2 items-center flex-1 animate-in fade-in duration-200">
                     <Popover>
@@ -320,10 +324,10 @@ export default function SheetSelector({ sheets, currentSheetId, workspaceId, onC
                     </div>
                 </div>
             ) : (
-                <div className="flex items-center p-1 bg-white dark:bg-white/[0.06] border border-slate-200 dark:border-white/[0.08] rounded-xl shadow-sm gap-1">
+                <div className="no-scrollbar flex w-full min-w-0 items-center gap-1 overflow-x-auto rounded-xl border border-slate-200 bg-white p-1 shadow-sm dark:border-white/[0.08] dark:bg-white/[0.06]">
                     {/* Month Selector */}
                     <Select value={currentSheetId?.toString()} onValueChange={(val) => onChange(parseInt(val))}>
-                        <SelectTrigger className="h-9 w-[180px] text-base font-bold border-none shadow-none bg-transparent hover:bg-slate-50 dark:hover:bg-white/[0.06] focus:ring-0 px-3 rounded-xl transition-all dark:text-slate-200">
+                        <SelectTrigger className="h-8 w-[148px] shrink-0 rounded-xl border-none bg-transparent px-2.5 text-sm font-bold shadow-none transition-all hover:bg-slate-50 focus:ring-0 sm:h-9 sm:w-[180px] sm:px-3 sm:text-base dark:text-slate-200 dark:hover:bg-white/[0.06]">
                             <SelectValue placeholder="Chọn bảng chi tiêu" />
                         </SelectTrigger>
                         <SelectContent>
@@ -344,20 +348,20 @@ export default function SheetSelector({ sheets, currentSheetId, workspaceId, onC
                             disabled={!currentSheetId || !sheets.some(s => s.id === currentSheetId) || isLocked}
                             variant="ghost"
                             size="icon"
-                            className="h-9 w-9 text-blue-600 hover:bg-blue-50 rounded-lg disabled:opacity-30"
+                            className="h-8 w-8 rounded-lg text-blue-600 disabled:opacity-30 hover:bg-blue-50 sm:h-9 sm:w-9"
                             title="Đổi tên"
                         >
-                            <Edit className="w-4 h-4 stroke-[2.5]" />
+                            <Edit className="h-3.5 w-3.5 stroke-[2.5] sm:h-4 sm:w-4" />
                         </Button>
                         <Button
                             onClick={handleDelete}
                             disabled={!currentSheetId || !sheets.some(s => s.id === currentSheetId) || isLocked}
                             variant="ghost"
                             size="icon"
-                            className="h-9 w-9 text-red-600 hover:bg-red-50 rounded-lg disabled:opacity-30"
+                            className="h-8 w-8 rounded-lg text-red-600 disabled:opacity-30 hover:bg-red-50 sm:h-9 sm:w-9"
                             title="Xóa tháng này"
                         >
-                            <Trash2 className="w-4 h-4 stroke-[2.5]" />
+                            <Trash2 className="h-3.5 w-3.5 stroke-[2.5] sm:h-4 sm:w-4" />
                         </Button>
                     </div>
 
@@ -371,7 +375,7 @@ export default function SheetSelector({ sheets, currentSheetId, workspaceId, onC
                                 variant="ghost"
                                 size="icon"
                                 className={cn(
-                                    "h-9 w-9 rounded-lg disabled:opacity-30 transition-all",
+                                    "h-8 w-8 rounded-lg transition-all disabled:opacity-30 sm:h-9 sm:w-9",
                                     isLocked
                                         ? "text-amber-600 hover:bg-amber-50 hover:text-amber-700"
                                         : "text-green-600 hover:bg-green-50 hover:text-green-700"
@@ -381,9 +385,9 @@ export default function SheetSelector({ sheets, currentSheetId, workspaceId, onC
                                 {isLocking ? (
                                     <span className="animate-spin text-sm">⏳</span>
                                 ) : isLocked ? (
-                                    <Lock className="w-4 h-4 stroke-[2.5]" />
+                                    <Lock className="h-3.5 w-3.5 stroke-[2.5] sm:h-4 sm:w-4" />
                                 ) : (
-                                    <Unlock className="w-4 h-4 stroke-[2.5]" />
+                                    <Unlock className="h-3.5 w-3.5 stroke-[2.5] sm:h-4 sm:w-4" />
                                 )}
                             </Button>
                         </>
@@ -397,10 +401,10 @@ export default function SheetSelector({ sheets, currentSheetId, workspaceId, onC
                             <Button
                                 variant="ghost"
                                 size="icon"
-                                className="h-9 w-9 text-purple-600 hover:bg-purple-50 rounded-lg"
+                                className="h-8 w-8 rounded-lg text-purple-600 hover:bg-purple-50 sm:h-9 sm:w-9"
                                 title="Thùng rác"
                             >
-                                <RotateCcw className="w-4 h-4 stroke-[2.5]" />
+                                <RotateCcw className="h-3.5 w-3.5 stroke-[2.5] sm:h-4 sm:w-4" />
                             </Button>
                         </DialogTrigger>
                         <DialogContent className="max-w-md">

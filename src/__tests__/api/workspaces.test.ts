@@ -23,6 +23,16 @@ vi.mock('@/lib/auth', () => ({
 import prisma from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
 
+type WorkspaceWithRelations = {
+    id: number;
+    name?: string;
+    sheets: Array<{ id: number; name?: string; status: string; month?: number; year?: number }>;
+    members: Array<{ id: number; name: string; status: string }>;
+};
+
+const asWorkspaceFindManyResult = (value: WorkspaceWithRelations[]) =>
+    value as unknown as Awaited<ReturnType<typeof prisma.workspace.findMany>>;
+
 describe('Workspaces API Tests', () => {
     beforeEach(() => {
         vi.clearAllMocks();
@@ -45,8 +55,8 @@ describe('Workspaces API Tests', () => {
                 ]
             };
 
-            vi.mocked(prisma.workspace.findMany).mockResolvedValue([workspace] as any);
-            const result = await prisma.workspace.findMany({});
+            vi.mocked(prisma.workspace.findMany).mockResolvedValue(asWorkspaceFindManyResult([workspace]));
+            const result = await prisma.workspace.findMany({}) as unknown as WorkspaceWithRelations[];
 
             expect(result).toHaveLength(1);
             expect(result[0].sheets).toHaveLength(2);
@@ -64,10 +74,9 @@ describe('Workspaces API Tests', () => {
                 members: []
             };
 
-            vi.mocked(prisma.workspace.findMany).mockResolvedValue([workspace] as any);
-            const result = await prisma.workspace.findMany({});
-
-            const sheets = result[0].sheets as any[];
+            vi.mocked(prisma.workspace.findMany).mockResolvedValue(asWorkspaceFindManyResult([workspace]));
+            const result = await prisma.workspace.findMany({}) as unknown as WorkspaceWithRelations[];
+            const sheets = result[0].sheets;
             expect(sheets.every(s => s.status !== 'DELETED')).toBe(true);
         });
 
@@ -82,10 +91,9 @@ describe('Workspaces API Tests', () => {
                 ]
             };
 
-            vi.mocked(prisma.workspace.findMany).mockResolvedValue([workspace] as any);
-            const result = await prisma.workspace.findMany({});
-
-            const members = result[0].members as any[];
+            vi.mocked(prisma.workspace.findMany).mockResolvedValue(asWorkspaceFindManyResult([workspace]));
+            const result = await prisma.workspace.findMany({}) as unknown as WorkspaceWithRelations[];
+            const members = result[0].members;
             expect(members.every(m => m.status !== 'DELETED')).toBe(true);
         });
 
@@ -103,11 +111,7 @@ describe('Workspaces API Tests', () => {
             vi.mocked(prisma.member.findFirst).mockResolvedValue({
                 id: 1,
                 workspaceId: 1
-            } as any);
-
-            const member = await prisma.member.findFirst({
-                where: { id: 1, workspaceId: 2 }
-            });
+            } as unknown as Awaited<ReturnType<typeof prisma.member.findFirst>>);
             vi.mocked(prisma.member.findFirst).mockResolvedValueOnce(null);
 
             const crossAccess = await prisma.member.findFirst({

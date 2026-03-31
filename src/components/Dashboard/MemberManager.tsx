@@ -19,6 +19,9 @@ import { Users, UserPlus, Trash2, Edit, Save, X, RotateCcw, History, Search, Loc
 import { cn } from "@/lib/utils";
 
 
+const getErrorMessage = (error: unknown): string =>
+    error instanceof Error ? error.message : 'Unexpected error';
+
 export default function MemberManager({ members, workspaceId, onUpdate }: Props) {
     const { confirm } = useConfirm();
     const { addToast } = useToast();
@@ -83,9 +86,9 @@ export default function MemberManager({ members, workspaceId, onUpdate }: Props)
             setIsAdding(false);
             onUpdate(); // Reload members list
             addToast('Member added', 'success');
-        } catch (e: any) {
-            console.error(e);
-            addToast(e.message || 'Error adding member', 'error');
+        } catch (error: unknown) {
+            console.error(error);
+            addToast(getErrorMessage(error) || 'Error adding member', 'error');
         }
     };
 
@@ -107,8 +110,8 @@ export default function MemberManager({ members, workspaceId, onUpdate }: Props)
             }
             addToast('Moved to Trash', 'success');
             onUpdate();
-        } catch (e: any) {
-            addToast(e.message || 'Error deleting member', 'error');
+        } catch (error: unknown) {
+            addToast(getErrorMessage(error) || 'Error deleting member', 'error');
         }
     };
 
@@ -147,11 +150,11 @@ export default function MemberManager({ members, workspaceId, onUpdate }: Props)
     };
 
     return (
-        <Card className="w-full premium-card overflow-hidden border-none soft-shadow group/manager">
-            <CardHeader className="p-4 pb-4 border-b border-indigo-50/50 bg-gradient-to-br from-indigo-50/50 via-white to-transparent">
+        <Card className="w-full premium-card overflow-hidden border-none soft-shadow group/manager section-enter">
+            <CardHeader className="p-4 pb-4 border-b border-slate-200/60 dark:border-white/[0.06] bg-gradient-to-br from-slate-50/90 dark:from-slate-500/5 via-white dark:via-transparent to-blue-50/35 dark:to-transparent">
                 <div className="flex items-center justify-between">
-                    <CardTitle className="text-base flex items-center gap-3 text-slate-800">
-                        <div className="p-2 bg-gradient-to-br from-indigo-500 to-violet-600 rounded-xl shadow-lg shadow-indigo-100 group-hover/manager:scale-110 group-hover/manager:rotate-3 transition-all duration-500">
+                    <CardTitle className="text-base flex items-center gap-3 text-slate-800 dark:text-slate-100">
+                        <div className="p-2 bg-gradient-to-br from-blue-600 to-cyan-600 rounded-xl shadow-lg shadow-blue-200/40 dark:shadow-blue-950/25 group-hover/manager:scale-110 group-hover/manager:rotate-3 transition-all duration-500">
                             <Users className="w-4 h-4 text-white" />
                         </div>
                         <span className="font-black tracking-tight">Members</span>
@@ -166,7 +169,7 @@ export default function MemberManager({ members, workspaceId, onUpdate }: Props)
                                 <Button
                                     size="sm"
                                     variant="outline"
-                                    className="h-8 w-8 p-0 text-slate-400 hover:text-purple-600 hover:bg-purple-50 border-transparent hover:border-purple-100"
+                                    className="h-8 w-8 p-0 text-slate-400 hover:text-blue-600 hover:bg-blue-50 border-transparent hover:border-blue-100"
                                     title="Recycle Bin"
                                 >
                                     <RotateCcw className="w-4 h-4" />
@@ -174,15 +177,15 @@ export default function MemberManager({ members, workspaceId, onUpdate }: Props)
                             </DialogTrigger>
                             <DialogContent className="max-w-md">
                                 <DialogHeader>
-                                    <DialogTitle className="flex items-center gap-2 text-purple-700">
-                                        <History className="w-5 h-5 text-purple-500" />
+                                    <DialogTitle className="flex items-center gap-2 text-blue-700 dark:text-blue-300">
+                                        <History className="w-5 h-5 text-blue-500" />
                                         Deleted Members (Trash)
                                     </DialogTitle>
                                 </DialogHeader>
                                 <div className="space-y-3 py-4 max-h-[400px] overflow-y-auto custom-scrollbar pr-1">
                                     {loadingBin ? (
                                         <div className="text-center py-8 text-slate-400 italic flex flex-col items-center gap-2">
-                                            <div className="w-6 h-6 border-2 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
+                                            <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
                                             Đang tải dữ liệu...
                                         </div>
                                     ) : deletedMembers.length === 0 ? (
@@ -222,7 +225,7 @@ export default function MemberManager({ members, workspaceId, onUpdate }: Props)
                             onClick={() => setIsAdding(!isAdding)}
                             className={cn(
                                 "h-8 text-[11px] font-bold shadow-sm transition-all active:scale-95 uppercase tracking-wide px-3",
-                                isAdding ? "bg-slate-200 text-slate-700 hover:bg-slate-300" : "bg-indigo-600 hover:bg-indigo-700 text-white"
+                                isAdding ? "bg-slate-200 text-slate-700 hover:bg-slate-300" : "bg-blue-600 hover:bg-blue-700 text-white"
                             )}
                         >
                             {isAdding ? <><X className="w-3 h-3 mr-1" /> Cancel</> : <><UserPlus className="w-3 h-3 mr-1.5" /> Add</>}
@@ -232,7 +235,7 @@ export default function MemberManager({ members, workspaceId, onUpdate }: Props)
             </CardHeader>
             <CardContent className="p-4 pt-4">
                 {isAdding && (
-                    <div className="flex flex-col gap-3 mb-6 p-4 rounded-2xl bg-indigo-50/30 border border-indigo-100 animate-in slide-in-from-top-2 duration-300">
+                    <div className="flex flex-col gap-3 mb-6 p-4 rounded-2xl bg-blue-50/40 dark:bg-blue-500/10 border border-blue-100 dark:border-blue-500/20 animate-in slide-in-from-top-2 duration-300">
                         <div className="grid grid-cols-1 gap-3">
                             <div className="relative">
                                 <Users className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-400" />
@@ -284,7 +287,7 @@ export default function MemberManager({ members, workspaceId, onUpdate }: Props)
                                 Cancel
                             </Button>
                             <Button
-                                className="h-8 px-6 bg-indigo-600 hover:bg-indigo-700 text-white font-bold shadow-md hover:shadow-indigo-200 transition-all active:scale-95 text-xs uppercase tracking-wider"
+                                className="h-8 px-6 bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-md hover:shadow-blue-200 transition-all active:scale-95 text-xs uppercase tracking-wider"
                                 onClick={handleAdd}
                             >
                                 Create Member <Save className="w-3 h-3 ml-2" />
@@ -304,8 +307,8 @@ export default function MemberManager({ members, workspaceId, onUpdate }: Props)
                             <div
                                 key={m.id}
                                 className={cn(
-                                    "group flex items-center justify-between p-2.5 rounded-xl hover:bg-indigo-50/50 transition-all duration-200 border border-transparent hover:border-indigo-100 shadow-sm hover:shadow-md",
-                                    editingId === m.id ? "bg-blue-50/50 border-blue-200 shadow-inner" : "bg-white"
+                                    "group flex items-center justify-between p-2.5 rounded-xl hover:bg-blue-50/50 dark:hover:bg-blue-500/10 transition-all duration-200 border border-transparent hover:border-blue-100 dark:hover:border-blue-500/20 shadow-sm hover:shadow-md",
+                                    editingId === m.id ? "bg-cyan-50/60 dark:bg-cyan-500/10 border-cyan-200 dark:border-cyan-500/30 shadow-inner" : "bg-white dark:bg-white/[0.03]"
                                 )}
                             >
                                 {editingId === m.id ? (
@@ -313,11 +316,11 @@ export default function MemberManager({ members, workspaceId, onUpdate }: Props)
                                         <Input
                                             value={editName}
                                             onChange={e => setEditName(e.target.value)}
-                                            className="h-8 text-sm flex-1 bg-white border-blue-200"
+                                            className="h-8 text-sm flex-1 bg-white dark:bg-white/[0.04] border-blue-200 dark:border-blue-500/30"
                                             autoFocus
                                             onKeyDown={(e) => e.key === 'Enter' && saveEdit(m.id)}
                                         />
-                                        <Button size="icon" className="h-8 w-8 bg-green-600 hover:bg-green-700 text-white shadow-sm" onClick={() => saveEdit(m.id)}>
+                                        <Button size="icon" className="h-8 w-8 bg-blue-600 hover:bg-blue-700 text-white shadow-sm" onClick={() => saveEdit(m.id)}>
                                             <Save className="w-3.5 h-3.5" />
                                         </Button>
                                         <Button size="icon" variant="ghost" className="h-8 w-8 text-slate-500 hover:bg-slate-200" onClick={() => setEditingId(null)}>
@@ -327,10 +330,10 @@ export default function MemberManager({ members, workspaceId, onUpdate }: Props)
                                 ) : (
                                     <>
                                         <div className="flex items-center gap-3">
-                                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-indigo-600 text-white flex items-center justify-center text-xs font-black shadow-inner">
+                                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-600 to-cyan-600 text-white flex items-center justify-center text-xs font-black shadow-inner">
                                                 {m.name.charAt(0).toUpperCase()}
                                             </div>
-                                            <span className="font-bold text-slate-700 text-sm tracking-tight">{m.name}</span>
+                                            <span className="font-bold text-slate-700 dark:text-slate-200 text-sm tracking-tight">{m.name}</span>
                                         </div>
                                         <div className="flex gap-1 items-center opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-1 group-hover:translate-x-0">
                                             {m.username && (

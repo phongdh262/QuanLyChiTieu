@@ -31,19 +31,83 @@ import useSWR from 'swr';
 
 const fetcher = (url: string) => fetch(url).then(res => res.json());
 
+interface WorkspaceSheet {
+  id: number;
+  name: string;
+  month: number;
+  year: number;
+}
+
+interface WorkspaceData {
+  id: number;
+  name: string;
+  sheets: WorkspaceSheet[];
+}
+
+interface ApiExpenseSplit {
+  member?: { name?: string } | string;
+  isPaid?: boolean;
+  isPending?: boolean;
+  paidAt?: string | null;
+  amount?: number;
+}
+
+interface ApiExpense {
+  id: number;
+  amount: number;
+  payer: { name: string };
+  type: 'SHARED' | 'PRIVATE';
+  splits: ApiExpenseSplit[];
+  description?: string;
+  date?: string;
+  isSettled?: boolean;
+}
+
+interface SheetData {
+  status?: string;
+  month?: number;
+  year?: number;
+  expenses: ApiExpense[];
+}
+
+interface MatrixData {
+  matrix: Record<string, Record<string, number>>;
+  totals: Record<string, number>;
+}
+
+interface DashboardCalculations extends CalculationResult {
+  globalDebts: DebtTransaction[];
+  matrix: MatrixData;
+}
+
+interface SheetPayload {
+  sheet: SheetData;
+  members: Member[];
+  calculations: DashboardCalculations;
+}
+
+interface NotificationsPayload {
+  totalPending?: number;
+}
+
+const getSplitMemberName = (member: ApiExpenseSplit['member']): string => {
+  if (!member) return '';
+  return typeof member === 'string' ? member : member.name || '';
+};
+
 export default function Home() {
   const { t } = useLanguage();
   const [loading, setLoading] = useState(true);
 
   // Workspace Data
-  const [workspace, setWorkspace] = useState<{ id: number; name: string; sheets: any[] } | null>(null);
-  const [sheets, setSheets] = useState<{ id: number; name: string; month: number; year: number }[]>([]);
+  const [workspace, setWorkspace] = useState<WorkspaceData | null>(null);
+  const [sheets, setSheets] = useState<WorkspaceSheet[]>([]);
   const [currentSheetId, setCurrentSheetId] = useState<number | null>(null);
 
   // Sheet Data
-  const [sheetData, setSheetData] = useState<any>(null);
+  const [sheetData, setSheetData] = useState<SheetData | null>(null);
   const [members, setMembers] = useState<Member[]>([]);
-  const [calculations, setCalculations] = useState<CalculationResult & { globalDebts: DebtTransaction[]; matrix: any } | null>(null);
+  const [calculations, setCalculations] = useState<DashboardCalculations | null>(null);
 
   // User Data
   const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
@@ -61,7 +125,7 @@ export default function Home() {
   const [showFAB, setShowFAB] = useState(false);
 
   // Notifications
-  const { data: notifications, mutate: mutateNotifications } = useSWR('/api/notifications', fetcher, {
+  const { data: notifications, mutate: mutateNotifications } = useSWR<NotificationsPayload>('/api/notifications', fetcher, {
     refreshInterval: 10000
   });
   const pendingCount = notifications?.totalPending || 0;
@@ -104,14 +168,14 @@ export default function Home() {
     try {
       const res = await fetch('/api/workspaces');
       if (!res.ok) throw new Error('Failed to fetch workspace');
-      const data = await res.json();
+      const data = await res.json() as WorkspaceData[];
 
       const ws = data[0];
       if (ws) {
         setWorkspace(ws);
         setSheets(ws.sheets);
 
-        const sheetExists = ws.sheets.some((s: any) => s.id === currentSheetId);
+        const sheetExists = ws.sheets.some((s) => s.id === currentSheetId);
         if (!sheetExists && ws.sheets.length > 0) {
           setCurrentSheetId(ws.sheets[ws.sheets.length - 1].id);
         } else if (ws.sheets.length === 0) {
@@ -125,6 +189,7 @@ export default function Home() {
 
   useEffect(() => {
     if (currentSheetId) fetchSheetData(currentSheetId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentSheetId]);
 
   const fetchSheetData = async (id: number) => {
@@ -136,7 +201,7 @@ export default function Home() {
         return;
       }
       if (!res.ok) throw new Error('Failed to fetch');
-      const json = await res.json();
+      const json = await res.json() as SheetPayload;
 
       setSheetData(json.sheet);
       setMembers(json.members);
@@ -160,7 +225,7 @@ export default function Home() {
       ...newBill,
       payer: { name: newBill.payer },
       splits: (newBill.beneficiaries || []).map(name => ({ member: { name } }))
-    }];
+    }] as ApiExpense[];
 
     setSheetData({
       ...sheetData,
@@ -168,27 +233,28 @@ export default function Home() {
     });
 
     const memberNames = members.map(m => m.name);
-    const currentBills: Bill[] = updatedExpenses.map((e: any) => ({
-      id: e.id,
-      amount: e.amount,
-      payer: e.payer.name,
-      type: e.type,
-      beneficiaries: e.splits.map((s: any) => s.member.name),
-      note: e.description,
-      date: e.date
+    const currentBills: Bill[] = updatedExpenses.map((expense) => ({
+      id: expense.id,
+      amount: expense.amount,
+      payer: expense.payer.name,
+      type: expense.type,
+      beneficiaries: expense.splits.map(split => getSplitMemberName(split.member)),
+      note: expense.description,
+      date: expense.date
     }));
 
     const { balances, stats, privateBalances } = calculateFinalBalances(memberNames, currentBills);
     const { matrix: pMatrix, totals: matrixTotals } = calculatePrivateMatrix(memberNames, currentBills);
     const globalDebts = calculateDebts(balances);
 
-    setCalculations({
+    const nextCalculations: DashboardCalculations = {
       balances,
       stats,
       privateBalances,
       matrix: { matrix: pMatrix, totals: matrixTotals },
       globalDebts,
-    } as any);
+    };
+    setCalculations(nextCalculations);
   };
 
   const handleLogout = async () => {
@@ -199,25 +265,25 @@ export default function Home() {
   if (!workspace && !loading) return <div style={{ padding: 20 }}>No Workspace Found. Seed database.</div>;
   if (loading && !workspace) return <div style={{ padding: 20 }}>{t('loading')}</div>;
 
-  const { globalDebts, matrix } = calculations || {};
-  const currentSheet = sheetData || { expenses: [] };
+  const globalDebts = calculations?.globalDebts;
+  const currentSheetExpenses = sheetData?.expenses || [];
 
-  const bills: Bill[] = (currentSheet.expenses || []).map((e: any) => ({
-    id: e.id,
-    amount: e.amount,
-    payer: e.payer.name,
-    type: e.type,
-    beneficiaries: e.splits.map((s: any) => s.member.name),
-    note: e.description,
-    date: e.date,
-    isSettled: e.isSettled,
-    splits: e.splits ? e.splits.map((s: any) => ({
-      member: { name: s.member?.name || s.member || '' },
-      isPaid: s.isPaid,
-      isPending: s.isPending,
-      paidAt: s.paidAt,
-      amount: s.amount
-    })) : []
+  const bills: Bill[] = currentSheetExpenses.map((expense) => ({
+    id: expense.id,
+    amount: expense.amount,
+    payer: expense.payer.name,
+    type: expense.type,
+    beneficiaries: expense.splits.map(split => getSplitMemberName(split.member)),
+    note: expense.description,
+    date: expense.date,
+    isSettled: expense.isSettled,
+    splits: expense.splits.map((split) => ({
+      member: { name: getSplitMemberName(split.member) },
+      isPaid: !!split.isPaid,
+      isPending: split.isPending,
+      paidAt: split.paidAt ?? undefined,
+      amount: split.amount
+    }))
   }));
 
   const activeSheetName = sheets.find(s => s.id === currentSheetId)?.name || t('appTitle');
@@ -249,13 +315,13 @@ export default function Home() {
         {/* ===== MAIN CONTENT ===== */}
         <div className="flex-1 flex flex-col min-h-screen min-w-0">
           {/* Compact Header with SheetSelector */}
-          <header className="sticky top-0 z-30 bg-white/90 dark:bg-[#1e2235]/90 backdrop-blur-xl border-b border-slate-100/60 dark:border-white/[0.06] h-12 flex items-center px-4 lg:px-6 relative">
+          <header className="sticky top-0 z-30 bg-white/90 dark:bg-[#1e2235]/90 backdrop-blur-xl border-b border-slate-200/70 dark:border-white/[0.06] h-14 flex items-center px-4 lg:px-6 relative">
             {/* Mobile menu button spacer */}
             <div className="w-10 lg:hidden shrink-0" />
 
             {/* Sheet Selector Toolbar — absolute center */}
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <div className="pointer-events-auto">
+              <div className="pointer-events-auto w-[min(760px,calc(100vw-7rem))] sm:w-[min(780px,calc(100vw-10rem))]">
                 {workspace && (
                   <SheetSelector
                     sheets={sheets}
@@ -271,7 +337,7 @@ export default function Home() {
             </div>
 
             {/* Right side controls */}
-            <div className="ml-auto flex items-center gap-3 relative z-10">
+            <div className="ml-auto flex items-center gap-2 sm:gap-3 relative z-10">
               {/* Notification bell */}
               <button
                 onClick={() => setIsNotificationsOpen(true)}
@@ -288,7 +354,7 @@ export default function Home() {
               </button>
 
               {/* User avatar */}
-              <div className="w-7 h-7 rounded-md bg-gradient-to-br from-indigo-500 to-violet-600 text-white flex items-center justify-center font-black text-[10px] shadow-sm cursor-default"
+              <div className="w-7 h-7 rounded-md bg-gradient-to-br from-indigo-500 to-blue-600 text-white flex items-center justify-center font-black text-[10px] shadow-sm cursor-default"
                 title={currentUser?.name || 'User'}
               >
                 {currentUser?.name?.charAt(0).toUpperCase() || 'U'}
@@ -297,42 +363,48 @@ export default function Home() {
           </header>
 
           {/* Page Content */}
-          <main className="flex-1 px-4 lg:px-6 py-4">
-            <div className="space-y-4">
+          <main className="flex-1 px-4 sm:px-5 lg:px-7 py-5 lg:py-6">
+            <div className="content-shell space-y-5">
 
               {calculations && (
-                <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                <div className="space-y-5 animate-in fade-in slide-in-from-bottom-4 duration-700">
 
                   {/* QUICK STATS */}
-                  <QuickStats members={members} calculations={calculations} bills={bills} />
+                  <div className="section-enter">
+                    <QuickStats members={members} calculations={calculations} bills={bills} />
+                  </div>
 
                   {/* ADD EXPENSE FORM */}
-                  <AddBillForm
-                    members={members}
-                    sheetId={currentSheetId!}
-                    onAdd={reload}
-                    onOptimisticAdd={handleOptimisticAdd}
-                    isLocked={isLocked}
-                  />
+                  <div className="section-enter section-enter-delay-1">
+                    <AddBillForm
+                      members={members}
+                      sheetId={currentSheetId!}
+                      onAdd={reload}
+                      onOptimisticAdd={handleOptimisticAdd}
+                      isLocked={isLocked}
+                    />
+                  </div>
 
                   {/* REPORTING */}
                   {hasExpenses && (
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 section-enter section-enter-delay-2">
                       <SummaryTable members={members} calculations={calculations} />
-                      <PrivateMatrix members={members} matrixData={matrix} />
+                      <PrivateMatrix members={members} matrixData={calculations.matrix} />
                     </div>
                   )}
 
                   {/* EXPENSE HISTORY */}
-                  <HistoryTable
-                    bills={bills}
-                    members={members}
-                    onDelete={reload}
-                    onRefresh={reload}
-                    isRefreshing={loading}
-                    currentUser={currentUser}
-                    isLocked={isLocked}
-                  />
+                  <div className="section-enter section-enter-delay-3">
+                    <HistoryTable
+                      bills={bills}
+                      members={members}
+                      onDelete={reload}
+                      onRefresh={reload}
+                      isRefreshing={loading}
+                      currentUser={currentUser}
+                      isLocked={isLocked}
+                    />
+                  </div>
                 </div>
               )}
             </div>
@@ -382,7 +454,7 @@ export default function Home() {
         {showFAB && (
           <button
             onClick={() => document.getElementById('add-bill-form')?.scrollIntoView({ behavior: 'smooth' })}
-            className="fixed bottom-6 right-6 z-40 w-14 h-14 rounded-2xl bg-gradient-to-br from-green-500 to-emerald-600 text-white shadow-2xl shadow-green-500/30 flex items-center justify-center hover:scale-110 active:scale-95 transition-all duration-300 lg:hidden animate-in zoom-in duration-200"
+            className="fixed bottom-6 right-6 z-40 w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-600 to-blue-600 text-white shadow-2xl shadow-indigo-500/30 flex items-center justify-center hover:scale-110 active:scale-95 transition-all duration-300 lg:hidden animate-in zoom-in duration-200"
             title={t('addNewExpense')}
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14M5 12h14" /></svg>

@@ -61,11 +61,6 @@ describe('Security Tests', () => {
 
     describe('Cross-Workspace Isolation Tests', () => {
         it('should prevent user from accessing other workspace data', async () => {
-            // User 1 in Workspace 1
-            const user1 = { id: 1, name: 'User1', workspaceId: 1 };
-            // User 2 in Workspace 2
-            const user2 = { id: 2, name: 'User2', workspaceId: 2 };
-
             vi.mocked(getSession).mockResolvedValue({ id: 1, name: 'User1' });
 
             // Simulate checking if user1 can access workspace2
@@ -80,9 +75,10 @@ describe('Security Tests', () => {
 
         it('should isolate members between workspaces', async () => {
             const workspace1Members = [{ id: 1, name: 'Alice', workspaceId: 1 }];
-            const workspace2Members = [{ id: 2, name: 'Bob', workspaceId: 2 }];
 
-            vi.mocked(prisma.member.findMany).mockResolvedValueOnce(workspace1Members as any);
+            vi.mocked(prisma.member.findMany).mockResolvedValueOnce(
+                workspace1Members as unknown as Awaited<ReturnType<typeof prisma.member.findMany>>
+            );
 
             const members = await prisma.member.findMany({ where: { workspaceId: 1 } });
 
@@ -104,7 +100,9 @@ describe('Security Tests', () => {
                 sheet: { workspaceId: 2 }
             };
 
-            vi.mocked(prisma.expense.findUnique).mockResolvedValue(expense as any);
+            vi.mocked(prisma.expense.findUnique).mockResolvedValue(
+                expense as unknown as Awaited<ReturnType<typeof prisma.expense.findUnique>>
+            );
 
             // User 1 is NOT member of workspace 2
             vi.mocked(prisma.member.findFirst).mockResolvedValue(null);
@@ -122,7 +120,9 @@ describe('Security Tests', () => {
 
             // Target member in workspace 2
             const targetMember = { id: 5, name: 'Target', workspaceId: 2 };
-            vi.mocked(prisma.member.findUnique).mockResolvedValue(targetMember as any);
+            vi.mocked(prisma.member.findUnique).mockResolvedValue(
+                targetMember as unknown as Awaited<ReturnType<typeof prisma.member.findUnique>>
+            );
 
             // User 1 not in workspace 2
             vi.mocked(prisma.member.findFirst).mockResolvedValue(null);
@@ -141,7 +141,9 @@ describe('Security Tests', () => {
                 { id: 1, name: 'Active', status: 'ACTIVE' },
             ];
 
-            vi.mocked(prisma.member.findMany).mockResolvedValue(activeMembers as any);
+            vi.mocked(prisma.member.findMany).mockResolvedValue(
+                activeMembers as unknown as Awaited<ReturnType<typeof prisma.member.findMany>>
+            );
 
             const members = await prisma.member.findMany({
                 where: {
@@ -163,9 +165,11 @@ describe('Security Tests', () => {
                 id: 1,
                 sheets: sheets,
                 members: []
-            }] as any);
+            }] as unknown as Awaited<ReturnType<typeof prisma.workspace.findMany>>);
 
-            const workspaces = await prisma.workspace.findMany({});
+            const workspaces = await prisma.workspace.findMany({}) as unknown as Array<{
+                sheets: Array<{ status: string }>;
+            }>;
 
             expect(workspaces[0].sheets).toHaveLength(1);
             expect(workspaces[0].sheets[0].status).toBe('OPEN');

@@ -127,7 +127,7 @@ export default function ConfirmationModal({ open, onOpenChange, onUpdated }: Pro
                 <DialogHeader className="px-5 pt-5 pb-0 shrink-0">
                     <DialogTitle className="flex items-center justify-between mb-4">
                         <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-white shadow-lg shadow-indigo-500/20">
+                            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-blue-600 flex items-center justify-center text-white shadow-lg shadow-indigo-500/20">
                                 <BellRing className="w-5 h-5" />
                             </div>
                             <div>
@@ -201,7 +201,7 @@ export default function ConfirmationModal({ open, onOpenChange, onUpdated }: Pro
                                 key={p.id}
                                 className={cn(
                                     "rounded-xl border p-4 transition-all duration-200 hover:shadow-md animate-in fade-in slide-in-from-bottom-1",
-                                    activeTab === 'pendingPayer' && "border-amber-200/60 dark:border-amber-500/20 bg-gradient-to-br from-white to-amber-50/50 dark:from-white/[0.03] dark:to-amber-500/[0.04]",
+                                    activeTab === 'pendingPayer' && "border-indigo-200/60 dark:border-indigo-500/20 bg-gradient-to-br from-white to-indigo-50/45 dark:from-white/[0.03] dark:to-indigo-500/[0.05]",
                                     activeTab === 'pendingDebtor' && "border-blue-200/60 dark:border-blue-500/20 bg-gradient-to-br from-white to-blue-50/50 dark:from-white/[0.03] dark:to-blue-500/[0.04]",
                                     activeTab === 'history' && "border-slate-200/60 dark:border-white/[0.06] bg-white dark:bg-white/[0.02]"
                                 )}
@@ -212,7 +212,7 @@ export default function ConfirmationModal({ open, onOpenChange, onUpdated }: Pro
                                     <div className="flex items-center gap-3">
                                         <div className={cn(
                                             "w-10 h-10 rounded-xl flex items-center justify-center text-sm font-black ring-2 ring-white dark:ring-[#1e2235] shadow-md",
-                                            activeTab === 'pendingPayer' ? "bg-gradient-to-br from-amber-400 to-orange-500 text-white shadow-amber-200/50 dark:shadow-amber-500/10" :
+                                            activeTab === 'pendingPayer' ? "bg-gradient-to-br from-indigo-500 to-blue-600 text-white shadow-indigo-200/50 dark:shadow-indigo-500/10" :
                                                 activeTab === 'pendingDebtor' ? "bg-gradient-to-br from-blue-400 to-indigo-500 text-white shadow-blue-200/50 dark:shadow-blue-500/10" :
                                                     "bg-gradient-to-br from-slate-200 to-slate-300 dark:from-slate-600 dark:to-slate-700 text-slate-600 dark:text-slate-300"
                                         )}>
@@ -228,7 +228,7 @@ export default function ConfirmationModal({ open, onOpenChange, onUpdated }: Pro
                                                         : p.member.name}
                                                 </span>
                                                 {activeTab === 'pendingPayer' && (
-                                                    <span className="px-1.5 py-0.5 bg-amber-100 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400 text-[9px] font-bold rounded-md uppercase tracking-wide">
+                                                    <span className="px-1.5 py-0.5 bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-300 text-[9px] font-bold rounded-md uppercase tracking-wide">
                                                         {t('notifNew')}
                                                     </span>
                                                 )}
@@ -241,7 +241,11 @@ export default function ConfirmationModal({ open, onOpenChange, onUpdated }: Pro
                                     </div>
                                     <div className={cn(
                                         "font-black text-lg tracking-tight tabular-nums",
-                                        activeTab === 'pendingPayer' ? "text-amber-600 dark:text-amber-400" : "text-indigo-600 dark:text-indigo-400"
+                                        activeTab === 'pendingPayer'
+                                            ? "text-indigo-600 dark:text-indigo-300"
+                                            : activeTab === 'pendingDebtor'
+                                                ? "text-blue-600 dark:text-blue-300"
+                                                : "text-slate-700 dark:text-slate-200"
                                     )}>
                                         {p.amount.toLocaleString()}<span className="text-xs font-bold text-slate-400 dark:text-slate-500 ml-0.5">đ</span>
                                     </div>
@@ -265,7 +269,7 @@ export default function ConfirmationModal({ open, onOpenChange, onUpdated }: Pro
                                             {t('notifReject')}
                                         </Button>
                                         <Button
-                                            className="flex-[2] h-9 rounded-lg bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white shadow-md shadow-green-500/20 font-bold text-xs transition-all active:scale-95"
+                                            className="flex-[2] h-9 rounded-lg bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white shadow-md shadow-blue-500/20 font-bold text-xs transition-all active:scale-95"
                                             onClick={() => handleAction(p.id, 'confirm')}
                                         >
                                             <Check className="w-3.5 h-3.5 mr-1.5" />

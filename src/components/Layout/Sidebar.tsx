@@ -51,12 +51,12 @@ const formatMoney = (amount: number) => amount.toLocaleString('vi-VN') + 'đ';
 
 const getAvatarColor = (name: string) => {
     const colors = [
-        'from-blue-400 to-blue-600',
-        'from-rose-400 to-rose-600',
-        'from-emerald-400 to-emerald-600',
-        'from-amber-400 to-amber-600',
-        'from-violet-400 to-violet-600',
-        'from-pink-400 to-pink-600',
+        'from-blue-500 to-indigo-600',
+        'from-sky-500 to-cyan-600',
+        'from-emerald-500 to-teal-600',
+        'from-indigo-500 to-blue-600',
+        'from-cyan-500 to-blue-600',
+        'from-slate-500 to-slate-700',
     ];
     let hash = 0;
     for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
@@ -101,17 +101,17 @@ export default function Sidebar({
                     "transition-colors duration-300"
                 )}
                 style={{
-                    backgroundImage: theme === 'dark' ? 'radial-gradient(ellipse at 20% 0%, rgba(99, 102, 241, 0.06) 0%, transparent 60%), radial-gradient(ellipse at 80% 100%, rgba(139, 92, 246, 0.04) 0%, transparent 50%)' : 'radial-gradient(ellipse at 20% 0%, rgba(99, 102, 241, 0.03) 0%, transparent 60%), radial-gradient(ellipse at 80% 100%, rgba(139, 92, 246, 0.02) 0%, transparent 50%)',
+                    backgroundImage: theme === 'dark' ? 'radial-gradient(ellipse at 20% 0%, rgba(59, 130, 246, 0.08) 0%, transparent 60%), radial-gradient(ellipse at 80% 100%, rgba(6, 182, 212, 0.05) 0%, transparent 50%)' : 'radial-gradient(ellipse at 20% 0%, rgba(59, 130, 246, 0.04) 0%, transparent 60%), radial-gradient(ellipse at 80% 100%, rgba(6, 182, 212, 0.03) 0%, transparent 50%)',
                 }}
             >
                 {/* ===== LOGO ===== */}
                 <div className="flex items-center justify-between px-5 h-16 border-b border-slate-200/60 dark:border-white/[0.05] shrink-0 transition-colors duration-300">
                     <div className="flex items-center gap-3.5 cursor-pointer group" onClick={() => window.location.href = '/'}>
                         <div className="relative">
-                            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 via-violet-500 to-purple-600 flex items-center justify-center text-white font-black text-lg shadow-lg shadow-indigo-500/30 group-hover:shadow-indigo-500/50 group-hover:scale-105 transition-all duration-300">
+                            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-blue-600 flex items-center justify-center text-white font-black text-lg shadow-lg shadow-indigo-500/30 group-hover:shadow-indigo-500/50 group-hover:scale-105 transition-all duration-300">
                                 <Sparkles className="w-5 h-5" />
                             </div>
-                            <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-indigo-400 to-violet-500 blur-lg opacity-20 group-hover:opacity-40 transition-opacity" />
+                            <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-indigo-400 to-blue-500 blur-lg opacity-20 group-hover:opacity-40 transition-opacity" />
                         </div>
                         <div>
                             <p className="font-extrabold text-[15px] tracking-tight text-slate-800 dark:text-white/95 leading-none transition-colors duration-300">
@@ -288,7 +288,7 @@ export default function Sidebar({
                         style={theme === 'dark' ? { boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.02)' } : {}}
                     >
                         <div className="relative">
-                            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 via-violet-500 to-purple-600 text-white flex items-center justify-center font-black text-sm shadow-lg shadow-indigo-500/20">
+                            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-blue-600 text-white flex items-center justify-center font-black text-sm shadow-lg shadow-indigo-500/20">
                                 {currentUser?.name?.charAt(0).toUpperCase() || 'U'}
                             </div>
                             <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-500 border-2 border-white dark:border-[#0c0e16]" />

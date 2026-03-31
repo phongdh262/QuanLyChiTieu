@@ -23,14 +23,14 @@ export default function PrivateMatrix({ members, matrixData }: Props) {
 
     return (
         <Card className="premium-card overflow-hidden border-none soft-shadow mb-6 group/matrix">
-            <CardHeader className="cursor-pointer flex flex-row items-center justify-between pb-6 bg-gradient-to-br from-orange-50/50 dark:from-orange-500/5 via-white dark:via-transparent to-transparent border-b border-orange-100/50 dark:border-white/[0.06]" onClick={() => setIsOpen(!isOpen)}>
-                <CardTitle className="text-xl flex items-center gap-3 text-slate-800 dark:text-slate-100">
-                    <div className="p-2.5 bg-gradient-to-br from-orange-500 to-rose-600 rounded-xl shadow-lg shadow-orange-100/50 dark:shadow-orange-900/20 group-hover/matrix:scale-110 group-hover/matrix:rotate-3 transition-all duration-500 ring-2 ring-white dark:ring-white/10">
+            <CardHeader className="cursor-pointer flex flex-row items-center justify-between pb-5 bg-gradient-to-br from-slate-50/95 dark:from-slate-500/5 via-white dark:via-transparent to-cyan-50/35 dark:to-transparent border-b border-slate-200/60 dark:border-white/[0.06]" onClick={() => setIsOpen(!isOpen)}>
+                <CardTitle className="text-lg sm:text-xl flex items-center gap-3 text-slate-800 dark:text-slate-100">
+                    <div className="p-2.5 bg-gradient-to-br from-cyan-600 to-blue-600 rounded-xl shadow-lg shadow-cyan-200/40 dark:shadow-cyan-900/20 group-hover/matrix:scale-110 group-hover/matrix:rotate-3 transition-all duration-500 ring-2 ring-white dark:ring-white/10">
                         <Banknote className="w-5 h-5 text-white drop-shadow-sm" />
                     </div>
                     <span className="font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-slate-700 dark:from-slate-200 to-slate-900 dark:to-white">{t('debtMatrixPrivate')}</span>
                 </CardTitle>
-                <div className={cn("rounded-full p-2 bg-white dark:bg-white/[0.06] shadow-sm text-slate-400 ring-1 ring-slate-100 dark:ring-white/[0.06] transition-transform duration-300 hover:bg-orange-50 dark:hover:bg-orange-500/10 hover:text-orange-600", isOpen && "rotate-180 bg-orange-100 dark:bg-orange-500/20 text-orange-600")}>
+                <div className={cn("rounded-full p-2 bg-white dark:bg-white/[0.06] shadow-sm text-slate-400 ring-1 ring-slate-100 dark:ring-white/[0.06] transition-transform duration-300 hover:bg-cyan-50 dark:hover:bg-cyan-500/10 hover:text-cyan-600", isOpen && "rotate-180 bg-cyan-100 dark:bg-cyan-500/20 text-cyan-600")}>
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
                         <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" />
                     </svg>
@@ -44,42 +44,42 @@ export default function PrivateMatrix({ members, matrixData }: Props) {
                             <Table>
                                 <TableHeader>
                                     <TableRow>
-                                        <TableHead className="dark:text-slate-300">{t('debtor')}</TableHead>
+                                        <TableHead className="dark:text-slate-300 text-xs">{t('debtor')}</TableHead>
                                         {members.map(m => (
-                                            <TableHead key={m.name} className="text-right whitespace-nowrap dark:text-slate-300">{t('pays')} {m.name}</TableHead>
+                                            <TableHead key={m.name} className="text-right whitespace-nowrap dark:text-slate-300 text-xs">{t('pays')} {m.name}</TableHead>
                                         ))}
-                                        <TableHead className="text-right font-bold text-destructive">{t('totalDebt')}</TableHead>
+                                        <TableHead className="text-right font-bold text-destructive text-xs">{t('totalDebt')}</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
                                     {members.map((debtor) => {
                                         let totalDebt = 0;
                                         return (
-                                            <TableRow key={debtor.name} className="hover:bg-orange-50/30 dark:hover:bg-orange-500/5">
-                                                <TableCell className="font-medium dark:text-slate-200">{debtor.name}</TableCell>
+                                            <TableRow key={debtor.name} className="hover:bg-cyan-50/35 dark:hover:bg-cyan-500/6">
+                                                <TableCell className="font-medium dark:text-slate-200 py-3">{debtor.name}</TableCell>
                                                 {members.map((creditor) => {
                                                     const amount = matrix[creditor.name]?.[debtor.name] || 0;
 
                                                     if (creditor.name === debtor.name) {
-                                                        return <TableCell key={creditor.name} className="bg-muted/50 dark:bg-white/[0.02]" />;
+                                                        return <TableCell key={creditor.name} className="bg-muted/50 dark:bg-white/[0.02] py-3" />;
                                                     }
 
                                                     if (amount > 0) {
                                                         totalDebt += amount;
                                                         return (
-                                                            <TableCell key={creditor.name} className="text-right font-bold bg-yellow-50 text-yellow-900 dark:bg-yellow-500/10 dark:text-yellow-300">
+                                                            <TableCell key={creditor.name} className="text-right font-bold bg-cyan-50 text-cyan-800 dark:bg-cyan-500/10 dark:text-cyan-300 py-3">
                                                                 {formatMoney(amount)}
                                                             </TableCell>
                                                         );
                                                     }
 
                                                     return (
-                                                        <TableCell key={creditor.name} className="text-right text-muted-foreground">
+                                                        <TableCell key={creditor.name} className="text-right text-muted-foreground py-3">
                                                             -
                                                         </TableCell>
                                                     );
                                                 })}
-                                                <TableCell className="text-right font-bold text-destructive">
+                                                <TableCell className="text-right font-bold text-destructive py-3">
                                                     {totalDebt > 0 ? formatMoney(totalDebt) : '-'}
                                                 </TableCell>
                                             </TableRow>

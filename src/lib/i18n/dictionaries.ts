@@ -99,6 +99,18 @@ export const dictionaries = {
         appTitle: "QUẢN LÝ CHI TIÊU",
         memberManager: "Member Manager",
 
+        // Login
+        loginWelcome: "Welcome Back",
+        loginSubtitle: "Sign in to manage your expenses",
+        loginUsername: "Username",
+        loginPassword: "Password",
+        loginUsernamePlaceholder: "Enter your username",
+        loginPasswordPlaceholder: "Enter your password",
+        loginSignIn: "Sign In",
+        loginSigningIn: "Signing In...",
+        loginMissingCaptcha: "Missing Turnstile Site Key",
+        loginFooter: "Personal Finance Manager",
+
         // Header & Toolbars
         edit: "Edit",
         delete: "Delete",
@@ -238,6 +250,18 @@ export const dictionaries = {
         loading: "Đang tải...",
         appTitle: "QUẢN LÝ CHI TIÊU",
         memberManager: "Quản lý thành viên",
+
+        // Login
+        loginWelcome: "Chào mừng trở lại",
+        loginSubtitle: "Đăng nhập để quản lý chi tiêu",
+        loginUsername: "Tên đăng nhập",
+        loginPassword: "Mật khẩu",
+        loginUsernamePlaceholder: "Nhập tên đăng nhập",
+        loginPasswordPlaceholder: "Nhập mật khẩu",
+        loginSignIn: "Đăng nhập",
+        loginSigningIn: "Đang đăng nhập...",
+        loginMissingCaptcha: "Thiếu Turnstile Site Key",
+        loginFooter: "Ứng dụng quản lý chi tiêu",
 
         // Header & Toolbars
         edit: "Sửa",

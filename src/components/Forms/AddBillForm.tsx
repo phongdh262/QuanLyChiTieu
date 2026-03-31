@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { PlusCircle, Wallet, Calendar as CalendarIcon, Users, Calculator, Check, CheckCircle2, Lock, Trash2, Plus, Layers } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/components/LanguageProvider';
+import type { Bill } from '@/types/expense';
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format } from "date-fns";
@@ -35,7 +36,7 @@ interface Props {
         type: 'SHARED' | 'PRIVATE';
         beneficiaryIds?: number[];
     } | null;
-    onOptimisticAdd?: (data: any) => void;
+    onOptimisticAdd?: (data: Bill) => void;
     isLocked?: boolean;
 }
 
@@ -146,7 +147,7 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
         setRows(prev => prev.filter(r => r.id !== rowId));
     };
 
-    const updateRow = (rowId: string, field: keyof ExpenseRow, value: any) => {
+    const updateRow = (rowId: string, field: keyof ExpenseRow, value: ExpenseRow[keyof ExpenseRow]) => {
         setRows(prev => prev.map(r => r.id === rowId ? { ...r, [field]: value } : r));
     };
 
@@ -166,8 +167,7 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
     };
 
     // Submit
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
+    const handleSubmit = async () => {
         if (isSubmitting) return;
 
         // Validate all rows
@@ -258,10 +258,10 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
 
     return (
         <Card className="w-full premium-card overflow-hidden border-none soft-shadow" id="add-bill-form">
-            <CardHeader className="bg-gradient-to-br from-indigo-50/80 dark:from-indigo-500/5 via-white dark:via-transparent to-emerald-50/50 dark:to-transparent pb-4 border-b border-indigo-50/50 dark:border-white/[0.06]">
+            <CardHeader className="bg-gradient-to-br from-slate-50/90 dark:from-slate-500/5 via-white dark:via-transparent to-blue-50/40 dark:to-transparent pb-4 border-b border-slate-200/60 dark:border-white/[0.06]">
                 <div className="flex items-center justify-between">
                     <CardTitle className="text-xl flex items-center gap-3 text-slate-800 dark:text-slate-100">
-                        <div className="p-2.5 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl shadow-lg shadow-green-200/50 dark:shadow-green-900/20 ring-2 ring-white dark:ring-white/10">
+                        <div className="p-2.5 bg-gradient-to-br from-blue-600 to-cyan-600 rounded-xl shadow-lg shadow-blue-200/50 dark:shadow-blue-900/20 ring-2 ring-white dark:ring-white/10">
                             <PlusCircle className="w-5 h-5 text-white drop-shadow-sm" />
                         </div>
                         <span className="font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-slate-700 dark:from-slate-200 to-slate-900 dark:to-white">{t('addNewExpense')}</span>
@@ -269,7 +269,7 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
                     {!isLocked && (
                         <div className="flex items-center gap-2">
                             {isBatch && (
-                                <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/10 px-2.5 py-1 rounded-full border border-indigo-100 dark:border-indigo-500/20 flex items-center gap-1">
+                                <span className="text-xs font-bold text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-500/10 px-2.5 py-1 rounded-full border border-blue-100 dark:border-blue-500/20 flex items-center gap-1">
                                     <Layers className="w-3 h-3" />
                                     {rows.length} {t('rows')}
                                 </span>
@@ -280,7 +280,7 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
                                 size="sm"
                                 onClick={addRow}
                                 disabled={rows.length >= MAX_ROWS}
-                                className="text-xs font-bold border-dashed border-emerald-300 dark:border-emerald-500/30 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 hover:border-emerald-400 transition-all"
+                                className="text-xs font-bold border-dashed border-blue-300 dark:border-blue-500/30 text-blue-700 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-500/10 hover:border-blue-400 transition-all"
                             >
                                 <Plus className="w-3.5 h-3.5 mr-1" />
                                 {t('addRow')}
@@ -309,17 +309,17 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
                             key={row.id}
                             className={cn(
                                 "space-y-3 transition-all duration-300 animate-in fade-in slide-in-from-top-2",
-                                isBatch && "relative p-4 rounded-xl border border-slate-200/80 dark:border-white/[0.06] bg-gradient-to-br from-slate-50/50 dark:from-white/[0.02] to-white dark:to-transparent hover:border-indigo-200/60 dark:hover:border-indigo-500/20 hover:shadow-sm"
+                                isBatch && "relative p-4 rounded-xl border border-slate-200/80 dark:border-white/[0.06] bg-gradient-to-br from-slate-50/50 dark:from-white/[0.02] to-white dark:to-transparent hover:border-blue-200/70 dark:hover:border-blue-500/20 hover:shadow-sm"
                             )}
                         >
                             {/* Row number badge + delete button for batch mode */}
                             {isBatch && (
                                 <div className="flex items-center justify-between mb-1">
                                     <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-                                        <span className="w-5 h-5 rounded-md bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center text-[10px] font-bold shadow-sm">
+                                        <span className="w-5 h-5 rounded-md bg-gradient-to-br from-blue-600 to-cyan-600 text-white flex items-center justify-center text-[10px] font-bold shadow-sm">
                                             {index + 1}
                                         </span>
-                                        Expense #{index + 1}
+                                        Line #{index + 1}
                                     </span>
                                     <button
                                         type="button"
@@ -336,7 +336,7 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3 items-end">
                                 {/* Description */}
                                 <div className="lg:col-span-4 space-y-1.5">
-                                    {index === 0 && <Label className="text-xs font-semibold text-slate-600">{t('description')} <span className="text-red-500">*</span></Label>}
+                                    {index === 0 && <Label className="text-xs font-semibold text-slate-600 dark:text-slate-300">{t('description')} <span className="text-red-500">*</span></Label>}
                                     <div className="relative">
                                         <Wallet className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                                         <Input
@@ -351,7 +351,7 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
 
                                 {/* Amount */}
                                 <div className="lg:col-span-2 space-y-1.5">
-                                    {index === 0 && <Label className="text-xs font-semibold text-slate-600">{t('amount')} <span className="text-red-500">*</span></Label>}
+                                    {index === 0 && <Label className="text-xs font-semibold text-slate-600 dark:text-slate-300">{t('amount')} <span className="text-red-500">*</span></Label>}
                                     <div className="relative">
                                         <Calculator className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                                         <Input
@@ -378,7 +378,7 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
                                                     e.preventDefault();
                                                 }
                                             }}
-                                            className="pl-9 h-10 font-mono font-bold text-lg text-green-700"
+                                            className="pl-9 h-10 font-mono font-bold text-lg text-blue-700 dark:text-blue-300"
                                             maxLength={15}
                                         />
                                     </div>
@@ -386,7 +386,7 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
 
                                 {/* Date */}
                                 <div className="lg:col-span-2 space-y-1.5">
-                                    {index === 0 && <Label className="text-xs font-semibold text-slate-600">{t('date')}</Label>}
+                                    {index === 0 && <Label className="text-xs font-semibold text-slate-600 dark:text-slate-300">{t('date')}</Label>}
                                     <Popover>
                                         <PopoverTrigger asChild>
                                             <div className="relative cursor-pointer">
@@ -394,7 +394,7 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
                                                 <Button
                                                     variant={"outline"}
                                                     className={cn(
-                                                        "w-full h-10 pl-9 text-left font-normal border-input bg-background hover:bg-slate-50 transition-colors justify-start",
+                                                        "w-full h-10 pl-9 text-left font-normal border-input bg-background hover:bg-blue-50/60 dark:hover:bg-blue-500/10 transition-colors justify-start",
                                                         !row.date && "text-muted-foreground"
                                                     )}
                                                 >
@@ -419,11 +419,11 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
 
                                 {/* Payer */}
                                 <div className="lg:col-span-2 space-y-1.5">
-                                    {index === 0 && <Label className="text-xs font-semibold text-slate-600">{t('payer')} <span className="text-red-500">*</span></Label>}
+                                    {index === 0 && <Label className="text-xs font-semibold text-slate-600 dark:text-slate-300">{t('payer')} <span className="text-red-500">*</span></Label>}
                                     <div className="relative">
                                         <Users className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground z-10" />
                                         <Select value={row.payerId} onValueChange={(v) => updateRow(row.id, 'payerId', v)}>
-                                            <SelectTrigger className="pl-9 h-10 w-full bg-background border-input focus:ring-2 focus:ring-ring focus:ring-offset-2">
+                                            <SelectTrigger className="pl-9 h-10 w-full bg-background border-input focus:ring-2 focus:ring-ring focus:ring-offset-2 dark:text-slate-200">
                                                 <SelectValue placeholder="Select" />
                                             </SelectTrigger>
                                             <SelectContent>
@@ -431,7 +431,7 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
                                                     <SelectItem key={m.id} value={m.id.toString()} className="cursor-pointer py-2.5">
                                                         <div className="flex items-center gap-2">
                                                             <div className={cn("w-5 h-5 rounded-full flex items-center justify-center text-white text-[10px] font-bold",
-                                                                ['bg-blue-500', 'bg-red-500', 'bg-green-500', 'bg-amber-500', 'bg-purple-500', 'bg-pink-500'][Math.abs(m.name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)) % 6]
+                                                                ['bg-blue-500', 'bg-cyan-500', 'bg-emerald-500', 'bg-indigo-500', 'bg-teal-500', 'bg-slate-600'][Math.abs(m.name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)) % 6]
                                                             )}>
                                                                 {m.name.charAt(0).toUpperCase()}
                                                             </div>
@@ -449,9 +449,9 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
                                     <div className="lg:col-span-2 space-y-1.5">
                                         <Label className="text-xs font-semibold text-transparent select-none hidden lg:block">.</Label>
                                         <Button
-                                            onClick={handleSubmit as any}
+                                            onClick={handleSubmit}
                                             disabled={isSubmitting}
-                                            className="w-full h-10 text-sm font-bold bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white shadow-lg shadow-green-200/50 hover:shadow-green-300 transition-all hover:scale-[1.01] overflow-hidden rounded-xl"
+                                            className="w-full h-10 text-sm font-bold bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white shadow-lg shadow-blue-200/50 hover:shadow-blue-300 transition-all hover:scale-[1.01] overflow-hidden rounded-xl"
                                         >
                                             {isSubmitting ? (
                                                 <><span className="animate-spin mr-1">⏳</span> {t('submitting')}</>
@@ -466,7 +466,7 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
                             {/* Expense Type + Beneficiaries */}
                             <div className="flex flex-col sm:flex-row items-start gap-3">
                                 <div className="flex items-center gap-2 shrink-0">
-                                    <Label className="text-xs font-semibold text-slate-600 whitespace-nowrap">{t('type')}:</Label>
+                                    <Label className="text-xs font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap">{t('type')}:</Label>
                                     <div className="flex gap-1.5">
                                         <button
                                             type="button"
@@ -475,11 +475,11 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
                                                 "flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-bold transition-all duration-200",
                                                 row.type === 'SHARED'
                                                     ? "border-blue-500 bg-blue-50 text-blue-700 shadow-sm"
-                                                    : "border-slate-200 bg-white text-slate-500 hover:border-blue-200 hover:bg-blue-50/50"
+                                                    : "border-slate-200 bg-white dark:bg-white/[0.04] text-slate-500 dark:text-slate-300 hover:border-blue-200 hover:bg-blue-50/50 dark:hover:bg-blue-500/10"
                                             )}
                                         >
                                             {row.type === 'SHARED' && <CheckCircle2 className="w-3 h-3" />}
-                                            🔹 Shared
+                                            Shared
                                         </button>
                                         <button
                                             type="button"
@@ -487,12 +487,12 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
                                             className={cn(
                                                 "flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-bold transition-all duration-200",
                                                 row.type === 'PRIVATE'
-                                                    ? "border-amber-500 bg-amber-50 text-amber-700 shadow-sm dark:bg-amber-500/20 dark:text-amber-400 dark:border-amber-500/50"
-                                                    : "border-slate-200 bg-white text-slate-500 hover:border-amber-200 hover:bg-amber-50/50 dark:border-white/[0.08] dark:bg-white/[0.04] dark:text-slate-400 dark:hover:bg-amber-500/10 dark:hover:border-amber-500/30"
+                                                    ? "border-cyan-500 bg-cyan-50 text-cyan-700 shadow-sm dark:bg-cyan-500/20 dark:text-cyan-300 dark:border-cyan-500/50"
+                                                    : "border-slate-200 bg-white text-slate-500 hover:border-cyan-200 hover:bg-cyan-50/60 dark:border-white/[0.08] dark:bg-white/[0.04] dark:text-slate-400 dark:hover:bg-cyan-500/10 dark:hover:border-cyan-500/30"
                                             )}
                                         >
                                             {row.type === 'PRIVATE' && <CheckCircle2 className="w-3 h-3" />}
-                                            🔸 Private
+                                            Private
                                         </button>
                                     </div>
                                 </div>
@@ -500,7 +500,7 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
                                 {/* Beneficiaries inline when PRIVATE */}
                                 {row.type === 'PRIVATE' && (
                                     <div className="flex items-center gap-2 flex-wrap animate-in fade-in slide-in-from-left-2 duration-200">
-                                        <span className="text-xs font-semibold text-amber-700 dark:text-amber-500 flex items-center gap-1">
+                                        <span className="text-xs font-semibold text-cyan-700 dark:text-cyan-400 flex items-center gap-1">
                                             <Users className="w-3 h-3" /> {t('for')}
                                         </span>
                                         {activeMembers.map(m => {
@@ -513,8 +513,8 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
                                                     className={cn(
                                                         "flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold transition-all border",
                                                         isSelected
-                                                            ? "bg-amber-500 dark:bg-amber-600/90 text-white border-amber-600 dark:border-amber-500 shadow-sm"
-                                                            : "bg-white dark:bg-white/[0.06] border-slate-200 dark:border-white/[0.08] text-slate-600 dark:text-slate-300 hover:border-amber-300 dark:hover:border-amber-500/50 hover:bg-amber-50 dark:hover:bg-amber-500/10"
+                                                            ? "bg-cyan-600 dark:bg-cyan-600/90 text-white border-cyan-700 dark:border-cyan-500 shadow-sm"
+                                                            : "bg-white dark:bg-white/[0.06] border-slate-200 dark:border-white/[0.08] text-slate-600 dark:text-slate-300 hover:border-cyan-300 dark:hover:border-cyan-500/50 hover:bg-cyan-50 dark:hover:bg-cyan-500/10"
                                                     )}
                                                 >
                                                     {isSelected && <Check className="w-3 h-3 stroke-[3px]" />}
@@ -530,23 +530,23 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
 
                     {/* Batch mode: Add row + Submit all buttons */}
                     {isBatch && (
-                        <div className="flex items-center gap-3 pt-2 border-t border-dashed border-slate-200">
+                        <div className="flex items-center gap-3 pt-2 border-t border-dashed border-slate-200 dark:border-white/[0.08]">
                             <Button
                                 type="button"
                                 variant="outline"
                                 size="sm"
                                 onClick={addRow}
                                 disabled={rows.length >= MAX_ROWS}
-                                className="text-xs font-bold border-dashed border-slate-300 text-slate-600 hover:bg-slate-50 transition-all"
+                                className="text-xs font-bold border-dashed border-slate-300 dark:border-white/[0.08] text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/[0.06] transition-all"
                             >
                                 <Plus className="w-3.5 h-3.5 mr-1" />
                                 {t('addRow')} ({rows.length}/{MAX_ROWS})
                             </Button>
                             <div className="flex-1" />
                             <Button
-                                onClick={handleSubmit as any}
+                                onClick={handleSubmit}
                                 disabled={isSubmitting}
-                                className="h-10 px-6 text-sm font-bold bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white shadow-lg shadow-green-200/50 hover:shadow-green-300 transition-all hover:scale-[1.01] overflow-hidden rounded-xl"
+                                className="h-10 px-6 text-sm font-bold bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white shadow-lg shadow-blue-200/50 hover:shadow-blue-300 transition-all hover:scale-[1.01] overflow-hidden rounded-xl"
                             >
                                 {isSubmitting ? (
                                     <><span className="animate-spin mr-1">⏳</span> {t('submitting')}</>
