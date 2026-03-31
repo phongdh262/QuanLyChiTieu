@@ -521,7 +521,7 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
                                     b.isSettled ? "opacity-50" : ""
                                   )}
                                 >
-                                  <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-start gap-4">
+                                  <div className="grid grid-cols-[auto_minmax(220px,1.8fr)_minmax(240px,2fr)_minmax(160px,1fr)] items-start gap-4 lg:gap-5">
                                     <div className="pt-1">
                                       <input
                                         type="checkbox"
@@ -564,7 +564,12 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
                                           </div>
                                         </div>
                                       </div>
+                                    </div>
 
+                                    <div className="min-w-0 space-y-2 border-l border-slate-200/70 pl-4 dark:border-white/[0.08]">
+                                      <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400 dark:text-slate-500">
+                                        Beneficiaries
+                                      </div>
                                       <div className="flex flex-wrap items-center gap-2">
                                         {nonPayerBeneficiaries.map((name, idx) => {
                                           const split = b.splits?.find((s) => s.member.name === name);
@@ -596,28 +601,28 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
                                             </button>
                                           );
                                         })}
-
-                                        {paymentSummary && (
-                                          <button
-                                            onClick={() => handleToggleSettle(b)}
-                                            disabled={!isPayer || isLocked}
-                                            className={cn(
-                                              "ml-auto rounded-xl px-3 py-1.5 text-xs font-bold transition-all",
-                                              isPayer && !isLocked ? "hover:shadow-sm active:scale-95" : "cursor-not-allowed opacity-60",
-                                              paymentSummary.paid === paymentSummary.total
-                                                ? "bg-emerald-100 text-emerald-700 border border-emerald-200 dark:bg-emerald-500/15 dark:text-emerald-300 dark:border-emerald-500/20"
-                                                : paymentSummary.pending > 0
-                                                  ? "bg-amber-100 text-amber-700 border border-amber-200 dark:bg-amber-500/15 dark:text-amber-300 dark:border-amber-500/20"
-                                                  : "bg-slate-100 text-slate-600 border border-slate-200 dark:bg-white/[0.04] dark:text-slate-300 dark:border-white/[0.08]"
-                                            )}
-                                          >
-                                            {paymentSummary.paid === paymentSummary.total ? 'Done' : `${paymentSummary.paid}/${paymentSummary.total} paid`}
-                                          </button>
-                                        )}
                                       </div>
+
+                                      {paymentSummary && (
+                                        <button
+                                          onClick={() => handleToggleSettle(b)}
+                                          disabled={!isPayer || isLocked}
+                                          className={cn(
+                                            "rounded-xl px-3 py-1.5 text-xs font-bold transition-all",
+                                            isPayer && !isLocked ? "hover:shadow-sm active:scale-95" : "cursor-not-allowed opacity-60",
+                                            paymentSummary.paid === paymentSummary.total
+                                              ? "bg-emerald-100 text-emerald-700 border border-emerald-200 dark:bg-emerald-500/15 dark:text-emerald-300 dark:border-emerald-500/20"
+                                              : paymentSummary.pending > 0
+                                                ? "bg-amber-100 text-amber-700 border border-amber-200 dark:bg-amber-500/15 dark:text-amber-300 dark:border-amber-500/20"
+                                                : "bg-slate-100 text-slate-600 border border-slate-200 dark:bg-white/[0.04] dark:text-slate-300 dark:border-white/[0.08]"
+                                          )}
+                                        >
+                                          {paymentSummary.paid === paymentSummary.total ? 'Done' : `${paymentSummary.paid}/${paymentSummary.total} paid`}
+                                        </button>
+                                      )}
                                     </div>
 
-                                    <div className="flex flex-col items-end gap-3">
+                                    <div className="flex flex-col items-end gap-3 border-l border-slate-200/70 pl-4 dark:border-white/[0.08]">
                                       <div className="text-right">
                                         <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">Amount</p>
                                         <p className={cn(
