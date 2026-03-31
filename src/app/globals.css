@@ -91,7 +91,7 @@
 /* ─── Card Components ─── */
 @layer utilities {
   .premium-card {
-    @apply bg-card/92 backdrop-blur-sm border border-border/70 rounded-[var(--radius)] transition-all duration-400;
+    @apply bg-card backdrop-blur-sm border border-border/70 rounded-[var(--radius)] transition-all duration-300;
     box-shadow: var(--shadow-premium);
     background-image: linear-gradient(160deg, hsl(40, 52%, 99%) 0%, hsl(38, 40%, 95%) 100%);
   }
@@ -129,7 +129,8 @@
   }
 
   .glass-effect {
-    @apply backdrop-blur-xl bg-card/70 border border-border/50 shadow-xl rounded-[var(--radius)];
+    @apply backdrop-blur-xl border border-border/50 shadow-xl rounded-[var(--radius)];
+    background-color: hsl(var(--card) / 0.7);
   }
 
   .soft-shadow {

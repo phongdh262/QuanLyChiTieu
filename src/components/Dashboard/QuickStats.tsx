@@ -18,13 +18,16 @@ const formatMoney = (amount: number) => amount.toLocaleString('vi-VN');
 const DongSonAccent = ({
     className,
     rings = 4,
+    style,
 }: {
     className?: string;
     rings?: number;
+    style?: React.CSSProperties;
 }) => (
     <svg
         width="72" height="72" viewBox="0 0 72 72" fill="none"
         className={className}
+        style={style}
         aria-hidden="true"
     >
         {Array.from({ length: rings }).map((_, i) => (

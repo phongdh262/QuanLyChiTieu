@@ -38,11 +38,11 @@ export default function SummaryTable({ members, calculations }: Props) {
                 <CardContent className="fade-in pt-0 pb-2">
                     <div className="overflow-x-auto">
                         <Table>
-                            <TableHeader className="bg-slate-50/50 dark:bg-white/[0.02]">
+                            <TableHeader style={{ background: 'rgba(201,163,78,0.06)' }}>
                                 <TableRow>
-                                    <TableHead className="font-bold text-slate-700 dark:text-slate-300 text-xs">{t('member')}</TableHead>
-                                    <TableHead className="text-right font-bold text-slate-700 dark:text-slate-300 text-xs">{t('totalPaid')}</TableHead>
-                                    <TableHead className="text-right font-bold text-slate-700 dark:text-slate-300 text-xs">{t('netBalanceShared')}</TableHead>
+                                    <TableHead className="font-bold text-xs uppercase tracking-widest" style={{ color: 'rgba(44,24,16,0.5)', letterSpacing: '0.14em' }}>{t('member')}</TableHead>
+                                    <TableHead className="text-right font-bold text-xs uppercase tracking-widest" style={{ color: 'rgba(44,24,16,0.5)', letterSpacing: '0.14em' }}>{t('totalPaid')}</TableHead>
+                                    <TableHead className="text-right font-bold text-xs uppercase tracking-widest" style={{ color: 'rgba(44,24,16,0.5)', letterSpacing: '0.14em' }}>{t('netBalanceShared')}</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -54,13 +54,35 @@ export default function SummaryTable({ members, calculations }: Props) {
                                     const sharedBalance = bal - privateBal;
 
                                     const balText = sharedBalance === 0 ? '-' : (sharedBalance > 0 ? `+${formatMoney(sharedBalance)}` : formatMoney(sharedBalance));
-                                    const textClass = sharedBalance > 0 ? 'text-emerald-600 dark:text-emerald-400 font-bold' : (sharedBalance < 0 ? 'text-rose-500 dark:text-rose-400 font-bold' : 'text-slate-400');
+                                    const balStyle = sharedBalance > 0
+                                        ? { color: '#2E7D55', fontWeight: 700 }
+                                        : sharedBalance < 0
+                                            ? { color: '#C0392B', fontWeight: 700 }
+                                            : { color: 'rgba(44,24,16,0.3)' };
 
                                     return (
-                                        <TableRow key={member.id} className={cn("transition-colors hover:bg-blue-50/35 dark:hover:bg-blue-500/5", index % 2 === 0 ? "bg-white dark:bg-transparent" : "bg-slate-50/20 dark:bg-white/[0.01]")}>
-                                            <TableCell className="font-semibold text-slate-700 dark:text-slate-200 py-3">{member.name}</TableCell>
-                                            <TableCell className="text-right font-bold text-slate-600 dark:text-slate-300 tabular-nums py-3">{formatMoney(s.sharedPaid)}</TableCell>
-                                            <TableCell className={cn("text-right tabular-nums py-3", textClass)}>{balText}</TableCell>
+                                        <TableRow
+                                            key={member.id}
+                                            className="transition-colors"
+                                            style={{
+                                                background: index % 2 === 0 ? 'transparent' : 'rgba(201,163,78,0.03)',
+                                            }}
+                                            onMouseEnter={e => (e.currentTarget.style.background = 'rgba(201,163,78,0.07)')}
+                                            onMouseLeave={e => (e.currentTarget.style.background = index % 2 === 0 ? 'transparent' : 'rgba(201,163,78,0.03)')}
+                                        >
+                                            <TableCell className="font-semibold py-3" style={{ color: 'rgba(44,24,16,0.8)' }}>{member.name}</TableCell>
+                                            <TableCell
+                                                className="text-right font-bold tabular-nums py-3"
+                                                style={{ fontFamily: 'var(--font-cormorant), Georgia, serif', fontSize: '15px', color: 'rgba(44,24,16,0.7)' }}
+                                            >
+                                                {formatMoney(s.sharedPaid)}
+                                            </TableCell>
+                                            <TableCell
+                                                className="text-right tabular-nums py-3"
+                                                style={{ fontFamily: 'var(--font-cormorant), Georgia, serif', fontSize: '15px', ...balStyle }}
+                                            >
+                                                {balText}
+                                            </TableCell>
                                         </TableRow>
                                     );
                                 })}

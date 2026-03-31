@@ -1,28 +1,39 @@
-import { LRUCache } from 'lru-cache';
-
 type RateLimitOptions = {
     uniqueTokenPerInterval?: number;
     interval?: number;
 };
 
+type TokenEntry = { count: number[]; expiresAt: number };
+
 export class RateLimit {
-    tokenCache: LRUCache<string, number[]>;
+    private cache: Map<string, TokenEntry>;
+    private interval: number;
+    private maxTokens: number;
 
     constructor(options?: RateLimitOptions) {
-        this.tokenCache = new LRUCache({
-            max: options?.uniqueTokenPerInterval || 500,
-            ttl: options?.interval || 60000,
-        });
+        this.cache = new Map();
+        this.interval = options?.interval || 60000;
+        this.maxTokens = options?.uniqueTokenPerInterval || 500;
     }
 
     check(limit: number, token: string) {
-        const tokenCount = this.tokenCache.get(token) || [0];
-        if (tokenCount[0] === 0) {
-            this.tokenCache.set(token, tokenCount);
-        }
-        tokenCount[0] += 1;
+        const now = Date.now();
 
-        const currentUsage = tokenCount[0];
+        // Evict expired entries when cache grows
+        if (this.cache.size > this.maxTokens) {
+            for (const [key, entry] of this.cache) {
+                if (entry.expiresAt < now) this.cache.delete(key);
+            }
+        }
+
+        let entry = this.cache.get(token);
+        if (!entry || entry.expiresAt < now) {
+            entry = { count: [0], expiresAt: now + this.interval };
+            this.cache.set(token, entry);
+        }
+
+        entry.count[0] += 1;
+        const currentUsage = entry.count[0];
         const isRateLimited = currentUsage > limit;
 
         return {
@@ -38,12 +49,12 @@ export class RateLimit {
 // Limit: 5 requests per 60 seconds per IP
 export const loginRateLimit = new RateLimit({
     uniqueTokenPerInterval: 500,
-    interval: 60 * 1000, // 60 seconds
+    interval: 60 * 1000,
 });
 
 // Global instance for Reset Password route
 // Limit: 3 requests per 60 seconds per IP
 export const resetPasswordRateLimit = new RateLimit({
     uniqueTokenPerInterval: 500,
-    interval: 60 * 1000, // 60 seconds
+    interval: 60 * 1000,
 });
