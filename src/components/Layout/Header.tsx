@@ -49,7 +49,7 @@ export default function Header({ user, title, onUpdated, onShowActivityLog, onSh
     };
 
     return (
-        <header className="w-full bg-white/60 dark:bg-[#0c0e16]/80 backdrop-blur-xl border-b border-slate-200/60 dark:border-white/[0.04] sticky top-0 z-40 mb-6 shadow-sm transition-colors duration-300">
+        <header className="w-full bg-white/90 dark:bg-[#0c0e16]/80 backdrop-blur-xl border-b border-slate-200/80 dark:border-white/[0.04] sticky top-0 z-40 mb-6 shadow-sm transition-colors duration-300">
             <div className="container mx-auto max-w-7xl px-4 h-16 flex items-center justify-between">
                 {/* Brand / Logo (Mobile mostly, visible on desktop if sidebar hidden) */}
                 <div className="flex items-center gap-3 cursor-pointer group lg:hidden" onClick={() => window.location.href = '/'}>
@@ -62,7 +62,7 @@ export default function Header({ user, title, onUpdated, onShowActivityLog, onSh
                 </div>
 
                 {/* Dynamic Title (Sheet Name) */}
-                <h1 className="hidden md:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 items-center text-xs font-bold text-slate-500 dark:text-white/50 uppercase tracking-[0.2em] bg-slate-100/50 dark:bg-white/[0.03] px-4 py-1.5 rounded-full border border-slate-200/50 dark:border-white/[0.04] shadow-sm transition-colors duration-300">
+                <h1 className="hidden md:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 items-center text-xs font-bold text-slate-600 dark:text-white/50 uppercase tracking-[0.2em] bg-white dark:bg-white/[0.03] px-4 py-1.5 rounded-full border border-slate-200/80 dark:border-white/[0.04] shadow-sm transition-colors duration-300">
                     {title}
                 </h1>
 
@@ -77,7 +77,7 @@ export default function Header({ user, title, onUpdated, onShowActivityLog, onSh
                             <Button
                                 variant="ghost"
                                 size="icon"
-                                className="h-10 w-10 rounded-xl bg-slate-100/50 dark:bg-white/[0.03] text-slate-500 dark:text-white/60 hover:bg-slate-200/50 dark:hover:bg-white/[0.08] hover:text-indigo-600 dark:hover:text-white border border-transparent transition-all duration-300"
+                                className="h-10 w-10 rounded-xl bg-white dark:bg-white/[0.03] text-slate-500 dark:text-white/60 hover:bg-slate-100 dark:hover:bg-white/[0.08] hover:text-indigo-600 dark:hover:text-white border border-slate-200/60 dark:border-transparent transition-all duration-300"
                                 onClick={onShowActivityLog}
                                 title="Activity Log"
                             >
@@ -89,7 +89,7 @@ export default function Header({ user, title, onUpdated, onShowActivityLog, onSh
                                 <Button
                                     variant="ghost"
                                     size="icon"
-                                    className="h-10 w-10 hidden sm:flex rounded-xl bg-slate-100/50 dark:bg-white/[0.03] text-slate-500 dark:text-white/60 hover:bg-slate-200/50 dark:hover:bg-white/[0.08] hover:text-indigo-600 dark:hover:text-white border border-transparent transition-all duration-300"
+                                    className="h-10 w-10 hidden sm:flex rounded-xl bg-white dark:bg-white/[0.03] text-slate-500 dark:text-white/60 hover:bg-slate-100 dark:hover:bg-white/[0.08] hover:text-indigo-600 dark:hover:text-white border border-slate-200/60 dark:border-transparent transition-all duration-300"
                                     onClick={onShowMemberManager}
                                     title="Manage Members"
                                 >
@@ -106,7 +106,7 @@ export default function Header({ user, title, onUpdated, onShowActivityLog, onSh
                                         "relative h-10 w-10 rounded-xl transition-all duration-300 overflow-visible group/bell",
                                         pendingCount > 0
                                             ? "bg-indigo-50 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-300 border border-indigo-100 dark:border-indigo-500/30 hover:bg-indigo-100 dark:hover:bg-indigo-500/30 hover:text-indigo-700 dark:hover:text-indigo-200"
-                                            : "bg-slate-100/50 dark:bg-white/[0.03] text-slate-500 dark:text-white/60 hover:bg-slate-200/50 dark:hover:bg-white/[0.08] hover:text-indigo-600 dark:hover:text-white border border-transparent"
+                                            : "bg-white dark:bg-white/[0.03] text-slate-500 dark:text-white/60 hover:bg-slate-100 dark:hover:bg-white/[0.08] hover:text-indigo-600 dark:hover:text-white border border-slate-200/60 dark:border-transparent"
                                     )}
                                     onClick={() => setIsConfirmModalOpen(true)}
                                 >
@@ -124,12 +124,12 @@ export default function Header({ user, title, onUpdated, onShowActivityLog, onSh
                                 </Button>
                             </div>
 
-                            <div className="w-px h-6 bg-slate-200/60 dark:bg-white/[0.06] mx-1 hidden sm:block transition-colors duration-300"></div>
+                            <div className="w-px h-6 bg-slate-200/80 dark:bg-white/[0.06] mx-1 hidden sm:block transition-colors duration-300"></div>
 
                             {/* User Menu */}
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" className="relative h-10 px-2 sm:pl-2 sm:pr-4 rounded-xl hover:bg-slate-100/50 dark:hover:bg-white/[0.04] gap-2.5 border border-transparent bg-slate-50 dark:bg-white/[0.02] shadow-sm transition-all duration-300 group overflow-hidden">
+                                    <Button variant="ghost" className="relative h-10 px-2 sm:pl-2 sm:pr-4 rounded-xl hover:bg-slate-100 dark:hover:bg-white/[0.04] gap-2.5 border border-slate-200/70 dark:border-transparent bg-white dark:bg-white/[0.02] shadow-sm transition-all duration-300 group overflow-hidden">
                                         <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-indigo-500 via-violet-500 to-purple-600 text-white flex items-center justify-center font-black text-xs shadow-lg shadow-indigo-500/20 group-hover:scale-105 transition-all duration-300 z-10">
                                             {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
                                         </div>
@@ -190,7 +190,7 @@ export default function Header({ user, title, onUpdated, onShowActivityLog, onSh
             </div>
 
             {/* Mobile Title */}
-            <div className="md:hidden border-t border-slate-200/60 dark:border-white/[0.04] py-2 bg-slate-50/95 dark:bg-[#0c0e16]/95 backdrop-blur-xl transition-colors duration-300">
+            <div className="md:hidden border-t border-slate-200/70 dark:border-white/[0.04] py-2 bg-white dark:bg-[#0c0e16]/95 backdrop-blur-xl transition-colors duration-300">
                 <h2 className="text-center text-[10px] font-bold text-slate-500 dark:text-white/50 uppercase tracking-[0.2em]">
                     {title}
                 </h2>

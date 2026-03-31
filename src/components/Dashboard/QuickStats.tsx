@@ -5,6 +5,7 @@ import { CalculationResult, Member, Bill } from '@/types/expense';
 import { TrendingUp, Users, Receipt, ArrowUpRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/components/LanguageProvider';
+import { useTheme } from '@/components/ThemeProvider';
 
 interface Props {
     members: Member[];
@@ -63,39 +64,41 @@ const statCards = [
     {
         key: 'totalSpent',
         icon: TrendingUp,
-        iconBg: 'linear-gradient(135deg, #8B1A1A 0%, #6B0F0F 100%)',
-        accentColor: '#8B1A1A',
-        accentColorDark: '#C9A34E',
-        shadowColor: 'rgba(139, 26, 26, 0.12)',
+        iconBg: 'linear-gradient(135deg, #2563EB 0%, #0EA5E9 100%)',
+        accentColor: '#1D4ED8',
+        accentColorDark: '#60A5FA',
+        shadowColor: 'rgba(37, 99, 235, 0.16)',
     },
     {
         key: 'avgPerPerson',
         icon: Users,
-        iconBg: 'linear-gradient(135deg, #7A1A1A 0%, #5C0F0F 100%)',
-        accentColor: '#7A1A1A',
-        accentColorDark: '#C4963E',
-        shadowColor: 'rgba(122, 26, 26, 0.1)',
+        iconBg: 'linear-gradient(135deg, #0F766E 0%, #14B8A6 100%)',
+        accentColor: '#0F766E',
+        accentColorDark: '#2DD4BF',
+        shadowColor: 'rgba(15, 118, 110, 0.14)',
     },
     {
         key: 'transactionCount',
         icon: Receipt,
-        iconBg: 'linear-gradient(135deg, #8B3414 0%, #6B260D 100%)',
-        accentColor: '#8B3414',
-        accentColorDark: '#D4A060',
-        shadowColor: 'rgba(139, 52, 20, 0.1)',
+        iconBg: 'linear-gradient(135deg, #7C3AED 0%, #A855F7 100%)',
+        accentColor: '#7C3AED',
+        accentColorDark: '#C4B5FD',
+        shadowColor: 'rgba(124, 58, 237, 0.15)',
     },
     {
         key: 'sharedPool',
         icon: ArrowUpRight,
-        iconBg: 'linear-gradient(135deg, #B08D40 0%, #8A6C28 100%)',
-        accentColor: '#9A7830',
-        accentColorDark: '#C9A34E',
-        shadowColor: 'rgba(176, 141, 64, 0.1)',
+        iconBg: 'linear-gradient(135deg, #EA580C 0%, #F97316 100%)',
+        accentColor: '#C2410C',
+        accentColorDark: '#FDBA74',
+        shadowColor: 'rgba(234, 88, 12, 0.14)',
     },
 ];
 
 export default function QuickStats({ members, calculations, bills }: Props) {
     const { t } = useLanguage();
+    const { theme } = useTheme();
+    const isDark = theme === 'dark';
     const { stats } = calculations;
     const memberNames = members.map(m => m.name);
 
@@ -133,35 +136,35 @@ export default function QuickStats({ members, calculations, bills }: Props) {
                             "border transition-all duration-300 cursor-default group",
                         )}
                         style={{
-                            background: "linear-gradient(160deg, hsl(40, 52%, 99%) 0%, hsl(38, 40%, 95%) 100%)",
-                            borderColor: "rgba(201, 163, 78, 0.22)",
-                            boxShadow: `0 4px 20px ${card.shadowColor}, 0 1px 4px rgba(44, 24, 16, 0.04)`,
+                            background: isDark
+                                ? "linear-gradient(160deg, hsl(228, 26%, 14%) 0%, hsl(228, 24%, 11%) 100%)"
+                                : "linear-gradient(160deg, hsl(0, 0%, 100%) 0%, hsl(210, 84%, 97%) 100%)",
+                            borderColor: isDark ? "rgba(148, 163, 184, 0.22)" : "rgba(148, 163, 184, 0.3)",
+                            boxShadow: isDark
+                                ? `0 6px 24px rgba(2, 6, 23, 0.38), 0 1px 4px rgba(2, 6, 23, 0.25)`
+                                : `0 8px 24px ${card.shadowColor}, 0 2px 6px rgba(15, 23, 42, 0.06)`,
                             animationDelay: `${index * 70}ms`,
                         }}
                         onMouseEnter={e => {
                             (e.currentTarget as HTMLDivElement).style.transform = "translateY(-2px)";
                             (e.currentTarget as HTMLDivElement).style.boxShadow =
-                                `0 10px 32px ${card.shadowColor.replace('0.12', '0.18').replace('0.1', '0.15')}, 0 2px 8px rgba(44, 24, 16, 0.06)`;
+                                isDark
+                                    ? "0 10px 32px rgba(2, 6, 23, 0.5), 0 2px 8px rgba(2, 6, 23, 0.3)"
+                                    : `0 12px 30px ${card.shadowColor.replace('0.16', '0.22').replace('0.15', '0.2').replace('0.14', '0.19')}, 0 3px 8px rgba(15, 23, 42, 0.08)`;
                         }}
                         onMouseLeave={e => {
                             (e.currentTarget as HTMLDivElement).style.transform = "translateY(0)";
                             (e.currentTarget as HTMLDivElement).style.boxShadow =
-                                `0 4px 20px ${card.shadowColor}, 0 1px 4px rgba(44, 24, 16, 0.04)`;
+                                isDark
+                                    ? "0 6px 24px rgba(2, 6, 23, 0.38), 0 1px 4px rgba(2, 6, 23, 0.25)"
+                                    : `0 8px 24px ${card.shadowColor}, 0 2px 6px rgba(15, 23, 42, 0.06)`;
                         }}
                     >
-                        {/* Dark mode override */}
-                        <style>{`
-                            .dark .qs-card-${card.key} {
-                                background: linear-gradient(160deg, hsl(10, 52%, 10%) 0%, hsl(9, 55%, 7%) 100%) !important;
-                                border-color: rgba(201, 163, 78, 0.12) !important;
-                            }
-                        `}</style>
-
                         {/* Dong Son watermark in corner */}
                         <DongSonAccent
                             className="absolute -bottom-7 -right-7 transition-opacity duration-300 group-hover:opacity-[0.07]"
                             rings={4}
-                            style={{ color: card.accentColor, opacity: 0.045 } as React.CSSProperties}
+                            style={{ color: isDark ? card.accentColorDark : card.accentColor, opacity: isDark ? 0.08 : 0.045 } as React.CSSProperties}
                         />
 
                         {/* Top thin accent line */}
@@ -174,7 +177,7 @@ export default function QuickStats({ members, calculations, bills }: Props) {
                             <div className="space-y-1.5 flex-1 min-w-0 pr-2">
                                 <p
                                     className="text-[10px] font-bold uppercase tracking-[0.2em]"
-                                    style={{ color: "rgba(44, 24, 16, 0.42)" }}
+                                    style={{ color: isDark ? "rgba(203, 213, 225, 0.65)" : "rgba(51, 65, 85, 0.58)" }}
                                 >
                                     {label}
                                 </p>
@@ -183,7 +186,7 @@ export default function QuickStats({ members, calculations, bills }: Props) {
                                     style={{
                                         fontFamily: "var(--font-cormorant), Georgia, serif",
                                         fontWeight: 700,
-                                        color: "rgba(44, 24, 16, 0.85)",
+                                        color: isDark ? "rgba(241, 245, 249, 0.96)" : "rgba(15, 23, 42, 0.95)",
                                     }}
                                 >
                                     {value}
@@ -195,10 +198,12 @@ export default function QuickStats({ members, calculations, bills }: Props) {
                                 className="p-2 sm:p-2.5 rounded-lg shadow-sm shrink-0 group-hover:scale-110 transition-transform duration-300"
                                 style={{
                                     background: card.iconBg,
-                                    boxShadow: `0 4px 12px ${card.shadowColor.replace('0.12', '0.35').replace('0.1', '0.3')}`,
+                                    boxShadow: isDark
+                                        ? "0 4px 14px rgba(2, 6, 23, 0.45)"
+                                        : `0 4px 14px ${card.shadowColor.replace('0.16', '0.3').replace('0.15', '0.28').replace('0.14', '0.26')}`,
                                 }}
                             >
-                                <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4" style={{ color: "#F5EDD8" }} />
+                                <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4" style={{ color: "#FFFFFF" }} />
                             </div>
                         </div>
                     </div>
