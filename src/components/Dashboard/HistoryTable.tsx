@@ -295,6 +295,30 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
     return { paid: paidCount, total: beneficiaries.length, pending: pendingCount };
   };
 
+  const getStatusChip = (bill: Bill) => {
+    const paymentSummary = getPaymentSummary(bill);
+    if (!paymentSummary) return null;
+
+    if (paymentSummary.paid === paymentSummary.total) {
+      return {
+        className: "bg-emerald-100 text-emerald-700 border border-emerald-200 dark:bg-emerald-500/15 dark:text-emerald-300 dark:border-emerald-500/20",
+        label: 'Done'
+      };
+    }
+
+    if (paymentSummary.pending > 0) {
+      return {
+        className: "bg-amber-100 text-amber-700 border border-amber-200 dark:bg-amber-500/15 dark:text-amber-300 dark:border-amber-500/20",
+        label: `${paymentSummary.pending} pending`
+      };
+    }
+
+    return {
+      className: "bg-slate-100 text-slate-600 border border-slate-200 dark:bg-white/[0.04] dark:text-slate-300 dark:border-white/[0.08]",
+      label: `${paymentSummary.paid}/${paymentSummary.total} paid`
+    };
+  };
+
   // --- FEATURE 5: Swipe handlers ---
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
     touchStartX.current = e.touches[0].clientX;
@@ -477,156 +501,159 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
 
                         {/* Bills in this group */}
                         {!isCollapsed && (
-                          <table className="w-full text-sm">
-                            <tbody>
-                              {group.bills.map((b) => {
-                                const isSelected = selectedIds.has(b.id);
-                                const isPayer = currentUser?.name === b.payer;
-                                const canDelete = isPayer && !isLocked;
-                                const paymentSummary = getPaymentSummary(b);
+                          <div className="grid gap-3 p-4 bg-gradient-to-b from-white/75 to-slate-50/40 dark:from-transparent dark:to-transparent">
+                            {group.bills.map((b) => {
+                              const isSelected = selectedIds.has(b.id);
+                              const isPayer = currentUser?.name === b.payer;
+                              const canDelete = isPayer && !isLocked;
+                              const paymentSummary = getPaymentSummary(b);
+                              const statusChip = getStatusChip(b);
+                              const nonPayerBeneficiaries = (b.beneficiaries || []).filter((name) => name !== b.payer);
 
-                                return (
-                                  <tr
-                                    key={b.id}
-                                    className={cn(
-                                      "group transition-all duration-150 border-b border-slate-50/80 dark:border-white/[0.04] last:border-0",
-                                      isSelected ? "bg-indigo-50/60 dark:bg-indigo-500/10" : "hover:bg-slate-50/50 dark:hover:bg-white/[0.03]",
-                                      b.isSettled ? "opacity-40" : ""
-                                    )}
-                                  >
-                                    {/* Checkbox */}
-                                    <td className="w-[40px] text-center px-2 py-3">
-                                      <input type="checkbox" checked={isSelected} onChange={() => toggleRow(b.id)} disabled={!canDelete}
-                                        className={cn("h-4 w-4 rounded border-slate-300 accent-indigo-600", canDelete ? "cursor-pointer" : "cursor-not-allowed opacity-30")}
+                              return (
+                                <div
+                                  key={b.id}
+                                  className={cn(
+                                    "rounded-2xl border px-4 py-4 transition-all duration-200",
+                                    isSelected
+                                      ? "border-blue-200 bg-blue-50/70 dark:border-blue-500/30 dark:bg-blue-500/10"
+                                      : "border-slate-200/80 bg-white/95 hover:border-slate-300/80 hover:shadow-md dark:border-white/[0.08] dark:bg-white/[0.03] dark:hover:border-white/[0.14]",
+                                    b.isSettled ? "opacity-50" : ""
+                                  )}
+                                >
+                                  <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-start gap-4">
+                                    <div className="pt-1">
+                                      <input
+                                        type="checkbox"
+                                        checked={isSelected}
+                                        onChange={() => toggleRow(b.id)}
+                                        disabled={!canDelete}
+                                        className={cn("h-4 w-4 rounded border-slate-300 accent-blue-600", canDelete ? "cursor-pointer" : "cursor-not-allowed opacity-30")}
                                       />
-                                    </td>
+                                    </div>
 
-                                    {/* Type Badge */}
-                                    <td className="w-[80px] py-3 pl-1">
-                                      <span className={cn(
-                                        "text-[10px] uppercase font-bold px-2 py-1 rounded-md tracking-wider",
-                                        b.type === 'SHARED' ? "text-indigo-700 dark:text-indigo-400 bg-indigo-100 dark:bg-indigo-500/15" : "text-cyan-700 dark:text-cyan-300 bg-cyan-100 dark:bg-cyan-500/15"
-                                      )}>
-                                        {b.type === 'SHARED' ? 'SHARED' : 'PRIVATE'}
-                                      </span>
-                                    </td>
-
-                                    {/* Description */}
-                                    <td className="py-3 pl-3">
-                                      <span className={cn("text-sm font-semibold", b.isSettled ? "text-slate-400 dark:text-slate-600 line-through" : "text-slate-800 dark:text-slate-100")}>
-                                        {b.note}
-                                      </span>
-                                    </td>
-
-                                    {/* Amount */}
-                                    <td className="py-3 text-right px-4 w-[130px]">
-                                      <span className={cn("text-[15px] font-black tabular-nums", b.isSettled ? "text-slate-300 dark:text-slate-600 line-through" : "text-emerald-700 dark:text-emerald-400")}>
-                                        {formatMoney(b.amount)}
-                                      </span>
-                                    </td>
-
-                                    {/* Payer */}
-                                    <td className="py-3 px-2 w-[120px]">
-                                      <div className="flex items-center gap-2">
-                                        <div className={cn("w-7 h-7 rounded-full flex items-center justify-center text-white font-bold text-[10px] ring-2 ring-white shadow-sm", getAvatarColor(b.payer))}>
-                                          {b.payer.charAt(0).toUpperCase()}
-                                        </div>
-                                        <span className="text-sm text-slate-700 dark:text-slate-300 font-semibold truncate max-w-[80px]">{b.payer}</span>
+                                    <div className="min-w-0 space-y-3">
+                                      <div className="flex flex-wrap items-center gap-2">
+                                        <span className={cn(
+                                          "text-[10px] uppercase font-bold px-2 py-1 rounded-md tracking-[0.18em]",
+                                          b.type === 'SHARED' ? "text-indigo-700 dark:text-indigo-300 bg-indigo-100 dark:bg-indigo-500/15" : "text-cyan-700 dark:text-cyan-300 bg-cyan-100 dark:bg-cyan-500/15"
+                                        )}>
+                                          {b.type === 'SHARED' ? 'Shared' : 'Private'}
+                                        </span>
+                                        {statusChip && (
+                                          <span className={cn("text-[11px] font-bold px-2.5 py-1 rounded-full", statusChip.className)}>
+                                            {statusChip.label}
+                                          </span>
+                                        )}
                                       </div>
-                                    </td>
 
-                                    {/* Split For Avatars */}
-                                    <td className="py-3 px-2">
-                                      <div className="flex flex-wrap items-center gap-1.5">
-                                        {(b.beneficiaries || []).map((name, idx) => {
-                                          const split = b.splits?.find(s => s.member.name === name);
+                                      <div className="space-y-1.5 min-w-0">
+                                        <p className={cn(
+                                          "text-base font-black tracking-tight",
+                                          b.isSettled ? "text-slate-400 dark:text-slate-500 line-through" : "text-slate-800 dark:text-slate-100"
+                                        )}>
+                                          {b.note || 'Untitled expense'}
+                                        </p>
+                                        <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+                                          <span className="font-semibold uppercase tracking-[0.16em] text-[10px] text-slate-400 dark:text-slate-500">Paid by</span>
+                                          <div className="flex items-center gap-2 rounded-full border border-slate-200/80 bg-slate-50/80 px-2.5 py-1 dark:border-white/[0.08] dark:bg-white/[0.04]">
+                                            <div className={cn("w-6 h-6 rounded-full flex items-center justify-center text-white font-bold text-[10px]", getAvatarColor(b.payer))}>
+                                              {b.payer.charAt(0).toUpperCase()}
+                                            </div>
+                                            <span className="font-semibold text-slate-700 dark:text-slate-200">{b.payer}</span>
+                                          </div>
+                                        </div>
+                                      </div>
+
+                                      <div className="flex flex-wrap items-center gap-2">
+                                        {nonPayerBeneficiaries.map((name, idx) => {
+                                          const split = b.splits?.find((s) => s.member.name === name);
                                           const isPaid = split?.isPaid;
                                           const isPending = split?.isPending;
                                           const isBeneficiary = currentUser?.name === name;
-                                          const isSelf = name === b.payer;
-                                          const canToggle = (isPayer || isBeneficiary) && !isSelf && !isLocked;
+                                          const canToggle = (isPayer || isBeneficiary) && !isLocked;
 
                                           return (
                                             <button
                                               key={idx}
-                                              onClick={(e) => { e.stopPropagation(); if (!isSelf) handleToggleSettle(b, name); }}
-                                              disabled={isSelf || !canToggle}
+                                              onClick={(e) => { e.stopPropagation(); handleToggleSettle(b, name); }}
+                                              disabled={!canToggle}
                                               className={cn(
-                                                "flex items-center gap-1.5 border rounded-full pl-0.5 pr-2.5 py-0.5 transition-all duration-200 text-xs font-semibold",
-                                                isSelf ? "bg-slate-50 dark:bg-white/[0.03] border-slate-100 dark:border-white/[0.06] opacity-60 cursor-default" :
-                                                  canToggle ? "hover:shadow-md active:scale-95 cursor-pointer" : "cursor-not-allowed opacity-60",
-                                                isPaid ? "bg-emerald-50 border-emerald-200 text-emerald-700" :
-                                                  isPending ? "bg-amber-50 border-amber-200 text-amber-700" :
-                                                    "bg-slate-50 dark:bg-white/[0.03] border-slate-200 dark:border-white/[0.08] text-slate-600 dark:text-slate-300"
+                                                "flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold transition-all",
+                                                canToggle ? "hover:shadow-sm active:scale-95" : "cursor-not-allowed opacity-60",
+                                                isPaid
+                                                  ? "bg-emerald-50 border-emerald-200 text-emerald-700 dark:bg-emerald-500/10 dark:border-emerald-500/20 dark:text-emerald-300"
+                                                  : isPending
+                                                    ? "bg-amber-50 border-amber-200 text-amber-700 dark:bg-amber-500/10 dark:border-amber-500/20 dark:text-amber-300"
+                                                    : "bg-slate-50 border-slate-200 text-slate-600 dark:bg-white/[0.03] dark:border-white/[0.08] dark:text-slate-300"
                                               )}
                                             >
-                                              <div className={cn("w-6 h-6 rounded-full flex items-center justify-center text-white font-bold text-[10px] relative", getAvatarColor(name))}>
+                                              <div className={cn("w-5 h-5 rounded-full flex items-center justify-center text-white font-bold text-[9px] relative", getAvatarColor(name))}>
                                                 {name.charAt(0).toUpperCase()}
-                                                {isPaid && (
-                                                  <div className="absolute -bottom-0.5 -right-0.5 bg-emerald-500 rounded-full w-2.5 h-2.5 border border-white flex items-center justify-center">
-                                                    <svg className="w-1.5 h-1.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={4} d="M5 13l4 4L19 7" /></svg>
-                                                  </div>
-                                                )}
-                                                {isPending && !isPaid && (
-                                                  <div className="absolute -bottom-0.5 -right-0.5 bg-amber-500 rounded-full w-2.5 h-2.5 border border-white flex items-center justify-center">
-                                                    <Clock className="w-1.5 h-1.5 text-white" />
-                                                  </div>
-                                                )}
                                               </div>
-                                              {name}
+                                              <span>{name}</span>
+                                              {isPaid ? <span className="text-[10px]">✓</span> : isPending ? <span className="text-[10px]">⏳</span> : null}
                                             </button>
                                           );
                                         })}
+
+                                        {paymentSummary && (
+                                          <button
+                                            onClick={() => handleToggleSettle(b)}
+                                            disabled={!isPayer || isLocked}
+                                            className={cn(
+                                              "ml-auto rounded-xl px-3 py-1.5 text-xs font-bold transition-all",
+                                              isPayer && !isLocked ? "hover:shadow-sm active:scale-95" : "cursor-not-allowed opacity-60",
+                                              paymentSummary.paid === paymentSummary.total
+                                                ? "bg-emerald-100 text-emerald-700 border border-emerald-200 dark:bg-emerald-500/15 dark:text-emerald-300 dark:border-emerald-500/20"
+                                                : paymentSummary.pending > 0
+                                                  ? "bg-amber-100 text-amber-700 border border-amber-200 dark:bg-amber-500/15 dark:text-amber-300 dark:border-amber-500/20"
+                                                  : "bg-slate-100 text-slate-600 border border-slate-200 dark:bg-white/[0.04] dark:text-slate-300 dark:border-white/[0.08]"
+                                            )}
+                                          >
+                                            {paymentSummary.paid === paymentSummary.total ? 'Done' : `${paymentSummary.paid}/${paymentSummary.total} paid`}
+                                          </button>
+                                        )}
                                       </div>
-                                    </td>
+                                    </div>
 
-                                    {/* --- FEATURE 6: Status Summary --- */}
-                                    <td className="py-3 px-3 w-[130px]">
-                                      {paymentSummary ? (
-                                        <button
-                                          onClick={() => handleToggleSettle(b)}
+                                    <div className="flex flex-col items-end gap-3">
+                                      <div className="text-right">
+                                        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">Amount</p>
+                                        <p className={cn(
+                                          "mt-1 text-[17px] font-black tabular-nums tracking-tight",
+                                          b.isSettled ? "text-slate-300 dark:text-slate-500 line-through" : "text-slate-900 dark:text-slate-100"
+                                        )}>
+                                          {formatMoney(b.amount)}
+                                        </p>
+                                      </div>
+
+                                      <div className="flex items-center gap-1">
+                                        <Button
+                                          variant="ghost"
+                                          size="icon"
+                                          className={cn("h-9 w-9 rounded-xl", isPayer ? "text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-500/10" : "text-slate-200 cursor-not-allowed")}
+                                          onClick={() => isPayer && !isLocked && setEditingBill(b)}
                                           disabled={!isPayer || isLocked}
-                                          className={cn(
-                                            "flex items-center gap-1.5 text-xs font-bold rounded-lg px-3 py-1.5 transition-all",
-                                            isPayer && !isLocked ? "cursor-pointer hover:shadow-md active:scale-95" : "cursor-not-allowed opacity-60",
-                                            paymentSummary.paid === paymentSummary.total
-                                              ? "bg-emerald-100 text-emerald-700 border border-emerald-200"
-                                              : paymentSummary.pending > 0
-                                                ? "bg-amber-100 text-amber-700 border border-amber-200"
-                                                : "bg-slate-100 dark:bg-white/[0.04] text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-white/[0.08]"
-                                          )}
                                         >
-                                          {paymentSummary.paid === paymentSummary.total ? (
-                                            <><svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd" /></svg> Done</>
-                                          ) : (
-                                            <>{paymentSummary.paid}/{paymentSummary.total} paid</>
-                                          )}
-                                        </button>
-                                      ) : (
-                                        <span className="text-[10px] text-slate-300">—</span>
-                                      )}
-                                    </td>
-
-                                    {/* Actions */}
-                                    <td className="py-3 pr-4 w-[80px]">
-                                      <div className="flex items-center justify-end gap-1">
-                                        <Button variant="ghost" size="icon"
-                                          className={cn("h-8 w-8 rounded-lg", isPayer ? "text-slate-400 hover:text-blue-600 hover:bg-blue-50" : "text-slate-200 cursor-not-allowed")}
-                                          onClick={() => isPayer && !isLocked && setEditingBill(b)} disabled={!isPayer || isLocked}>
                                           <Edit className="w-4 h-4" />
                                         </Button>
-                                        <Button variant="ghost" size="icon"
-                                          className={cn("h-8 w-8 rounded-lg", canDelete ? "text-slate-400 hover:text-red-600 hover:bg-red-50" : "text-slate-200 cursor-not-allowed")}
-                                          onClick={() => canDelete && handleDeleteClick(b.id)} disabled={!canDelete}>
+                                        <Button
+                                          variant="ghost"
+                                          size="icon"
+                                          className={cn("h-9 w-9 rounded-xl", canDelete ? "text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10" : "text-slate-200 cursor-not-allowed")}
+                                          onClick={() => canDelete && handleDeleteClick(b.id)}
+                                          disabled={!canDelete}
+                                        >
                                           {deletingId === b.id ? <div className="w-4 h-4 border-2 border-red-500 border-t-transparent rounded-full animate-spin" /> : <Trash2 className="w-4 h-4" />}
                                         </Button>
                                       </div>
-                                    </td>
-                                  </tr>
-                                );
-                              })}
-                            </tbody>
-                          </table>
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
                         )}
                       </div>
                     );

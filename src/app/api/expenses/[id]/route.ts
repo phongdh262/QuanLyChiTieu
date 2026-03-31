@@ -5,6 +5,14 @@ import { logActivity } from '@/lib/logger';
 
 import { updateExpenseSchema } from '@/lib/schemas';
 
+const ERROR_EXPENSE_NOT_FOUND = 'EXPENSE_NOT_FOUND';
+const ERROR_LOCKED = 'LOCKED';
+const ERROR_FORBIDDEN_WORKSPACE = 'FORBIDDEN_WORKSPACE';
+const ERROR_FORBIDDEN_PAYER_EDIT = 'FORBIDDEN_PAYER_EDIT';
+
+const getErrorMessage = (error: unknown) => error instanceof Error ? error.message : '';
+type PrismaTransaction = Omit<typeof prisma, '$connect' | '$disconnect' | '$on' | '$transaction' | '$use' | '$extends'>;
+
 // UPDATE Expense
 export async function PUT(
     request: Request,
@@ -32,17 +40,17 @@ export async function PUT(
         let sheetId = 0;
 
         // Transaction: Update expense + Re-do splits
-        await prisma.$transaction(async (tx: any) => {
+        await prisma.$transaction(async (tx: PrismaTransaction) => {
             // 1. Get Expense to find Sheet -> Workspace
             const expense = await tx.expense.findUnique({
                 where: { id },
                 include: { sheet: true }
             });
-            if (!expense) throw new Error('Expense not found');
+            if (!expense) throw new Error(ERROR_EXPENSE_NOT_FOUND);
 
             // LOCK CHECK
             if (expense.sheet.status === 'LOCKED') {
-                throw new Error('LOCKED');
+                throw new Error(ERROR_LOCKED);
             }
 
             workspaceId = expense.sheet.workspaceId;
@@ -55,7 +63,11 @@ export async function PUT(
                     id: actorId
                 }
             });
-            if (!isMember) throw new Error('Forbidden: Not a member of this workspace');
+            if (!isMember) throw new Error(ERROR_FORBIDDEN_WORKSPACE);
+
+            if (expense.payerId !== actorId) {
+                throw new Error(ERROR_FORBIDDEN_PAYER_EDIT);
+            }
 
             // 2. Update Expense Details
             await tx.expense.update({
@@ -85,7 +97,7 @@ export async function PUT(
                         status: { not: 'DELETED' }
                     }
                 });
-                splitMembers = activeMembers.map((m: any) => m.id);
+                splitMembers = activeMembers.map((member) => member.id);
             } else {
                 splitMembers = beneficiaryIds || [];
             }
@@ -115,9 +127,20 @@ export async function PUT(
         );
 
         return NextResponse.json({ success: true });
-    } catch (error: any) {
-        if (error?.message === 'LOCKED') {
+    } catch (error: unknown) {
+        const errorMessage = getErrorMessage(error);
+
+        if (errorMessage === ERROR_EXPENSE_NOT_FOUND) {
+            return NextResponse.json({ error: 'Expense not found' }, { status: 404 });
+        }
+        if (errorMessage === ERROR_LOCKED) {
             return NextResponse.json({ error: 'Sheet đã bị khóa, không thể chỉnh sửa khoản chi' }, { status: 403 });
+        }
+        if (errorMessage === ERROR_FORBIDDEN_WORKSPACE) {
+            return NextResponse.json({ error: 'Forbidden: Not a member of this workspace' }, { status: 403 });
+        }
+        if (errorMessage === ERROR_FORBIDDEN_PAYER_EDIT) {
+            return NextResponse.json({ error: 'Forbidden: Only the payer can edit this expense' }, { status: 403 });
         }
         console.error(error);
         return NextResponse.json({ error: 'Failed' }, { status: 500 });
@@ -169,7 +192,7 @@ export async function DELETE(
         }
 
         // Transaction to delete splits then expense
-        await prisma.$transaction(async (tx: any) => {
+        await prisma.$transaction(async (tx: PrismaTransaction) => {
             await tx.split.deleteMany({
                 where: { expenseId: id }
             });

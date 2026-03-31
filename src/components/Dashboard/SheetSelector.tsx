@@ -230,9 +230,9 @@ export default function SheetSelector({ sheets, currentSheetId, workspaceId, onC
     };
 
     return (
-        <div className="flex h-10 w-full min-w-0 items-center gap-2">
+        <div className="flex h-10 w-full min-w-0 items-center gap-2 lg:inline-flex lg:h-auto lg:w-auto lg:max-w-full">
             {isEditing ? (
-                <div className="flex gap-2 items-center flex-1 animate-in fade-in duration-200">
+                <div className="flex w-full gap-2 items-center animate-in fade-in duration-200 lg:w-auto">
                     <Popover>
                         <PopoverTrigger asChild>
                             <Button variant="outline" className="w-[160px] justify-start text-left font-bold border-slate-200 h-9 bg-white">
@@ -273,7 +273,7 @@ export default function SheetSelector({ sheets, currentSheetId, workspaceId, onC
                     </Button>
                 </div>
             ) : isCreating ? (
-                <div className="flex gap-2 items-center flex-1 animate-in fade-in duration-200 bg-white p-1 rounded-lg border border-slate-200 shadow-sm">
+                <div className="flex w-full gap-2 items-center animate-in fade-in duration-200 bg-white p-1 rounded-lg border border-slate-200 shadow-sm lg:w-auto">
                     <Popover>
                         <PopoverTrigger asChild>
                             <Button variant="outline" className="w-[160px] justify-start text-left font-bold border-slate-200 h-9">
@@ -324,7 +324,7 @@ export default function SheetSelector({ sheets, currentSheetId, workspaceId, onC
                     </div>
                 </div>
             ) : (
-                <div className="no-scrollbar flex w-full min-w-0 items-center gap-1 overflow-x-auto rounded-xl border border-slate-200 bg-white p-1 shadow-sm dark:border-white/[0.08] dark:bg-white/[0.06]">
+                <div className="no-scrollbar flex w-full min-w-0 items-center gap-1 overflow-x-auto rounded-xl border border-slate-200 bg-white p-1 shadow-sm dark:border-white/[0.08] dark:bg-white/[0.06] lg:w-auto lg:max-w-full">
                     {/* Month Selector */}
                     <Select value={currentSheetId?.toString()} onValueChange={(val) => onChange(parseInt(val))}>
                         <SelectTrigger className="h-8 w-[148px] shrink-0 rounded-xl border-none bg-transparent px-2.5 text-sm font-bold shadow-none transition-all hover:bg-slate-50 focus:ring-0 sm:h-9 sm:w-[180px] sm:px-3 sm:text-base dark:text-slate-200 dark:hover:bg-white/[0.06]">

@@ -12,7 +12,6 @@ export async function POST(request: Request) {
 
         const actorId = sessionPayload.id as number;
         const actorName = sessionPayload.name as string;
-        const isAdmin = sessionPayload.role === 'ADMIN';
 
         const body = await request.json();
         const { splitId, action } = body; // action can be 'confirm' or 'reject'
@@ -40,11 +39,24 @@ export async function POST(request: Request) {
         }
 
         // LOCK CHECK: Block payment actions on locked sheets
-        if ((split as any).expense?.sheet?.status === 'LOCKED') {
+        if (split.expense.sheet.status === 'LOCKED') {
             return NextResponse.json({ error: 'Sheet đã bị khóa, không thể thay đổi trạng thái thanh toán' }, { status: 403 });
         }
 
+        const actorMembership = await prisma.member.findFirst({
+            where: {
+                id: actorId,
+                workspaceId: split.expense.sheet.workspaceId
+            },
+            select: { role: true }
+        });
+
+        if (!actorMembership) {
+            return NextResponse.json({ error: 'Forbidden: Not a member of this workspace' }, { status: 403 });
+        }
+
         const isPayer = String(split.expense.payerId) === String(actorId);
+        const isAdmin = actorMembership.role === 'ADMIN';
 
         if (!isPayer && !isAdmin) {
             return NextResponse.json({ error: 'Only the original payer or admin can handle this payment' }, { status: 403 });
@@ -53,7 +65,7 @@ export async function POST(request: Request) {
         const isReject = action === 'reject';
 
         // Update split status
-        await (prisma.split as any).update({
+        await prisma.split.update({
             where: { id: splitId },
             data: {
                 isPaid: isReject ? false : true,
@@ -67,15 +79,15 @@ export async function POST(request: Request) {
             where: { expenseId: split.expenseId }
         });
 
-        const allPaid = allSplits.every(s => (s as any).isPaid);
+        const allPaid = allSplits.every((splitItem) => splitItem.isPaid);
 
         // Update the global expense status
-        await (prisma.expense as any).update({
+        await prisma.expense.update({
             where: { id: split.expenseId },
             data: { isSettled: allPaid }
         });
 
-        const workspaceId = (split as any).expense.sheet.workspaceId;
+        const workspaceId = split.expense.sheet.workspaceId;
 
         // Log activity
         const logMsg = isReject

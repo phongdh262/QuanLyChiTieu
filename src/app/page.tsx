@@ -315,13 +315,12 @@ export default function Home() {
         {/* ===== MAIN CONTENT ===== */}
         <div className="flex-1 flex flex-col min-h-screen min-w-0">
           {/* Compact Header with SheetSelector */}
-          <header className="sticky top-0 z-30 bg-white/90 dark:bg-[#1e2235]/90 backdrop-blur-xl border-b border-slate-200/70 dark:border-white/[0.06] h-14 flex items-center px-4 lg:px-6 relative">
-            {/* Mobile menu button spacer */}
-            <div className="w-10 lg:hidden shrink-0" />
+          <header className="sticky top-0 z-30 bg-white/90 dark:bg-[#1e2235]/90 backdrop-blur-xl border-b border-slate-200/70 dark:border-white/[0.06] min-h-14 px-4 lg:px-6">
+            <div className="content-shell flex min-h-14 items-center gap-3">
+              {/* Mobile menu button spacer */}
+              <div className="w-10 lg:hidden shrink-0" />
 
-            {/* Sheet Selector Toolbar — absolute center */}
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <div className="pointer-events-auto w-[min(760px,calc(100vw-7rem))] sm:w-[min(780px,calc(100vw-10rem))]">
+              <div className="flex min-w-0 flex-1 items-center justify-center lg:justify-start">
                 {workspace && (
                   <SheetSelector
                     sheets={sheets}
@@ -334,10 +333,9 @@ export default function Home() {
                   />
                 )}
               </div>
-            </div>
 
-            {/* Right side controls */}
-            <div className="ml-auto flex items-center gap-2 sm:gap-3 relative z-10">
+              {/* Right side controls */}
+              <div className="flex items-center gap-2 sm:gap-3">
               {/* Notification bell */}
               <button
                 onClick={() => setIsNotificationsOpen(true)}
@@ -359,6 +357,7 @@ export default function Home() {
               >
                 {currentUser?.name?.charAt(0).toUpperCase() || 'U'}
               </div>
+            </div>
             </div>
           </header>
 

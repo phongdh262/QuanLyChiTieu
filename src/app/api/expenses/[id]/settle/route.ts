@@ -3,6 +3,12 @@ import { getSession } from '@/lib/auth';
 import prisma from '@/lib/prisma';
 import { logActivity } from '@/lib/logger';
 
+type SplitStatusUpdate = {
+    isPaid: boolean;
+    isPending: boolean;
+    paidAt: Date | null;
+};
+
 export async function POST(
     request: Request,
     { params }: { params: Promise<{ id: string }> }
@@ -22,7 +28,7 @@ export async function POST(
         const { isSettled, paymentFor, isPaid } = body;
 
         // AUTH CHECK: Verify if user is owner of expense or Admin
-        const expense: any = await prisma.expense.findUnique({
+        const expense = await prisma.expense.findUnique({
             where: { id: expenseId },
             include: { payer: true, sheet: true }
         });
@@ -33,12 +39,31 @@ export async function POST(
 
         const workspaceId = expense.sheet.workspaceId;
 
+        if (expense.sheet.status === 'LOCKED') {
+            return NextResponse.json({ error: 'Sheet đã bị khóa, không thể thay đổi trạng thái thanh toán' }, { status: 403 });
+        }
+
+        const actorMembership = await prisma.member.findFirst({
+            where: {
+                id: actorId,
+                workspaceId
+            },
+            select: {
+                id: true,
+                role: true
+            }
+        });
+
+        if (!actorMembership) {
+            return NextResponse.json({ error: 'Forbidden: Not a member of this workspace' }, { status: 403 });
+        }
+
         // Check if user is Payer OR Admin
         const userId = String(sessionPayload.id);
         const payerId = String(expense.payerId);
 
         const isPayer = payerId === userId;
-        const isAdmin = sessionPayload.role === 'ADMIN';
+        const isAdmin = actorMembership.role === 'ADMIN';
 
         // Check if user is the Beneficiary being settled for
         let isBeneficiary = false;
@@ -80,7 +105,7 @@ export async function POST(
             }
 
             // Fetch current split status to prevent illegal transitions
-            const existingSplit: any = await prisma.split.findFirst({
+            const existingSplit = await prisma.split.findFirst({
                 where: { expenseId: expenseId, memberId: member.id }
             });
 
@@ -88,7 +113,7 @@ export async function POST(
                 return NextResponse.json({ error: 'Status locked. Only the Debtor or Admin can undo after confirmation.' }, { status: 403 });
             }
 
-            let updateData: any = {};
+            let updateData: SplitStatusUpdate = { isPaid: false, isPending: false, paidAt: null };
             let logMsg = "";
 
             if (!isPaid) {
@@ -110,7 +135,7 @@ export async function POST(
             }
 
             // Update specific split
-            await (prisma.split as any).updateMany({
+            await prisma.split.updateMany({
                 where: {
                     expenseId: expenseId,
                     memberId: member.id
@@ -119,14 +144,14 @@ export async function POST(
             });
 
             // Check if all splits for this expense are now paid (only confirmed ones)
-            const allSplits: any[] = await prisma.split.findMany({
+            const allSplits = await prisma.split.findMany({
                 where: { expenseId: expenseId }
             });
 
             const allPaid = allSplits.every(s => s.isPaid);
 
             // Update the global expense status based on split status
-            await (prisma.expense as any).update({
+            await prisma.expense.update({
                 where: { id: expenseId },
                 data: { isSettled: allPaid }
             });
@@ -156,11 +181,11 @@ export async function POST(
         }
 
         await prisma.$transaction([
-            (prisma.expense as any).update({
+            prisma.expense.update({
                 where: { id: expenseId },
                 data: { isSettled: !!isSettled }
             }),
-            (prisma.split as any).updateMany({
+            prisma.split.updateMany({
                 where: { expenseId: expenseId },
                 data: {
                     isPaid: !!isSettled,
