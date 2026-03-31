@@ -1,5 +1,12 @@
 import { Bill, CalculationResult, DebtTransaction, BalanceStats } from '../types/expense';
 
+interface BalanceBucket {
+    name: string;
+    amount: number;
+}
+
+type BillSplit = NonNullable<Bill['splits']>[number];
+
 /**
  * Calculates the final balance for each member in a group expense sharing scenario.
  */
@@ -24,7 +31,7 @@ export function calculateFinalBalances(members: string[], bills: Bill[]): Calcul
     bills.forEach(bill => {
         const { amount, payer, type, beneficiaries } = bill;
 
-        if (!balances.hasOwnProperty(payer)) {
+        if (!Object.prototype.hasOwnProperty.call(balances, payer)) {
             // Skip unknown payers or handle error
             return;
         }
@@ -56,9 +63,9 @@ export function calculateFinalBalances(members: string[], bills: Bill[]): Calcul
 
         effectiveSplits.forEach(split => {
             const person = split.member.name;
-            if (!balances.hasOwnProperty(person)) return;
+            if (!Object.prototype.hasOwnProperty.call(balances, person)) return;
 
-            const splitAmount = split.amount || (amount / effectiveSplits.length);
+            const splitAmount = split.amount ?? (amount / effectiveSplits.length);
             const isPaid = isGlobalSettled || !!split.isPaid;
 
             // Stats Consumed (Always track what everyone ate/used)
@@ -121,23 +128,23 @@ export function calculatePrivateMatrix(members: string[], bills: Bill[]) {
     });
 
     bills.filter(b => b.type === 'PRIVATE').forEach(bill => {
-        const { amount, payer, id, splits } = bill; // Expect splits to be populated now
+        const { amount, payer, splits = [] } = bill;
 
         // If no splits populated (legacy support), fallback or skip
         if (!splits || splits.length === 0) return;
 
         if (!matrix[payer]) return;
 
-        // Debt is calculated per split
-        const splitAmount = amount / splits.length;
-
-        splits.forEach((split: any) => {
+        splits.forEach((split: BillSplit) => {
             const beneficiaryName = split.member?.name;
+            if (!beneficiaryName || beneficiaryName === payer) return;
+
+            const splitAmount = split.amount ?? (amount / splits.length);
 
             // If paid, skip debt calculation
-            if (split.isPaid) return;
+            if (!!bill.isSettled || split.isPaid) return;
 
-            if (beneficiaryName && matrix[payer] && matrix[payer].hasOwnProperty(beneficiaryName)) {
+            if (matrix[payer] && Object.prototype.hasOwnProperty.call(matrix[payer], beneficiaryName)) {
                 matrix[payer][beneficiaryName] += splitAmount;
                 totals[payer] += splitAmount;
             }
@@ -159,14 +166,40 @@ export function calculatePrivateMatrix(members: string[], bills: Bill[]) {
  * Calculates the specific debt transactions to settle the balances.
  */
 export function calculateDebts(balances: Record<string, number>): DebtTransaction[] {
-    const debtors = [];
-    const creditors = [];
-
+    // Normalize to integer VND and compensate rounding drift to keep total = 0.
+    const normalizedBalances: Record<string, number> = {};
     for (const [person, amount] of Object.entries(balances)) {
-        if (amount < -1) {
-            debtors.push({ name: person, amount: amount });
-        } else if (amount > 1) {
-            creditors.push({ name: person, amount: amount });
+        normalizedBalances[person] = Math.round(Number.isFinite(amount) ? amount : 0);
+    }
+
+    const residual = Object.values(normalizedBalances).reduce((sum, amount) => sum + amount, 0);
+    if (residual !== 0) {
+        if (residual > 0) {
+            const biggestCreditor = Object.entries(normalizedBalances)
+                .filter(([, amount]) => amount > 0)
+                .sort((a, b) => b[1] - a[1])[0];
+            if (biggestCreditor) {
+                normalizedBalances[biggestCreditor[0]] -= residual;
+            }
+        } else {
+            const biggestDebtor = Object.entries(normalizedBalances)
+                .filter(([, amount]) => amount < 0)
+                .sort((a, b) => a[1] - b[1])[0];
+            if (biggestDebtor) {
+                // residual is negative; subtracting it adds the absolute value back.
+                normalizedBalances[biggestDebtor[0]] -= residual;
+            }
+        }
+    }
+
+    const debtors: BalanceBucket[] = [];
+    const creditors: BalanceBucket[] = [];
+
+    for (const [person, amount] of Object.entries(normalizedBalances)) {
+        if (amount < 0) {
+            debtors.push({ name: person, amount });
+        } else if (amount > 0) {
+            creditors.push({ name: person, amount });
         }
     }
 
@@ -181,19 +214,20 @@ export function calculateDebts(balances: Record<string, number>): DebtTransactio
         const debtor = debtors[i];
         const creditor = creditors[j];
 
-        const amount = Math.min(Math.abs(debtor.amount), creditor.amount);
+        const transferAmount = Math.min(Math.abs(debtor.amount), creditor.amount);
+        if (transferAmount <= 0) break;
 
         transactions.push({
             from: debtor.name,
             to: creditor.name,
-            amount: Math.round(amount)
+            amount: transferAmount
         });
 
-        debtor.amount += amount;
-        creditor.amount -= amount;
+        debtor.amount += transferAmount;
+        creditor.amount -= transferAmount;
 
-        if (Math.abs(debtor.amount) < 1) i++;
-        if (creditor.amount < 1) j++;
+        if (debtor.amount === 0) i++;
+        if (creditor.amount === 0) j++;
     }
 
     return transactions;

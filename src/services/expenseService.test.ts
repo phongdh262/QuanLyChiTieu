@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { calculateFinalBalances, calculateDebts } from './expenseService';
+import { calculateFinalBalances, calculateDebts, calculatePrivateMatrix } from './expenseService';
 import { Bill } from '../types/expense';
 
 describe('Expense Calculator', () => {
@@ -129,5 +129,44 @@ describe('Expense Calculator', () => {
 
         expect(balances['A']).toBeCloseTo(66667, -1); // Allow +/- 10
         expect(balances['B']).toBeCloseTo(-33333, -1);
+    });
+
+    it('Scenario 5: Debt matching stays stable with floating balances', () => {
+        const balances = {
+            A: 100.4,
+            B: -40.2,
+            C: -60.2
+        };
+
+        const debts = calculateDebts(balances);
+
+        expect(debts).toEqual([
+            { from: 'C', to: 'A', amount: 60 },
+            { from: 'B', to: 'A', amount: 40 }
+        ]);
+    });
+
+    it('Scenario 6: Private matrix uses split.amount and ignores payer self-split', () => {
+        const bills: Bill[] = [{
+            id: 6,
+            payer: 'A',
+            amount: 90000,
+            type: 'PRIVATE',
+            beneficiaries: ['A', 'B', 'C'],
+            note: 'Mixed private split',
+            date: new Date(),
+            splits: [
+                { member: { name: 'A' }, isPaid: false, amount: 10000 },
+                { member: { name: 'B' }, isPaid: false, amount: 30000 },
+                { member: { name: 'C' }, isPaid: true, amount: 50000 }
+            ]
+        }];
+
+        const { matrix, totals } = calculatePrivateMatrix(members, bills);
+
+        expect(matrix['A']['A']).toBe(0);
+        expect(matrix['A']['B']).toBe(30000);
+        expect(matrix['A']['C']).toBe(0);
+        expect(totals['A']).toBe(30000);
     });
 });
