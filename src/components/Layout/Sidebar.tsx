@@ -222,7 +222,14 @@ export default function Sidebar({
                     {/* --- DEBT SUMMARY --- */}
                     {globalDebts && globalDebts.length > 0 && (
                         <div className="px-4 pt-4 pb-3">
-                            <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 dark:text-white/25 mb-3 px-1 transition-colors duration-300">{t('debts')}</h3>
+                            <div className="mb-3 px-1">
+                                <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 dark:text-white/25 transition-colors duration-300">
+                                    {t('finalSettlement')}
+                                </h3>
+                                <p className="mt-1 text-[10px] leading-relaxed text-slate-400/90 dark:text-white/30 transition-colors duration-300">
+                                    {t('finalSettlementScope')}
+                                </p>
+                            </div>
                             <div className="space-y-1.5">
                                 {globalDebts.slice(0, 5).map((debt, idx) => (
                                     <div key={idx} className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-white dark:bg-white/[0.025] border border-slate-200/60 dark:border-white/[0.03] text-[12px] hover:bg-slate-50 dark:hover:bg-white/[0.04] transition-all duration-150 shadow-sm dark:shadow-none">
