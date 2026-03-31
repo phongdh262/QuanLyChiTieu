@@ -1,10 +1,19 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Cormorant_Garamond, Be_Vietnam_Pro } from "next/font/google";
 import "./globals.css";
 
-const inter = Inter({
+const cormorant = Cormorant_Garamond({
   subsets: ["latin"],
-  variable: "--font-inter",
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-cormorant",
+  display: "swap",
+});
+
+const beVietnam = Be_Vietnam_Pro({
+  subsets: ["latin", "vietnamese"],
+  weight: ["300", "400", "500", "600", "700", "800"],
+  variable: "--font-be-vietnam",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -23,8 +32,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={inter.className}>
+    <html lang="vi" suppressHydrationWarning>
+      <body className={`${cormorant.variable} ${beVietnam.variable}`}>
         <ThemeProvider>
           <LanguageProvider>
             <ToastProvider>

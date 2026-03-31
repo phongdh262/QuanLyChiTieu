@@ -20,14 +20,14 @@ export default function SummaryTable({ members, calculations }: Props) {
 
     return (
         <Card className="premium-card overflow-hidden border-none soft-shadow mb-6 group/summary">
-            <CardHeader className="cursor-pointer flex flex-row items-center justify-between pb-5 bg-gradient-to-br from-slate-50/95 dark:from-slate-500/5 via-white dark:via-transparent to-blue-50/35 dark:to-transparent border-b border-slate-200/60 dark:border-white/[0.06]" onClick={() => setIsOpen(!isOpen)}>
-                <CardTitle className="text-lg sm:text-xl flex items-center gap-3 text-slate-800 dark:text-slate-100">
-                    <div className="p-2.5 bg-gradient-to-br from-blue-600 to-cyan-600 rounded-xl shadow-lg shadow-blue-200/40 dark:shadow-blue-900/20 group-hover/summary:scale-110 group-hover/summary:rotate-3 transition-all duration-500 ring-2 ring-white dark:ring-white/10">
-                        <Wallet className="w-5 h-5 text-white drop-shadow-sm" />
+            <CardHeader className="cursor-pointer flex flex-row items-center justify-between pb-5 border-b border-border/60" onClick={() => setIsOpen(!isOpen)}>
+                <CardTitle className="text-lg sm:text-xl flex items-center gap-3 text-foreground">
+                    <div className="p-2.5 rounded-lg group-hover/summary:scale-110 group-hover/summary:rotate-3 transition-all duration-500" style={{ background: "linear-gradient(135deg, #8B1A1A, #6B0F0F)", boxShadow: "0 4px 14px rgba(139, 26, 26, 0.3)" }}>
+                        <Wallet className="w-5 h-5 drop-shadow-sm" style={{ color: "#F5EDD8" }} />
                     </div>
-                    <span className="font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-slate-700 dark:from-slate-200 to-slate-900 dark:to-white">{t('expensesSummary')}</span>
+                    <span className="font-bold tracking-tight" style={{ fontFamily: "var(--font-cormorant), Georgia, serif", fontSize: "20px", color: "rgba(44, 24, 16, 0.85)" }}>{t('expensesSummary')}</span>
                 </CardTitle>
-                <div className={cn("rounded-full p-2 bg-white dark:bg-white/[0.06] shadow-sm text-slate-400 ring-1 ring-slate-100 dark:ring-white/[0.06] transition-transform duration-300 hover:bg-blue-50 dark:hover:bg-blue-500/10 hover:text-blue-600", isOpen && "rotate-180 bg-blue-100 dark:bg-blue-500/20 text-blue-600")}>
+                <div className={cn("rounded-full p-2 shadow-sm ring-1 transition-all duration-300", isOpen ? "rotate-180" : "")} style={{ background: "rgba(139, 26, 26, 0.06)", color: "rgba(44, 24, 16, 0.45)", borderColor: "rgba(139, 26, 26, 0.12)" }}>
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
                         <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" />
                     </svg>
