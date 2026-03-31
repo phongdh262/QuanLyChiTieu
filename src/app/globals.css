@@ -58,7 +58,20 @@
 
   body {
     @apply bg-background text-foreground;
+    font-family: var(--font-sans), "Segoe UI", system-ui, sans-serif;
     font-feature-settings: "rlig" 1, "calt" 1;
+    line-height: 1.58;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-heading), var(--font-sans), "Segoe UI", system-ui, sans-serif;
+    letter-spacing: -0.01em;
+    font-weight: 700;
   }
 
   /* Light mode gradient background */
