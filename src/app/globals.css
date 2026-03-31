@@ -32,27 +32,27 @@
   }
 
   .dark {
-    /* Deep lacquerware palette */
-    --background: 9 60% 5%;
-    --foreground: 38 42% 87%;
-    --card: 10 55% 8%;
-    --card-foreground: 38 42% 87%;
-    --popover: 10 52% 9%;
-    --popover-foreground: 38 42% 87%;
-    --primary: 38 50% 54%;
-    --primary-foreground: 9 60% 5%;
-    --secondary: 12 38% 14%;
-    --secondary-foreground: 38 38% 78%;
-    --muted: 12 38% 14%;
-    --muted-foreground: 34 18% 52%;
-    --accent: 38 50% 54%;
-    --accent-foreground: 9 60% 5%;
+    /* Dark mode tuned for higher contrast + cleaner readability */
+    --background: 228 24% 9%;
+    --foreground: 210 25% 92%;
+    --card: 228 22% 13%;
+    --card-foreground: 210 25% 92%;
+    --popover: 228 22% 13%;
+    --popover-foreground: 210 25% 92%;
+    --primary: 38 58% 60%;
+    --primary-foreground: 228 24% 9%;
+    --secondary: 228 16% 18%;
+    --secondary-foreground: 210 20% 86%;
+    --muted: 228 16% 18%;
+    --muted-foreground: 220 12% 66%;
+    --accent: 38 58% 60%;
+    --accent-foreground: 228 24% 9%;
     --destructive: 0 70% 50%;
     --destructive-foreground: 0 0% 100%;
-    --border: 12 38% 17%;
-    --input: 12 38% 17%;
-    --ring: 38 50% 54%;
-    --shadow-premium: 0 20px 40px -5px rgba(0, 0, 0, 0.45), 0 10px 20px -5px rgba(0, 0, 0, 0.25);
+    --border: 228 16% 22%;
+    --input: 228 16% 22%;
+    --ring: 38 58% 60%;
+    --shadow-premium: 0 20px 40px -5px rgba(0, 0, 0, 0.5), 0 10px 20px -5px rgba(0, 0, 0, 0.28);
   }
 }
 
@@ -65,6 +65,9 @@
     @apply bg-background text-foreground;
     font-family: var(--font-be-vietnam), 'Segoe UI', system-ui, sans-serif;
     font-feature-settings: "rlig" 1, "calt" 1;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
   }
 
   /* Light mode: warm parchment with subtle radial warmth */
@@ -79,11 +82,17 @@
   /* Dark mode: deep lacquer with a faint amber glow */
   .dark body {
     background-image:
-      radial-gradient(ellipse at 0% 0%, rgba(201, 163, 78, 0.05) 0%, transparent 50%),
-      radial-gradient(ellipse at 100% 100%, rgba(139, 26, 26, 0.1) 0%, transparent 50%);
+      radial-gradient(ellipse at 0% 0%, rgba(201, 163, 78, 0.04) 0%, transparent 50%),
+      radial-gradient(ellipse at 100% 100%, rgba(56, 189, 248, 0.05) 0%, transparent 55%);
   }
 
-  h1, h2, h3, h4, .heading-serif {
+  h1, h2, h3, h4 {
+    font-family: var(--font-be-vietnam), 'Segoe UI', system-ui, sans-serif;
+    letter-spacing: -0.01em;
+    font-weight: 700;
+  }
+
+  .heading-serif {
     font-family: var(--font-cormorant), Georgia, 'Times New Roman', serif;
   }
 }
