@@ -521,7 +521,7 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
                               const canDelete = isPayer && !isLocked;
                               const paymentSummary = getPaymentSummary(b);
                               const statusChip = getStatusChip(b);
-                              const nonPayerBeneficiaries = (b.beneficiaries || []).filter((name) => name !== b.payer);
+                              const allBeneficiaries = b.beneficiaries || [];
 
                               return (
                                 <div
@@ -584,33 +584,38 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
                                         {t('beneficiariesLabel')}
                                       </div>
                                       <div className="flex flex-wrap items-center gap-2">
-                                        {nonPayerBeneficiaries.map((name, idx) => {
+                                        {allBeneficiaries.map((name, idx) => {
+                                          const isPayerBeneficiary = name === b.payer;
                                           const split = b.splits?.find((s) => s.member.name === name);
-                                          const isPaid = split?.isPaid;
-                                          const isPending = split?.isPending;
+                                          const isPaid = isPayerBeneficiary ? true : split?.isPaid;
+                                          const isPending = isPayerBeneficiary ? false : split?.isPending;
                                           const isBeneficiary = currentUser?.name === name;
-                                          const canToggle = (isPayer || isBeneficiary) && !isLocked;
+                                          const canToggle = !isPayerBeneficiary && (isPayer || isBeneficiary) && !isLocked;
 
                                           return (
                                             <button
                                               key={idx}
-                                              onClick={(e) => { e.stopPropagation(); handleToggleSettle(b, name); }}
+                                              onClick={(e) => { e.stopPropagation(); if (!isPayerBeneficiary) handleToggleSettle(b, name); }}
                                               disabled={!canToggle}
                                               className={cn(
                                                 "flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold transition-all",
-                                                canToggle ? "hover:shadow-sm active:scale-95" : "cursor-not-allowed opacity-60",
-                                                isPaid
+                                                isPayerBeneficiary
+                                                  ? "bg-blue-50 border-blue-200 text-blue-700 dark:bg-blue-500/10 dark:border-blue-500/20 dark:text-blue-300 cursor-default"
+                                                  : canToggle ? "hover:shadow-sm active:scale-95" : "cursor-not-allowed opacity-60",
+                                                !isPayerBeneficiary && isPaid
                                                   ? "bg-emerald-50 border-emerald-200 text-emerald-700 dark:bg-emerald-500/10 dark:border-emerald-500/20 dark:text-emerald-300"
-                                                  : isPending
+                                                  : !isPayerBeneficiary && isPending
                                                     ? "bg-amber-50 border-amber-200 text-amber-700 dark:bg-amber-500/10 dark:border-amber-500/20 dark:text-amber-300"
-                                                    : "bg-slate-50 border-slate-200 text-slate-600 dark:bg-white/[0.03] dark:border-white/[0.08] dark:text-slate-300"
+                                                    : !isPayerBeneficiary
+                                                      ? "bg-slate-50 border-slate-200 text-slate-600 dark:bg-white/[0.03] dark:border-white/[0.08] dark:text-slate-300"
+                                                      : ""
                                               )}
                                             >
                                               <div className={cn("w-5 h-5 rounded-full flex items-center justify-center text-white font-bold text-[9px] relative", getAvatarColor(name))}>
                                                 {name.charAt(0).toUpperCase()}
                                               </div>
                                               <span>{name}</span>
-                                              {isPaid ? <span className="text-[10px]">✓</span> : isPending ? <span className="text-[10px]">⏳</span> : null}
+                                              {isPayerBeneficiary ? <span className="text-[10px]">💰</span> : isPaid ? <span className="text-[10px]">✓</span> : isPending ? <span className="text-[10px]">⏳</span> : null}
                                             </button>
                                           );
                                         })}
@@ -776,27 +781,30 @@ export default function HistoryTable({ bills, members, onDelete, onUpdate, onRef
 
                                     {/* Mobile beneficiary pills */}
                                     <div className="flex flex-wrap gap-1 mt-2">
-                                      {(b.beneficiaries || []).filter(name => name !== b.payer).map((name, idx) => {
+                                      {(b.beneficiaries || []).map((name, idx) => {
+                                        const isPayerBeneficiary = name === b.payer;
                                         const split = b.splits?.find(s => s.member.name === name);
-                                        const isPaid = split?.isPaid;
-                                        const isPending = split?.isPending;
+                                        const isPaid = isPayerBeneficiary ? true : split?.isPaid;
+                                        const isPending = isPayerBeneficiary ? false : split?.isPending;
                                         const isBeneficiary = currentUser?.name === name;
-                                        const canToggle = (isPayer || isBeneficiary) && !isLocked;
+                                        const canToggle = !isPayerBeneficiary && (isPayer || isBeneficiary) && !isLocked;
 
                                         return (
                                           <button
                                             key={idx}
-                                            onClick={(e) => { e.stopPropagation(); handleToggleSettle(b, name); }}
+                                            onClick={(e) => { e.stopPropagation(); if (!isPayerBeneficiary) handleToggleSettle(b, name); }}
                                             disabled={!canToggle}
                                             className={cn(
                                               "text-[10px] font-bold px-2 py-0.5 rounded-full border transition-all",
-                                              canToggle ? "active:scale-95" : "opacity-60",
-                                              isPaid ? "bg-emerald-50 border-emerald-200 text-emerald-700" :
-                                                isPending ? "bg-amber-50 border-amber-200 text-amber-700" :
-                                                    "bg-slate-50 dark:bg-white/[0.05] border-slate-200 dark:border-white/[0.08] text-slate-500 dark:text-slate-300"
+                                              isPayerBeneficiary
+                                                ? "bg-blue-50 border-blue-200 text-blue-700 dark:bg-blue-500/10 dark:border-blue-500/20 dark:text-blue-300 cursor-default"
+                                                : canToggle ? "active:scale-95" : "opacity-60",
+                                              !isPayerBeneficiary && isPaid ? "bg-emerald-50 border-emerald-200 text-emerald-700" :
+                                                !isPayerBeneficiary && isPending ? "bg-amber-50 border-amber-200 text-amber-700" :
+                                                  !isPayerBeneficiary ? "bg-slate-50 dark:bg-white/[0.05] border-slate-200 dark:border-white/[0.08] text-slate-500 dark:text-slate-300" : ""
                                             )}
                                           >
-                                            {isPaid ? '✓ ' : isPending ? '⏳ ' : ''}{name}
+                                            {isPayerBeneficiary ? '💰 ' : isPaid ? '✓ ' : isPending ? '⏳ ' : ''}{name}
                                           </button>
                                         );
                                       })}
