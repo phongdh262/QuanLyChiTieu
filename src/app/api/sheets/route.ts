@@ -3,6 +3,7 @@ import prisma from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
 import { logActivity } from '@/lib/logger';
 import { createSheetSchema } from '@/lib/schemas';
+import { resolveSelectedSheetMemberIds, workspaceMemberSelect } from '@/lib/sheetMembers';
 
 export async function POST(request: Request) {
     try {
@@ -13,7 +14,7 @@ export async function POST(request: Request) {
         if (!validation.success) {
             return NextResponse.json({ error: validation.error.issues[0].message }, { status: 400 });
         }
-        const { workspaceId, month, year } = validation.data;
+        const { workspaceId, month, year, memberIds } = validation.data;
 
         const name = `Tháng ${month}/${year}`;
 
@@ -31,6 +32,27 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Forbidden: You must be a member of this workspace' }, { status: 403 });
         }
 
+        const activeMembers = await prisma.member.findMany({
+            where: {
+                workspaceId,
+                status: { not: 'DELETED' }
+            },
+            select: workspaceMemberSelect
+        });
+
+        const {
+            memberIds: selectedMemberIds,
+            invalidMemberIds
+        } = resolveSelectedSheetMemberIds(memberIds, activeMembers);
+
+        if (invalidMemberIds.length > 0) {
+            return NextResponse.json({ error: 'Có user không hợp lệ trong danh sách tham gia tháng' }, { status: 400 });
+        }
+
+        if (selectedMemberIds.length === 0) {
+            return NextResponse.json({ error: 'Vui lòng chọn ít nhất 1 user tham gia tháng' }, { status: 400 });
+        }
+
         // Check for duplicate sheet (excluding deleted ones if applicable, but typically "status" field might be used)
         // Adjusting query to check for existing active sheet
         const existingSheet = await prisma.sheet.findFirst({
@@ -46,14 +68,25 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: `Bảng chi tiêu cho tháng ${month}/${year} đã tồn tại!` }, { status: 409 });
         }
 
-        const sheet = await prisma.sheet.create({
-            data: {
-                name,
-                month,
-                year,
-                workspaceId,
-                status: 'OPEN'
-            }
+        const sheet = await prisma.$transaction(async (tx) => {
+            const newSheet = await tx.sheet.create({
+                data: {
+                    name,
+                    month,
+                    year,
+                    workspaceId,
+                    status: 'OPEN'
+                }
+            });
+
+            await tx.sheetMember.createMany({
+                data: selectedMemberIds.map((memberId) => ({
+                    sheetId: newSheet.id,
+                    memberId
+                }))
+            });
+
+            return newSheet;
         });
 
         await logActivity(

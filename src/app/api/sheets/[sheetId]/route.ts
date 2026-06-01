@@ -4,6 +4,7 @@ import { calculateFinalBalances, calculatePrivateMatrix, calculateDebts } from '
 import { Bill } from '@/types/expense';
 import { getSession } from '@/lib/auth';
 import { logActivity } from '@/lib/logger';
+import { getActiveSheetMembers, workspaceMemberSelect } from '@/lib/sheetMembers';
 
 export const dynamic = 'force-dynamic';
 
@@ -60,33 +61,34 @@ export async function GET(
         // This ensures historical expenses are calculated correctly
         const allMembers = await prisma.member.findMany({
             where: { workspaceId: sheet.workspaceId },
-            select: { id: true, name: true, email: true, username: true, role: true, status: true, workspaceId: true }
+            select: workspaceMemberSelect
         });
 
-        // 3. Filter active members for UI (dropdowns, member list)
-        const activeMembers = allMembers.filter(m => m.status !== 'DELETED');
+        // 3. Resolve active members that belong to this sheet.
+        // Fallback to all active workspace members for legacy sheets without explicit selections.
+        const activeMembers = await getActiveSheetMembers(prisma, sheet.id, sheet.workspaceId);
 
         // 4. Transform DB Data to Service Types
         // Use ALL members for calculation to preserve historical data
         const allMemberNames = allMembers.map(m => m.name);
 
-        const bills: Bill[] = sheet.expenses.map((e: any) => {
-            const beneficiaries = e.splits.map((s: any) => s.member.name);
+        const bills: Bill[] = sheet.expenses.map((expense) => {
+            const beneficiaries = expense.splits.map((split) => split.member.name);
             return {
-                id: e.id,
-                amount: e.amount,
-                payer: e.payer.name,
-                type: e.type as 'SHARED' | 'PRIVATE',
+                id: expense.id,
+                amount: expense.amount,
+                payer: expense.payer.name,
+                type: expense.type as 'SHARED' | 'PRIVATE',
                 beneficiaries: beneficiaries,
-                note: e.description,
-                date: e.date, // Map date
-                isSettled: e.isSettled,
-                splits: e.splits.map((s: any) => ({
-                    member: { name: s.member.name },
-                    isPaid: s.isPaid,
-                    isPending: s.isPending,
-                    paidAt: s.paidAt,
-                    amount: s.amount
+                note: expense.description,
+                date: expense.date, // Map date
+                isSettled: expense.isSettled,
+                splits: expense.splits.map((split) => ({
+                    member: { name: split.member.name },
+                    isPaid: split.isPaid,
+                    isPending: split.isPending,
+                    paidAt: split.paidAt?.toISOString(),
+                    amount: split.amount
                 }))
             };
         });

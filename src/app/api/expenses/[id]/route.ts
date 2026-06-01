@@ -4,11 +4,14 @@ import { getSession } from '@/lib/auth';
 import { logActivity } from '@/lib/logger';
 
 import { updateExpenseSchema } from '@/lib/schemas';
+import { getActiveSheetMemberIds } from '@/lib/sheetMembers';
 
 const ERROR_EXPENSE_NOT_FOUND = 'EXPENSE_NOT_FOUND';
 const ERROR_LOCKED = 'LOCKED';
 const ERROR_FORBIDDEN_WORKSPACE = 'FORBIDDEN_WORKSPACE';
 const ERROR_FORBIDDEN_PAYER_EDIT = 'FORBIDDEN_PAYER_EDIT';
+const ERROR_INVALID_PAYER = 'INVALID_PAYER';
+const ERROR_INVALID_BENEFICIARIES = 'INVALID_BENEFICIARIES';
 
 const getErrorMessage = (error: unknown) => error instanceof Error ? error.message : '';
 type PrismaTransaction = Omit<typeof prisma, '$connect' | '$disconnect' | '$on' | '$transaction' | '$use' | '$extends'>;
@@ -69,6 +72,22 @@ export async function PUT(
                 throw new Error(ERROR_FORBIDDEN_PAYER_EDIT);
             }
 
+            const activeSheetMemberIds = new Set(
+                await getActiveSheetMemberIds(tx, expense.sheetId, expense.sheet.workspaceId)
+            );
+
+            if (!activeSheetMemberIds.has(payerId)) {
+                throw new Error(ERROR_INVALID_PAYER);
+            }
+
+            if (type === 'PRIVATE') {
+                const uniqueBeneficiaryIds = [...new Set(beneficiaryIds || [])];
+
+                if (uniqueBeneficiaryIds.length === 0 || uniqueBeneficiaryIds.some((memberId) => !activeSheetMemberIds.has(memberId))) {
+                    throw new Error(ERROR_INVALID_BENEFICIARIES);
+                }
+            }
+
             // 2. Update Expense Details
             await tx.expense.update({
                 where: { id },
@@ -90,16 +109,9 @@ export async function PUT(
             let splitMembers = [];
 
             if (type === 'SHARED') {
-                // Fetch only ACTIVE members in workspace (exclude DELETED)
-                const activeMembers = await tx.member.findMany({
-                    where: {
-                        workspaceId: expense.sheet.workspaceId,
-                        status: { not: 'DELETED' }
-                    }
-                });
-                splitMembers = activeMembers.map((member) => member.id);
+                splitMembers = Array.from(activeSheetMemberIds);
             } else {
-                splitMembers = beneficiaryIds || [];
+                splitMembers = [...new Set(beneficiaryIds || [])];
             }
 
             if (splitMembers.length > 0) {
@@ -141,6 +153,12 @@ export async function PUT(
         }
         if (errorMessage === ERROR_FORBIDDEN_PAYER_EDIT) {
             return NextResponse.json({ error: 'Forbidden: Only the payer can edit this expense' }, { status: 403 });
+        }
+        if (errorMessage === ERROR_INVALID_PAYER) {
+            return NextResponse.json({ error: 'Người trả tiền phải thuộc danh sách user tham gia tháng này' }, { status: 400 });
+        }
+        if (errorMessage === ERROR_INVALID_BENEFICIARIES) {
+            return NextResponse.json({ error: 'Người thụ hưởng phải thuộc danh sách user tham gia tháng này' }, { status: 400 });
         }
         console.error(error);
         return NextResponse.json({ error: 'Failed' }, { status: 500 });

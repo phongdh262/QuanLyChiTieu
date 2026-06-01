@@ -28,25 +28,40 @@ model Sheet {
   workspaceId  Int
   activityLogs ActivityLog[]
   expenses     Expense[]
+  sheetMembers SheetMember[]
   workspace    Workspace     @relation(fields: [workspaceId], references: [id])
 
   @@index([workspaceId], map: "Sheet_workspaceId_fkey")
 }
 
 model Member {
-  id           Int       @id @default(autoincrement())
+  id           Int           @id @default(autoincrement())
   name         String
   email        String?
   workspaceId  Int
   password     String?
-  username     String?   @unique
-  role         String    @default("MEMBER")
-  status       String    @default("ACTIVE")
-  paidExpenses Expense[] @relation("Payer")
-  workspace    Workspace @relation(fields: [workspaceId], references: [id])
+  username     String?       @unique
+  role         String        @default("MEMBER")
+  status       String        @default("ACTIVE")
+  paidExpenses Expense[]     @relation("Payer")
+  sheetMembers SheetMember[]
+  workspace    Workspace     @relation(fields: [workspaceId], references: [id])
   splits       Split[]
 
   @@index([workspaceId], map: "Member_workspaceId_fkey")
+}
+
+model SheetMember {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  sheetId   Int
+  memberId  Int
+  member    Member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  sheet     Sheet    @relation(fields: [sheetId], references: [id], onDelete: Cascade)
+
+  @@unique([sheetId, memberId])
+  @@index([sheetId], map: "SheetMember_sheetId_fkey")
+  @@index([memberId], map: "SheetMember_memberId_fkey")
 }
 
 model Expense {

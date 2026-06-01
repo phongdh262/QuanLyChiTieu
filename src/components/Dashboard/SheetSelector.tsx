@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useConfirm } from '@/components/ui/ConfirmProvider';
 import { useToast } from '@/components/ui/ToastProvider';
 import { Button } from "@/components/ui/button";
@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Check, X, Trash2, Edit, Plus, RotateCcw, History, Calendar as CalendarIcon, ChevronLeft, ChevronRight, Lock, Unlock } from "lucide-react";
+import { Check, X, Trash2, Edit, Plus, RotateCcw, History, Calendar as CalendarIcon, ChevronLeft, ChevronRight, Lock, Unlock, Users } from "lucide-react";
 import type { CurrentUser } from '@/types/expense';
 
 interface Sheet {
@@ -22,18 +22,20 @@ interface Props {
     sheets: Sheet[];
     currentSheetId: number | null;
     workspaceId: number;
+    workspaceMembers: Array<{ id: number; name: string; status?: string }>;
     onChange: (id: number) => void;
     onCreated: () => void;
     isLocked?: boolean;
     currentUser?: CurrentUser | null;
 }
 
-export default function SheetSelector({ sheets, currentSheetId, workspaceId, onChange, onCreated, isLocked, currentUser }: Props) {
+export default function SheetSelector({ sheets, currentSheetId, workspaceId, workspaceMembers, onChange, onCreated, isLocked, currentUser }: Props) {
     const { confirm } = useConfirm();
     const { addToast } = useToast();
     const [isCreating, setIsCreating] = useState(false);
     const [month, setMonth] = useState(new Date().getMonth() + 1);
     const [year, setYear] = useState(new Date().getFullYear());
+    const [selectedMemberIds, setSelectedMemberIds] = useState<number[]>([]);
     const [isLocking, setIsLocking] = useState(false);
 
     // Edit State
@@ -46,6 +48,19 @@ export default function SheetSelector({ sheets, currentSheetId, workspaceId, onC
     const [deletedSheets, setDeletedSheets] = useState<Sheet[]>([]);
     const [loadingBin, setLoadingBin] = useState(false);
     const [deletingId, setDeletingId] = useState<number | null>(null);
+    const activeWorkspaceMembers = useMemo(
+        () => workspaceMembers.filter((member) => member.status !== 'DELETED'),
+        [workspaceMembers]
+    );
+
+    useEffect(() => {
+        if (!isCreating) return;
+
+        setSelectedMemberIds((prev) => {
+            const validIds = prev.filter((id) => activeWorkspaceMembers.some((member) => member.id === id));
+            return validIds.length > 0 ? validIds : activeWorkspaceMembers.map((member) => member.id);
+        });
+    }, [isCreating, activeWorkspaceMembers]);
 
     const getErrorMessage = (error: unknown, fallback: string) => {
         return error instanceof Error ? error.message : fallback;
@@ -73,11 +88,16 @@ export default function SheetSelector({ sheets, currentSheetId, workspaceId, onC
     }, [isBinOpen]);
 
     const handleCreate = async () => {
+        if (selectedMemberIds.length === 0) {
+            addToast('Vui lòng chọn ít nhất 1 user tham gia tháng', 'warning');
+            return;
+        }
+
         try {
             const res = await fetch('/api/sheets', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ workspaceId, month, year })
+                body: JSON.stringify({ workspaceId, month, year, memberIds: selectedMemberIds })
             });
 
             if (!res.ok) {
@@ -94,6 +114,21 @@ export default function SheetSelector({ sheets, currentSheetId, workspaceId, onC
             console.error(e);
             addToast(getErrorMessage(e, 'Lỗi khi tạo bảng mới'), 'error');
         }
+    };
+
+    const toggleSelectedMember = (memberId: number) => {
+        setSelectedMemberIds((prev) =>
+            prev.includes(memberId)
+                ? prev.filter((id) => id !== memberId)
+                : [...prev, memberId]
+        );
+    };
+
+    const startCreate = () => {
+        setMonth(new Date().getMonth() + 1);
+        setYear(new Date().getFullYear());
+        setSelectedMemberIds(activeWorkspaceMembers.map((member) => member.id));
+        setIsCreating(true);
     };
 
     const handleDelete = async () => {
@@ -273,54 +308,110 @@ export default function SheetSelector({ sheets, currentSheetId, workspaceId, onC
                     </Button>
                 </div>
             ) : isCreating ? (
-                <div className="flex w-full gap-2 items-center animate-in fade-in duration-200 bg-white p-1 rounded-lg border border-slate-200 shadow-sm lg:w-auto">
-                    <Popover>
-                        <PopoverTrigger asChild>
-                            <Button variant="outline" className="w-[160px] justify-start text-left font-bold border-slate-200 h-9">
-                                <CalendarIcon className="mr-2 h-4 w-4 text-slate-500" />
-                                {month ? `Tháng ${month}/${year}` : <span>Chọn tháng...</span>}
-                            </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-64 p-3" align="start">
-                            <div className="flex justify-between items-center mb-4">
-                                <Button variant="ghost" size="icon" onClick={() => setYear(year - 1)} className="h-7 w-7">
-                                    <ChevronLeft className="h-4 w-4" />
+                <div className="flex w-full flex-col gap-3 animate-in fade-in duration-200 rounded-xl border border-slate-200 bg-white p-3 shadow-sm lg:w-[420px]">
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                        <Popover>
+                            <PopoverTrigger asChild>
+                                <Button variant="outline" className="w-full justify-start text-left font-bold border-slate-200 h-9 sm:w-[170px]">
+                                    <CalendarIcon className="mr-2 h-4 w-4 text-slate-500" />
+                                    {month ? `Tháng ${month}/${year}` : <span>Chọn tháng...</span>}
                                 </Button>
-                                <span className="font-bold text-base">{year}</span>
-                                <Button variant="ghost" size="icon" onClick={() => setYear(year + 1)} className="h-7 w-7">
-                                    <ChevronRight className="h-4 w-4" />
-                                </Button>
-                            </div>
-                            <div className="grid grid-cols-4 gap-2">
-                                {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
-                                    <Button
-                                        key={m}
-                                        variant={m === month ? "default" : "outline"}
-                                        className={`text-xs h-8 px-0 ${m === month ? "bg-blue-600 hover:bg-blue-700 text-white" : ""}`}
-                                        onClick={() => setMonth(m)}
-                                    >
-                                        Th {m}
+                            </PopoverTrigger>
+                            <PopoverContent className="w-64 p-3" align="start">
+                                <div className="flex justify-between items-center mb-4">
+                                    <Button variant="ghost" size="icon" onClick={() => setYear(year - 1)} className="h-7 w-7">
+                                        <ChevronLeft className="h-4 w-4" />
                                     </Button>
-                                ))}
-                            </div>
-                        </PopoverContent>
-                    </Popover>
+                                    <span className="font-bold text-base">{year}</span>
+                                    <Button variant="ghost" size="icon" onClick={() => setYear(year + 1)} className="h-7 w-7">
+                                        <ChevronRight className="h-4 w-4" />
+                                    </Button>
+                                </div>
+                                <div className="grid grid-cols-4 gap-2">
+                                    {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
+                                        <Button
+                                            key={m}
+                                            variant={m === month ? "default" : "outline"}
+                                            className={`text-xs h-8 px-0 ${m === month ? "bg-blue-600 hover:bg-blue-700 text-white" : ""}`}
+                                            onClick={() => setMonth(m)}
+                                        >
+                                            Th {m}
+                                        </Button>
+                                    ))}
+                                </div>
+                            </PopoverContent>
+                        </Popover>
 
-                    <div className="flex items-center gap-1 ml-auto">
-                        <Button
-                            onClick={handleCreate}
-                            className="bg-blue-600 hover:bg-blue-700 h-9 px-3 text-xs md:text-sm font-semibold shadow-sm transition-all hover:scale-105 active:scale-95"
-                        >
-                            <Check className="w-3.5 h-3.5 mr-1" /> Tạo
-                        </Button>
-                        <Button
-                            onClick={() => setIsCreating(false)}
-                            variant="ghost"
-                            size="icon"
-                            className="h-9 w-9 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                        >
-                            <X className="w-4 h-4" />
-                        </Button>
+                        <div className="flex items-center gap-1 sm:ml-auto">
+                            <Button
+                                onClick={handleCreate}
+                                className="bg-blue-600 hover:bg-blue-700 h-9 px-3 text-xs md:text-sm font-semibold shadow-sm transition-all hover:scale-105 active:scale-95"
+                            >
+                                <Check className="w-3.5 h-3.5 mr-1" /> Tạo
+                            </Button>
+                            <Button
+                                onClick={() => setIsCreating(false)}
+                                variant="ghost"
+                                size="icon"
+                                className="h-9 w-9 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                            >
+                                <X className="w-4 h-4" />
+                            </Button>
+                        </div>
+                    </div>
+
+                    <div className="rounded-xl border border-slate-200 bg-slate-50/80 p-3">
+                        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                            <div className="flex items-center gap-2 text-sm font-semibold text-slate-700">
+                                <Users className="h-4 w-4 text-blue-600" />
+                                User tham gia tháng
+                                <span className="rounded-full bg-blue-100 px-2 py-0.5 text-[11px] font-bold text-blue-700">
+                                    {selectedMemberIds.length}/{activeWorkspaceMembers.length}
+                                </span>
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    className="h-7 px-2 text-[11px]"
+                                    onClick={() => setSelectedMemberIds(activeWorkspaceMembers.map((member) => member.id))}
+                                >
+                                    Chọn tất cả
+                                </Button>
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-7 px-2 text-[11px] text-slate-500"
+                                    onClick={() => setSelectedMemberIds([])}
+                                >
+                                    Bỏ chọn
+                                </Button>
+                            </div>
+                        </div>
+
+                        <div className="mt-3 flex flex-wrap gap-2">
+                            {activeWorkspaceMembers.map((member) => {
+                                const isSelected = selectedMemberIds.includes(member.id);
+
+                                return (
+                                    <button
+                                        key={member.id}
+                                        type="button"
+                                        onClick={() => toggleSelectedMember(member.id)}
+                                        className={cn(
+                                            "rounded-full border px-3 py-1.5 text-xs font-semibold transition-all",
+                                            isSelected
+                                                ? "border-blue-600 bg-blue-600 text-white shadow-sm"
+                                                : "border-slate-200 bg-white text-slate-600 hover:border-blue-300 hover:text-blue-700"
+                                        )}
+                                    >
+                                        {member.name}
+                                    </button>
+                                );
+                            })}
+                        </div>
                     </div>
                 </div>
             ) : (
@@ -459,7 +550,7 @@ export default function SheetSelector({ sheets, currentSheetId, workspaceId, onC
                     {/* Add Button */}
                     <div className="pl-1">
                         <Button
-                            onClick={() => setIsCreating(true)}
+                            onClick={startCreate}
                             variant="default"
                             size="icon"
                             className="h-9 w-9 bg-blue-600 hover:bg-blue-700 text-white shadow-sm hover:scale-105 transition-all rounded-xl"

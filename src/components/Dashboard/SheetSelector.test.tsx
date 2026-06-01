@@ -26,6 +26,7 @@ describe('SheetSelector Unified Toolbar', () => {
                 sheets={mockSheets}
                 currentSheetId={1}
                 workspaceId={1}
+                workspaceMembers={[]}
                 onChange={() => { }}
                 onCreated={() => { }}
             />
@@ -47,6 +48,7 @@ describe('SheetSelector Unified Toolbar', () => {
                 sheets={mockSheets}
                 currentSheetId={1}
                 workspaceId={1}
+                workspaceMembers={[]}
                 onChange={() => { }}
                 onCreated={() => { }}
             />

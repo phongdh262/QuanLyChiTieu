@@ -3,6 +3,7 @@ import prisma from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
 import { logActivity } from '@/lib/logger';
 import { createBatchExpenseSchema } from '@/lib/schemas';
+import { getActiveSheetMembers } from '@/lib/sheetMembers';
 
 export async function POST(req: Request) {
     try {
@@ -46,20 +47,38 @@ export async function POST(req: Request) {
         }
 
         // Security: actor must be a member
-        const isMember = sheet.workspace.members.some((m: any) => m.id === actorId);
+        const isMember = sheet.workspace.members.some((member) => member.id === actorId);
         if (!isMember) {
             return NextResponse.json({ error: 'Forbidden: You are not a member of this workspace' }, { status: 403 });
         }
 
         const workspaceId = sheet.workspaceId;
-        const allActiveMembers = sheet.workspace.members.filter((m: any) => m.status !== 'DELETED');
+        const activeSheetMembers = await getActiveSheetMembers(prisma, sheetId, workspaceId);
+        const activeSheetMemberIds = new Set(activeSheetMembers.map((member) => member.id));
 
-        // Validate private expenses beneficiaries
+        // Validate payers and private expense beneficiaries against this sheet's active members.
         for (const input of expenseInputs) {
+            if (!activeSheetMemberIds.has(input.payerId)) {
+                return NextResponse.json(
+                    { error: `Người trả tiền của khoản "${input.description}" không thuộc danh sách user tham gia tháng này` },
+                    { status: 400 }
+                );
+            }
+
             if (input.type === 'PRIVATE') {
                 if (!input.beneficiaryIds || input.beneficiaryIds.length === 0) {
                     return NextResponse.json(
                         { error: `Private expense "${input.description}" requires beneficiaries` },
+                        { status: 400 }
+                    );
+                }
+
+                const uniqueBeneficiaryIds = [...new Set(input.beneficiaryIds)];
+                const hasInvalidBeneficiary = uniqueBeneficiaryIds.some((id) => !activeSheetMemberIds.has(id));
+
+                if (hasInvalidBeneficiary) {
+                    return NextResponse.json(
+                        { error: `Người thụ hưởng của khoản "${input.description}" phải thuộc danh sách user tham gia tháng này` },
                         { status: 400 }
                     );
                 }
@@ -76,11 +95,10 @@ export async function POST(req: Request) {
                 // Determine split members
                 let splitMembers;
                 if (type === 'SHARED') {
-                    splitMembers = allActiveMembers;
+                    splitMembers = activeSheetMembers;
                 } else {
-                    splitMembers = await tx.member.findMany({
-                        where: { id: { in: beneficiaryIds! } }
-                    });
+                    const uniqueBeneficiaryIds = [...new Set(beneficiaryIds!)];
+                    splitMembers = activeSheetMembers.filter((member) => uniqueBeneficiaryIds.includes(member.id));
                 }
 
                 if (splitMembers.length === 0) {
@@ -102,13 +120,13 @@ export async function POST(req: Request) {
                 });
 
                 // Create splits
-                await tx.split.createMany({
-                    data: splitMembers.map((m: any) => ({
-                        expenseId: newExpense.id,
-                        memberId: m.id,
-                        amount: amountPerPerson
-                    }))
-                });
+                    await tx.split.createMany({
+                        data: splitMembers.map((member) => ({
+                            expenseId: newExpense.id,
+                            memberId: member.id,
+                            amount: amountPerPerson
+                        }))
+                    });
 
                 results.push(newExpense);
             }
@@ -118,7 +136,6 @@ export async function POST(req: Request) {
 
         // Log activities (outside transaction for performance)
         for (const expense of createdExpenses) {
-            const input = expenseInputs.find(e => e.description === expense.description);
             await logActivity(
                 workspaceId,
                 actorId,

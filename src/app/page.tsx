@@ -42,6 +42,7 @@ interface WorkspaceData {
   id: number;
   name: string;
   sheets: WorkspaceSheet[];
+  members: Member[];
 }
 
 interface ApiExpenseSplit {
@@ -106,7 +107,7 @@ export default function Home() {
 
   // Sheet Data
   const [sheetData, setSheetData] = useState<SheetData | null>(null);
-  const [members, setMembers] = useState<Member[]>([]);
+  const [sheetMembers, setSheetMembers] = useState<Member[]>([]);
   const [calculations, setCalculations] = useState<DashboardCalculations | null>(null);
 
   // User Data
@@ -204,7 +205,7 @@ export default function Home() {
       const json = await res.json() as SheetPayload;
 
       setSheetData(json.sheet);
-      setMembers(json.members);
+      setSheetMembers(json.members);
       setCalculations(json.calculations);
     } catch (e) {
       console.error(e);
@@ -219,7 +220,7 @@ export default function Home() {
   };
 
   const handleOptimisticAdd = (newBill: Bill) => {
-    if (!sheetData || !members) return;
+    if (!sheetData || !sheetMembers) return;
 
     const updatedExpenses = [...sheetData.expenses, {
       ...newBill,
@@ -232,7 +233,7 @@ export default function Home() {
       expenses: updatedExpenses
     });
 
-    const memberNames = members.map(m => m.name);
+    const memberNames = sheetMembers.map(m => m.name);
     const currentBills: Bill[] = updatedExpenses.map((expense) => ({
       id: expense.id,
       amount: expense.amount,
@@ -267,6 +268,7 @@ export default function Home() {
 
   const globalDebts = calculations?.globalDebts;
   const currentSheetExpenses = sheetData?.expenses || [];
+  const workspaceMembers = workspace?.members || [];
 
   const bills: Bill[] = currentSheetExpenses.map((expense) => ({
     id: expense.id,
@@ -297,7 +299,7 @@ export default function Home() {
         <Sidebar
           sheets={sheets}
           currentSheetId={currentSheetId}
-          members={members}
+          members={workspaceMembers}
           currentUser={currentUser}
           globalDebts={globalDebts}
           isLocked={isLocked}
@@ -326,6 +328,7 @@ export default function Home() {
                     sheets={sheets}
                     currentSheetId={currentSheetId}
                     workspaceId={workspace.id}
+                    workspaceMembers={workspaceMembers}
                     onChange={setCurrentSheetId}
                     onCreated={reload}
                     isLocked={isLocked}
@@ -370,13 +373,13 @@ export default function Home() {
 
                   {/* QUICK STATS */}
                   <div className="section-enter">
-                    <QuickStats members={members} calculations={calculations} bills={bills} />
+                    <QuickStats members={sheetMembers} calculations={calculations} bills={bills} />
                   </div>
 
                   {/* ADD EXPENSE FORM */}
                   <div className="section-enter section-enter-delay-1">
                     <AddBillForm
-                      members={members}
+                      members={sheetMembers}
                       sheetId={currentSheetId!}
                       onAdd={reload}
                       onOptimisticAdd={handleOptimisticAdd}
@@ -387,8 +390,8 @@ export default function Home() {
                   {/* REPORTING */}
                   {hasExpenses && (
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 section-enter section-enter-delay-2">
-                      <SummaryTable members={members} calculations={calculations} />
-                      <PrivateMatrix members={members} matrixData={calculations.matrix} />
+                      <SummaryTable members={sheetMembers} calculations={calculations} />
+                      <PrivateMatrix members={sheetMembers} matrixData={calculations.matrix} />
                     </div>
                   )}
 
@@ -396,7 +399,7 @@ export default function Home() {
                   <div className="section-enter section-enter-delay-3">
                     <HistoryTable
                       bills={bills}
-                      members={members}
+                      members={sheetMembers}
                       onDelete={reload}
                       onRefresh={reload}
                       isRefreshing={loading}
@@ -425,7 +428,7 @@ export default function Home() {
                 </button>
               </div>
               <div className="flex-1 overflow-hidden">
-                <ActivityLogList members={members} sheetId={currentSheetId!} month={sheetData?.month} year={sheetData?.year} sheetName={activeSheetName} />
+                <ActivityLogList members={workspaceMembers} sheetId={currentSheetId!} month={sheetData?.month} year={sheetData?.year} sheetName={activeSheetName} />
               </div>
             </div>
           </div>
@@ -443,7 +446,7 @@ export default function Home() {
                 </button>
               </div>
               <div className="flex-1 overflow-y-auto p-4">
-                <MemberManager members={members} workspaceId={workspace!.id} onUpdate={reload} />
+                <MemberManager members={workspaceMembers} workspaceId={workspace!.id} onUpdate={reload} />
               </div>
             </div>
           </div>

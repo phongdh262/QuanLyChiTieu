@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+const idSchema = z.number().int().positive().or(z.string().regex(/^\d+$/).transform(Number));
+
 export const loginSchema = z.object({
     username: z.string().min(1, 'Username is required'),
     password: z.string().min(8, 'Password must be at least 8 characters'),
@@ -7,7 +9,7 @@ export const loginSchema = z.object({
 });
 
 export const createMemberSchema = z.object({
-    workspaceId: z.number().or(z.string().regex(/^\d+$/).transform(Number)),
+    workspaceId: idSchema,
     name: z.string().min(1, 'Name is required').max(100),
     username: z.string().min(3, 'Username must be at least 3 characters').optional(),
     password: z.string().min(8, 'Password must be at least 8 characters').optional(),
@@ -46,7 +48,8 @@ export const resetPasswordSchema = z.object({
 });
 
 export const createSheetSchema = z.object({
-    workspaceId: z.number().or(z.string().regex(/^\d+$/).transform(Number)),
+    workspaceId: idSchema,
     month: z.number().min(1).max(12).or(z.string().regex(/^\d+$/).transform(Number)),
     year: z.number().min(2000).max(2100).or(z.string().regex(/^\d+$/).transform(Number)),
+    memberIds: z.array(idSchema).min(1, 'Vui lòng chọn ít nhất 1 user tham gia tháng').optional(),
 });

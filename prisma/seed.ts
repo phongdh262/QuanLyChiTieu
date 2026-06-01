@@ -30,6 +30,25 @@ async function main() {
         ]
     });
 
+    const [defaultSheet, members] = await Promise.all([
+        prisma.sheet.findFirst({
+            where: { workspaceId: workspace.id },
+            orderBy: { id: 'asc' }
+        }),
+        prisma.member.findMany({
+            where: { workspaceId: workspace.id, status: { not: 'DELETED' } }
+        })
+    ]);
+
+    if (defaultSheet && members.length > 0) {
+        await prisma.sheetMember.createMany({
+            data: members.map((member) => ({
+                sheetId: defaultSheet.id,
+                memberId: member.id
+            }))
+        });
+    }
+
     console.log('Seeding completed: Created Workspace + 3 Admins (Phong, Van, Khoi)');
 }
 

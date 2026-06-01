@@ -3,6 +3,7 @@ import prisma from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
 import { logActivity } from '@/lib/logger';
 import { createExpenseSchema } from '@/lib/schemas';
+import { getActiveSheetMembers } from '@/lib/sheetMembers';
 
 export async function POST(req: Request) {
     try {
@@ -24,49 +25,45 @@ export async function POST(req: Request) {
 
         // 2. Determine Splits and Verify Access
         let splitMembers = [];
-        let workspaceId = 0;
+
+        const sheet = await prisma.sheet.findUnique({
+            where: { id: sheetId },
+            include: { workspace: { include: { members: true } } }
+        });
+        if (!sheet) return NextResponse.json({ error: 'Sheet not found' }, { status: 404 });
+
+        if (sheet.status === 'LOCKED') {
+            return NextResponse.json({ error: 'Sheet đã bị khóa, không thể thêm khoản chi' }, { status: 403 });
+        }
+
+        const isMember = sheet.workspace.members.some((member) => member.id === actorId);
+        if (!isMember) {
+            return NextResponse.json({ error: 'Forbidden: You are not a member of this workspace' }, { status: 403 });
+        }
+
+        const workspaceId = sheet.workspaceId;
+        const activeSheetMembers = await getActiveSheetMembers(prisma, sheetId, workspaceId);
+        const activeSheetMemberIds = new Set(activeSheetMembers.map((member) => member.id));
+
+        if (!activeSheetMemberIds.has(payerId)) {
+            return NextResponse.json({ error: 'Người trả tiền không thuộc danh sách user tham gia tháng này' }, { status: 400 });
+        }
 
         if (type === 'SHARED') {
-            const sheet = await prisma.sheet.findUnique({
-                where: { id: sheetId },
-                include: { workspace: { include: { members: true } } }
-            });
-            if (!sheet) return NextResponse.json({ error: 'Sheet not found' }, { status: 404 });
-
-            // LOCK CHECK: Block expense creation on locked sheets
-            if (sheet.status === 'LOCKED') {
-                return NextResponse.json({ error: 'Sheet đã bị khóa, không thể thêm khoản chi' }, { status: 403 });
-            }
-
-            // SECURITY CHECK: Ensure actor belongs to workspace
-            const isMember = sheet.workspace.members.some((m: any) => m.id === actorId);
-
-            if (!isMember) {
-                return NextResponse.json({ error: 'Forbidden: You are not a member of this workspace' }, { status: 403 });
-            }
-
-            // Only include ACTIVE members for shared expense splits
-            splitMembers = sheet.workspace.members.filter((m: any) => m.status !== 'DELETED');
-            workspaceId = sheet.workspaceId;
+            splitMembers = activeSheetMembers;
         } else {
-            // PRIVATE
             if (!beneficiaryIds || beneficiaryIds.length === 0) {
                 return NextResponse.json({ error: 'Private bills require beneficiaries' }, { status: 400 });
             }
-            // Fetch sheet to get workspaceId
-            const sheet = await prisma.sheet.findUnique({ where: { id: sheetId } });
-            if (!sheet) return NextResponse.json({ error: 'Sheet not found' }, { status: 404 });
 
-            // LOCK CHECK: Block expense creation on locked sheets
-            if (sheet.status === 'LOCKED') {
-                return NextResponse.json({ error: 'Sheet đã bị khóa, không thể thêm khoản chi' }, { status: 403 });
+            const uniqueBeneficiaryIds = [...new Set(beneficiaryIds)];
+            const hasInvalidBeneficiary = uniqueBeneficiaryIds.some((id) => !activeSheetMemberIds.has(id));
+
+            if (hasInvalidBeneficiary) {
+                return NextResponse.json({ error: 'Người thụ hưởng phải thuộc danh sách user tham gia tháng này' }, { status: 400 });
             }
 
-            workspaceId = sheet.workspaceId;
-
-            splitMembers = await prisma.member.findMany({
-                where: { id: { in: beneficiaryIds } }
-            });
+            splitMembers = activeSheetMembers.filter((member) => uniqueBeneficiaryIds.includes(member.id));
         }
 
         if (splitMembers.length === 0) {
