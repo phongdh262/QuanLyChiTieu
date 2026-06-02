@@ -39,6 +39,7 @@ export const dictionaries = {
         submitting: "Submitting...",
         lockedTitle: "🔒 Sheet is locked",
         lockedDesc: "Cannot add new expenses. Contact Admin to unlock.",
+        sharedDateHint: "Applied to all rows",
 
         // HistoryTable
         expenseHistory: "Expense History",
@@ -205,6 +206,7 @@ export const dictionaries = {
         submitting: "Đang lưu...",
         lockedTitle: "🔒 Bảng chi tiêu đã được khóa",
         lockedDesc: "Không thể thêm khoản chi mới. Liên hệ Admin để mở khóa.",
+        sharedDateHint: "Áp dụng cho tất cả dòng",
 
         // HistoryTable
         expenseHistory: "Lịch sử Chi tiêu",

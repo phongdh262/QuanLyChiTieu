@@ -384,6 +384,7 @@ export default function Home() {
                       onAdd={reload}
                       onOptimisticAdd={handleOptimisticAdd}
                       isLocked={isLocked}
+                      currentUser={currentUser}
                     />
                   </div>
 

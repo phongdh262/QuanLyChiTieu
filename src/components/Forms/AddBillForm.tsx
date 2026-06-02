@@ -38,6 +38,7 @@ interface Props {
     } | null;
     onOptimisticAdd?: (data: Bill) => void;
     isLocked?: boolean;
+    currentUser?: { id: number; name: string } | null;
 }
 
 interface ExpenseRow {
@@ -75,45 +76,36 @@ function formatAmount(value: string): string {
     return parseInt(clean).toLocaleString('vi-VN');
 }
 
-export default function AddBillForm({ members, sheetId, onAdd, initialData, onOptimisticAdd, isLocked }: Props) {
+export default function AddBillForm({ members, sheetId, onAdd, initialData, onOptimisticAdd, isLocked, currentUser }: Props) {
     const { t } = useLanguage();
     const { addToast } = useToast();
-    const [currentUser, setCurrentUser] = useState<{ id: number; name: string } | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [batchDate, setBatchDate] = useState<Date>(new Date());
 
     const activeMembers = useMemo(() => members.filter(m => m.status !== 'DELETED'), [members]);
 
     // Default payer ID
-    const getDefaultPayerId = () => {
+    const getDefaultPayerId = React.useCallback(() => {
         if (currentUser) {
             const me = activeMembers.find(m => m.id === currentUser.id);
             if (me) return me.id.toString();
         }
         return activeMembers.length > 0 ? activeMembers[0].id.toString() : '';
-    };
+    }, [currentUser, activeMembers]);
 
     const [rows, setRows] = useState<ExpenseRow[]>(() => [createEmptyRow('')]);
 
-    // Fetch current user
+    // Set default payer when currentUser or activeMembers become available
     React.useEffect(() => {
-        fetch('/api/auth/me')
-            .then(res => res.json())
-            .then(data => {
-                if (data.user) setCurrentUser(data.user);
-            })
-            .catch(console.error);
-    }, []);
-
-    // Set default payer when currentUser loads
-    React.useEffect(() => {
-        if (activeMembers.length > 0 && currentUser) {
+        if (activeMembers.length > 0) {
             const defaultId = getDefaultPayerId();
-            setRows(prev => prev.map(row =>
-                row.payerId === '' ? { ...row, payerId: defaultId } : row
-            ));
+            if (defaultId) {
+                setRows(prev => prev.map(row =>
+                    row.payerId === '' ? { ...row, payerId: defaultId } : row
+                ));
+            }
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [activeMembers, currentUser]);
+    }, [activeMembers, getDefaultPayerId]);
 
     // Handle initialData (duplication)
     React.useEffect(() => {
@@ -190,6 +182,7 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
             for (const row of rows) {
                 const payerName = members.find(m => m.id === parseInt(row.payerId))?.name || 'Unknown';
                 const beneficiaryNames = row.beneficiaryIds.map(id => members.find(m => m.id === parseInt(id))?.name || 'Unknown');
+                const effectiveDate = isBatch ? batchDate : row.date;
                 onOptimisticAdd({
                     id: Date.now() + Math.random(),
                     amount: parseFloat(row.amount.replace(/\./g, '')),
@@ -197,7 +190,7 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
                     type: row.type,
                     beneficiaries: row.type === 'PRIVATE' ? beneficiaryNames : members.map(m => m.name),
                     note: row.description,
-                    date: row.date ? row.date.toISOString() : new Date().toISOString()
+                    date: effectiveDate ? effectiveDate.toISOString() : new Date().toISOString()
                 });
             }
         }
@@ -222,7 +215,7 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
                 if (!res.ok) throw new Error('Failed to add expense');
                 addToast('Đã thêm khoản chi! ✅', 'success');
             } else {
-                // Batch — use new endpoint
+                // Batch — use new endpoint, all rows share batchDate
                 const res = await fetch('/api/expenses/batch', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -233,7 +226,7 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
                             amount: parseInt(row.amount.replace(/\./g, '')),
                             description: row.description,
                             type: row.type,
-                            date: row.date ? row.date.toISOString() : undefined,
+                            date: batchDate ? batchDate.toISOString() : undefined,
                             beneficiaryIds: row.type === 'PRIVATE' ? row.beneficiaryIds.map(id => parseInt(id)) : []
                         }))
                     }),
@@ -245,6 +238,7 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
 
             // Reset to single empty row
             setRows([{ ...createEmptyRow(getDefaultPayerId()), date: new Date() }]);
+            setBatchDate(new Date());
             onAdd();
         } catch (error) {
             console.error(error);
@@ -304,6 +298,44 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
                 </CardContent>
             ) : (
                 <CardContent className="p-5 pt-3 space-y-3">
+                    {/* Shared date picker for batch mode */}
+                    {isBatch && (
+                        <div className="flex items-center gap-3 p-3 rounded-xl bg-gradient-to-r from-blue-50/80 via-cyan-50/50 to-blue-50/80 dark:from-blue-500/[0.08] dark:via-cyan-500/[0.05] dark:to-blue-500/[0.08] border border-blue-100/80 dark:border-blue-500/15 animate-in fade-in slide-in-from-top-2 duration-300">
+                            <div className="flex items-center gap-2 text-xs font-bold text-blue-700 dark:text-blue-300">
+                                <CalendarIcon className="w-4 h-4" />
+                                <span>{t('date')}:</span>
+                            </div>
+                            <Popover>
+                                <PopoverTrigger asChild>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className={cn(
+                                            "h-8 px-3 text-xs font-bold border-blue-200 dark:border-blue-500/30 bg-white dark:bg-white/[0.06] hover:bg-blue-50 dark:hover:bg-blue-500/10 transition-all",
+                                            "text-blue-700 dark:text-blue-300"
+                                        )}
+                                    >
+                                        <CalendarIcon className="w-3.5 h-3.5 mr-1.5" />
+                                        {format(batchDate, "dd/MM/yyyy")}
+                                    </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-auto p-0" align="start">
+                                    <Calendar
+                                        mode="single"
+                                        selected={batchDate}
+                                        onSelect={(d) => { if (d) setBatchDate(d); }}
+                                        disabled={(date) =>
+                                            date > new Date() || date < new Date("1900-01-01")
+                                        }
+                                        initialFocus
+                                        locale={vi}
+                                    />
+                                </PopoverContent>
+                            </Popover>
+                            <span className="text-[10px] text-blue-500/70 dark:text-blue-400/50 font-medium">— {t('sharedDateHint') || 'Áp dụng cho tất cả dòng'}</span>
+                        </div>
+                    )}
+
                     {rows.map((row, index) => (
                         <div
                             key={row.id}
@@ -332,8 +364,8 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
                                 </div>
                             )}
 
-                            {/* ROW FIELDS: Description, Amount, Date, Payer */}
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3 items-end">
+                            {/* ROW FIELDS: Description, Amount, Date (single mode only), Payer */}
+                            <div className={cn("grid grid-cols-1 sm:grid-cols-2 gap-3 items-end", isBatch ? "lg:grid-cols-10" : "lg:grid-cols-12")}>
                                 {/* Description */}
                                 <div className="lg:col-span-4 space-y-1.5">
                                     {index === 0 && <Label className="text-xs font-semibold text-slate-600 dark:text-slate-300">{t('description')} <span className="text-red-500">*</span></Label>}
@@ -350,7 +382,7 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
                                 </div>
 
                                 {/* Amount */}
-                                <div className="lg:col-span-2 space-y-1.5">
+                                <div className={cn(isBatch ? "lg:col-span-2" : "lg:col-span-2", "space-y-1.5")}>
                                     {index === 0 && <Label className="text-xs font-semibold text-slate-600 dark:text-slate-300">{t('amount')} <span className="text-red-500">*</span></Label>}
                                     <div className="relative">
                                         <Calculator className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -384,7 +416,8 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
                                     </div>
                                 </div>
 
-                                {/* Date */}
+                                {/* Date — only shown in single row mode; batch mode uses shared date */}
+                                {!isBatch && (
                                 <div className="lg:col-span-2 space-y-1.5">
                                     {index === 0 && <Label className="text-xs font-semibold text-slate-600 dark:text-slate-300">{t('date')}</Label>}
                                     <Popover>
@@ -416,9 +449,10 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
                                         </PopoverContent>
                                     </Popover>
                                 </div>
+                                )}
 
                                 {/* Payer */}
-                                <div className="lg:col-span-2 space-y-1.5">
+                                <div className={cn(isBatch ? "lg:col-span-2" : "lg:col-span-2", "space-y-1.5")}>
                                     {index === 0 && <Label className="text-xs font-semibold text-slate-600 dark:text-slate-300">{t('payer')} <span className="text-red-500">*</span></Label>}
                                     <div className="relative">
                                         <Users className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground z-10" />
