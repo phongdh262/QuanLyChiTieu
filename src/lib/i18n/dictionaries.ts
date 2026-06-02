@@ -40,6 +40,7 @@ export const dictionaries = {
         lockedTitle: "🔒 Sheet is locked",
         lockedDesc: "Cannot add new expenses. Contact Admin to unlock.",
         sharedDateHint: "Applied to all rows",
+        applyDateAll: "Set date for all rows",
 
         // HistoryTable
         expenseHistory: "Expense History",
@@ -207,6 +208,7 @@ export const dictionaries = {
         lockedTitle: "🔒 Bảng chi tiêu đã được khóa",
         lockedDesc: "Không thể thêm khoản chi mới. Liên hệ Admin để mở khóa.",
         sharedDateHint: "Áp dụng cho tất cả dòng",
+        applyDateAll: "Đặt ngày cho tất cả",
 
         // HistoryTable
         expenseHistory: "Lịch sử Chi tiêu",

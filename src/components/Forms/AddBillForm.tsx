@@ -80,7 +80,6 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
     const { t } = useLanguage();
     const { addToast } = useToast();
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [batchDate, setBatchDate] = useState<Date>(new Date());
 
     const activeMembers = useMemo(() => members.filter(m => m.status !== 'DELETED'), [members]);
 
@@ -131,7 +130,14 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
             addToast(`Tối đa ${MAX_ROWS} khoản chi mỗi lần`, 'warning');
             return;
         }
-        setRows(prev => [...prev, { ...createEmptyRow(getDefaultPayerId()), date: new Date() }]);
+        // Inherit date from the last row so same-day batch entry is easy
+        const lastRowDate = rows.length > 0 ? rows[rows.length - 1].date : new Date();
+        setRows(prev => [...prev, { ...createEmptyRow(getDefaultPayerId()), date: lastRowDate }]);
+    };
+
+    // Apply a chosen date to all rows at once
+    const applyDateToAll = (date: Date) => {
+        setRows(prev => prev.map(row => ({ ...row, date })));
     };
 
     const removeRow = (rowId: string) => {
@@ -182,7 +188,6 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
             for (const row of rows) {
                 const payerName = members.find(m => m.id === parseInt(row.payerId))?.name || 'Unknown';
                 const beneficiaryNames = row.beneficiaryIds.map(id => members.find(m => m.id === parseInt(id))?.name || 'Unknown');
-                const effectiveDate = isBatch ? batchDate : row.date;
                 onOptimisticAdd({
                     id: Date.now() + Math.random(),
                     amount: parseFloat(row.amount.replace(/\./g, '')),
@@ -190,7 +195,7 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
                     type: row.type,
                     beneficiaries: row.type === 'PRIVATE' ? beneficiaryNames : members.map(m => m.name),
                     note: row.description,
-                    date: effectiveDate ? effectiveDate.toISOString() : new Date().toISOString()
+                    date: row.date ? row.date.toISOString() : new Date().toISOString()
                 });
             }
         }
@@ -215,7 +220,7 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
                 if (!res.ok) throw new Error('Failed to add expense');
                 addToast('Đã thêm khoản chi! ✅', 'success');
             } else {
-                // Batch — use new endpoint, all rows share batchDate
+                // Batch — each row has its own date
                 const res = await fetch('/api/expenses/batch', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -226,7 +231,7 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
                             amount: parseInt(row.amount.replace(/\./g, '')),
                             description: row.description,
                             type: row.type,
-                            date: batchDate ? batchDate.toISOString() : undefined,
+                            date: row.date ? row.date.toISOString() : undefined,
                             beneficiaryIds: row.type === 'PRIVATE' ? row.beneficiaryIds.map(id => parseInt(id)) : []
                         }))
                     }),
@@ -238,7 +243,6 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
 
             // Reset to single empty row
             setRows([{ ...createEmptyRow(getDefaultPayerId()), date: new Date() }]);
-            setBatchDate(new Date());
             onAdd();
         } catch (error) {
             console.error(error);
@@ -298,12 +302,12 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
                 </CardContent>
             ) : (
                 <CardContent className="p-5 pt-3 space-y-3">
-                    {/* Shared date picker for batch mode */}
+                    {/* Quick "apply date to all rows" toolbar in batch mode */}
                     {isBatch && (
                         <div className="flex items-center gap-3 p-3 rounded-xl bg-gradient-to-r from-blue-50/80 via-cyan-50/50 to-blue-50/80 dark:from-blue-500/[0.08] dark:via-cyan-500/[0.05] dark:to-blue-500/[0.08] border border-blue-100/80 dark:border-blue-500/15 animate-in fade-in slide-in-from-top-2 duration-300">
                             <div className="flex items-center gap-2 text-xs font-bold text-blue-700 dark:text-blue-300">
                                 <CalendarIcon className="w-4 h-4" />
-                                <span>{t('date')}:</span>
+                                <span>{t('applyDateAll') || 'Đặt ngày cho tất cả'}:</span>
                             </div>
                             <Popover>
                                 <PopoverTrigger asChild>
@@ -316,14 +320,14 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
                                         )}
                                     >
                                         <CalendarIcon className="w-3.5 h-3.5 mr-1.5" />
-                                        {format(batchDate, "dd/MM/yyyy")}
+                                        {format(rows[0]?.date || new Date(), "dd/MM/yyyy")}
                                     </Button>
                                 </PopoverTrigger>
                                 <PopoverContent className="w-auto p-0" align="start">
                                     <Calendar
                                         mode="single"
-                                        selected={batchDate}
-                                        onSelect={(d) => { if (d) setBatchDate(d); }}
+                                        selected={rows[0]?.date}
+                                        onSelect={(d) => { if (d) applyDateToAll(d); }}
                                         disabled={(date) =>
                                             date > new Date() || date < new Date("1900-01-01")
                                         }
@@ -332,7 +336,7 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
                                     />
                                 </PopoverContent>
                             </Popover>
-                            <span className="text-[10px] text-blue-500/70 dark:text-blue-400/50 font-medium">— {t('sharedDateHint') || 'Áp dụng cho tất cả dòng'}</span>
+                            <span className="text-[10px] text-blue-500/70 dark:text-blue-400/50 font-medium">— {t('sharedDateHint')}</span>
                         </div>
                     )}
 
@@ -364,8 +368,8 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
                                 </div>
                             )}
 
-                            {/* ROW FIELDS: Description, Amount, Date (single mode only), Payer */}
-                            <div className={cn("grid grid-cols-1 sm:grid-cols-2 gap-3 items-end", isBatch ? "lg:grid-cols-10" : "lg:grid-cols-12")}>
+                            {/* ROW FIELDS: Description, Amount, Date, Payer */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3 items-end">
                                 {/* Description */}
                                 <div className="lg:col-span-4 space-y-1.5">
                                     {index === 0 && <Label className="text-xs font-semibold text-slate-600 dark:text-slate-300">{t('description')} <span className="text-red-500">*</span></Label>}
@@ -382,7 +386,7 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
                                 </div>
 
                                 {/* Amount */}
-                                <div className={cn(isBatch ? "lg:col-span-2" : "lg:col-span-2", "space-y-1.5")}>
+                                <div className="lg:col-span-2 space-y-1.5">
                                     {index === 0 && <Label className="text-xs font-semibold text-slate-600 dark:text-slate-300">{t('amount')} <span className="text-red-500">*</span></Label>}
                                     <div className="relative">
                                         <Calculator className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -416,8 +420,7 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
                                     </div>
                                 </div>
 
-                                {/* Date — only shown in single row mode; batch mode uses shared date */}
-                                {!isBatch && (
+                                {/* Date */}
                                 <div className="lg:col-span-2 space-y-1.5">
                                     {index === 0 && <Label className="text-xs font-semibold text-slate-600 dark:text-slate-300">{t('date')}</Label>}
                                     <Popover>
@@ -449,10 +452,9 @@ export default function AddBillForm({ members, sheetId, onAdd, initialData, onOp
                                         </PopoverContent>
                                     </Popover>
                                 </div>
-                                )}
 
                                 {/* Payer */}
-                                <div className={cn(isBatch ? "lg:col-span-2" : "lg:col-span-2", "space-y-1.5")}>
+                                <div className="lg:col-span-2 space-y-1.5">
                                     {index === 0 && <Label className="text-xs font-semibold text-slate-600 dark:text-slate-300">{t('payer')} <span className="text-red-500">*</span></Label>}
                                     <div className="relative">
                                         <Users className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground z-10" />
