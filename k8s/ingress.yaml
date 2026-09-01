@@ -14,7 +14,7 @@ spec:
   #     - chitieu.yourdomain.com
   #   secretName: chitieu-tls-secret
   rules:
-    - host: chitieu.YOUR_VPS_IP.nip.io # Thay YOUR_VPS_IP bằng IP thật của VPS
+    - host: chitieu.45.252.250.225.nip.io
       http:
         paths:
           - path: /
