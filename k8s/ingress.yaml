@@ -14,7 +14,7 @@ spec:
   #     - chitieu.yourdomain.com
   #   secretName: chitieu-tls-secret
   rules:
-    - host: chitieu.45.252.250.225.nip.io
+    - host: s1006.phongdinh.info.vn
       http:
         paths:
           - path: /
