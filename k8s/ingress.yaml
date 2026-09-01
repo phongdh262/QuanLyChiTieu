@@ -1,0 +1,26 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: chitieu-ingress
+  annotations:
+    # If using Traefik (default in K3s)
+    kubernetes.io/ingress.class: traefik
+    # Optional: Enable Let's Encrypt for automatic HTTPS
+    # cert-manager.io/cluster-issuer: "letsencrypt-prod"
+spec:
+  # Uncomment and replace with your domain when you have one
+  # tls:
+  # - hosts:
+  #     - chitieu.yourdomain.com
+  #   secretName: chitieu-tls-secret
+  rules:
+    - host: chitieu.45.252.248.35.nip.io # nip.io provides wildcard DNS for any IP address
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: chitieu-service
+                port:
+                  number: 80

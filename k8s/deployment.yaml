@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chitieu-app
+  labels:
+    app: chitieu
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: chitieu
+  template:
+    metadata:
+      labels:
+        app: chitieu
+    spec:
+      containers:
+      - name: chitieu-app
+        # This image will be built and pushed by GitHub Actions
+        image: ghcr.io/phongdh262/quanlychitieu:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 3000
+        envFrom:
+        - secretRef:
+            name: chitieu-secrets
+      imagePullSecrets:
+      - name: ghcr-login-secret
