@@ -14,7 +14,7 @@ spec:
   #     - chitieu.yourdomain.com
   #   secretName: chitieu-tls-secret
   rules:
-    - host: chitieu.45.252.248.35.nip.io # nip.io provides wildcard DNS for any IP address
+    - host: chitieu.YOUR_VPS_IP.nip.io # Thay YOUR_VPS_IP bằng IP thật của VPS
       http:
         paths:
           - path: /
