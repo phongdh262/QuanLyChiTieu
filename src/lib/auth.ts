@@ -2,11 +2,13 @@ import { SignJWT, jwtVerify } from 'jose';
 import bcrypt from 'bcryptjs';
 import { cookies } from 'next/headers';
 
-const SECRET_KEY = process.env.JWT_SECRET;
-if (!SECRET_KEY) {
-    throw new Error('FATAL: JWT_SECRET is not defined in environment variables.');
+function getKey() {
+    const SECRET_KEY = process.env.JWT_SECRET;
+    if (!SECRET_KEY) {
+        throw new Error('FATAL: JWT_SECRET is not defined in environment variables.');
+    }
+    return new TextEncoder().encode(SECRET_KEY);
 }
-const key = new TextEncoder().encode(SECRET_KEY);
 
 export async function hashPassword(password: string) {
     return await bcrypt.hash(password, 10);
@@ -21,7 +23,7 @@ export async function createSession(payload: any) {
         .setProtectedHeader({ alg: 'HS256' })
         .setIssuedAt()
         .setExpirationTime('30d') // Long session for convenience
-        .sign(key);
+        .sign(getKey());
 
     (await cookies()).set('session', token, {
         httpOnly: true,
@@ -36,7 +38,7 @@ export async function getSession() {
     const session = (await cookies()).get('session')?.value;
     if (!session) return null;
     try {
-        const { payload } = await jwtVerify(session, key, {
+        const { payload } = await jwtVerify(session, getKey(), {
             algorithms: ['HS256'],
         });
         return payload;
