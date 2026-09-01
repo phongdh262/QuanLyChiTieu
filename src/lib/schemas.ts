@@ -4,7 +4,7 @@ const idSchema = z.number().int().positive().or(z.string().regex(/^\d+$/).transf
 
 export const loginSchema = z.object({
     username: z.string().min(1, 'Username is required'),
-    password: z.string().min(8, 'Password must be at least 8 characters'),
+    password: z.string().min(5, 'Password must be at least 5 characters'),
     captchaToken: z.string().optional(), // Make optional for now or strictly required if flow mandates
 });
 
@@ -12,7 +12,7 @@ export const createMemberSchema = z.object({
     workspaceId: idSchema,
     name: z.string().min(1, 'Name is required').max(100),
     username: z.string().min(3, 'Username must be at least 3 characters').optional(),
-    password: z.string().min(8, 'Password must be at least 8 characters').optional(),
+    password: z.string().min(5, 'Password must be at least 5 characters').optional(),
 });
 
 export const createExpenseSchema = z.object({
@@ -44,7 +44,7 @@ export const updateMemberSchema = z.object({
 
 export const resetPasswordSchema = z.object({
     memberId: z.number().int().positive('Member ID is required'),
-    newPassword: z.string().min(8, 'Password must be at least 8 characters'),
+    newPassword: z.string().min(5, 'Password must be at least 5 characters'),
 });
 
 export const createSheetSchema = z.object({
